@@ -1,0 +1,394 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pine: #24402f;
+  --color-pine-light: #35543f;
+  --color-moss: #5c7a54;
+  --color-moss-lit: #6f8f66;
+  --color-parchment: #f2e8d5;
+  --color-parchment-dark: #e6d8bc;
+  --color-bark: #5b4230;
+  --color-gold: #d6a84c;
+  --color-berry: #a8433b;
+  --color-ink: #2a241c;
+  --color-skin: #e8b98c;
+  --color-blush: #dd8f72;
+  --color-leaf: #4c6b47;
+  --color-water: #6a8f8a;
+  --color-water-deep: #4e7370;
+  --color-sand: #eaddb0;
+  --color-soil: #6b5340;
+  --color-path: #c4a574;
+  --color-sky-top: #cfe4c8;
+  --color-sky-bot: #e7ddb4;
+  --color-low: #cbb992;
+  --color-mid: #7fa05e;
+  --color-high: #35543f;
+
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Baloo 2", "Nunito", ui-rounded, sans-serif;
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.75rem;
+
+  --shadow-panel:
+    0 0 0 1px color-mix(in oklab, var(--color-bark) 14%, transparent),
+    0 10px 28px -12px rgb(36 64 47 / 0.45);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-pine);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes gnome-bounce {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-8px) rotate(-5deg);
+  }
+  60% {
+    transform: translateY(0) rotate(3deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes grow-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-slot {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes coin-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ripple {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleX(1.08);
+  }
+}
+
+.gnome-bounce {
+  animation: gnome-bounce 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: 50% 90%;
+}
+
+.grow-in {
+  animation: grow-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: bottom center;
+}
+
+.slide-up {
+  animation: slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pulse-slot {
+  animation: pulse-slot 1.6s ease-in-out infinite;
+}
+
+.coin-pop {
+  animation: coin-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes gnome-walk-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-5px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes gnome-idle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.5px);
+  }
+}
+
+@keyframes gnome-leg-back {
+  0%,
+  100% {
+    transform: rotate(20deg);
+  }
+  50% {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes gnome-leg-front {
+  0%,
+  100% {
+    transform: rotate(-20deg);
+  }
+  50% {
+    transform: rotate(22deg);
+  }
+}
+
+@keyframes gnome-arm-back {
+  0%,
+  100% {
+    transform: rotate(-22deg);
+  }
+  50% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes gnome-arm-front {
+  0%,
+  100% {
+    transform: rotate(18deg);
+  }
+  50% {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes gnome-dust {
+  0% {
+    opacity: 0.55;
+    transform: translateX(0) scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-10px) scale(1.35);
+  }
+}
+
+.gnome-walk-root {
+  animation: gnome-walk-bob 0.48s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transform-origin: 50% 100%;
+}
+
+.gnome-idle {
+  animation: gnome-idle-bob 2.4s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+
+.gnome-leg-back,
+.gnome-leg-front {
+  transform-box: fill-box;
+  transform-origin: 50% 8%;
+}
+
+.gnome-leg-back {
+  animation: gnome-leg-back 0.48s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.gnome-leg-front {
+  animation: gnome-leg-front 0.48s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.gnome-arm-back,
+.gnome-arm-front {
+  transform-box: fill-box;
+  transform-origin: 0% 0%;
+}
+
+.gnome-arm-back {
+  animation: gnome-arm-back 0.48s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.gnome-arm-front {
+  animation: gnome-arm-front 0.48s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.gnome-dust {
+  animation: gnome-dust 0.48s ease-out infinite;
+  transform-origin: center;
+}
+
+@keyframes gnome-strike-bob {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+  35% {
+    transform: translate(6px, -4px) rotate(-8deg);
+  }
+  70% {
+    transform: translate(2px, 1px) rotate(3deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+}
+
+@keyframes gnome-arm-strike {
+  0% {
+    transform: rotate(10deg);
+  }
+  40% {
+    transform: rotate(-70deg);
+  }
+  100% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes hitsplat-pop {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.6);
+  }
+  40% {
+    transform: translateY(-10px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(1);
+  }
+}
+
+@keyframes xp-float {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px);
+  }
+}
+
+.gnome-strike {
+  animation: gnome-strike-bob 0.42s cubic-bezier(0.2, 0.8, 0.3, 1);
+  transform-origin: 50% 100%;
+}
+
+.gnome-arm-strike {
+  animation: gnome-arm-strike 0.42s cubic-bezier(0.2, 0.8, 0.3, 1);
+  transform-box: fill-box;
+  transform-origin: 0% 0%;
+}
+
+.hitsplat {
+  animation: hitsplat-pop 0.85s ease-out forwards;
+  pointer-events: none;
+}
+
+.xp-drop {
+  animation: xp-float 1.1s ease-out forwards;
+  pointer-events: none;
+}
+
+.water-ripple {
+  animation: ripple 4.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.hotspot-hit {
+  fill: var(--color-gold);
+  fill-opacity: 0.01;
+  pointer-events: all;
+}
+
+.hotspot-hit:hover {
+  fill-opacity: 0.28;
+}
