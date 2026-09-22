@@ -25,7 +25,7 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
   if (!live || live.enemyId !== combat.enemyId || live.phase !== "enemy") return;
   const s = get();
   const e = ENEMIES[combat.enemyId];
-  const miss = combat.enemyId === "sprite" && Math.random() < 0.22;
+  const miss = (combat.enemyId === "sprite" && Math.random() < 0.22) || (combat.enemyId === "runt" && Math.random() < 0.55);
   if (miss) {
     set({
       combat: {
@@ -34,14 +34,15 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
         striking: false,
         splatOnPlayer: "miss",
         splatOnEnemy: null,
-        log: "The sprite misses. Leaves everywhere.",
+        log: combat.enemyId === "runt" ? "The runt swings at the air." : "The sprite misses. Leaves everywhere.",
       },
     });
     armAutoAttack(get, 1500);
     return;
   }
   const fire = (combat.enemyId === "dragon" || combat.enemyId === "absence") && Math.random() < 0.4;
-  const raw = (combat.enemyDmg ?? e.dmg) + roll(0, 1) + (fire ? 2 : 0);
+  const raw =
+    combat.enemyId === "runt" ? 1 : (combat.enemyDmg ?? e.dmg) + roll(0, 1) + (fire ? 2 : 0);
   const dmg = incoming(s, raw, combat.enemyId === "dragon" || combat.enemyId === "absence");
   const hp = Math.max(0, combat.playerHp - dmg);
   sfx("hit");
@@ -183,7 +184,9 @@ export function combatSlice(
       const lv = levelsOf(s.skills);
       const weaponAtk = gearStats(s.equipment.weapon).atk;
       const vsDragon = c.enemyId === "dragon" || c.enemyId === "absence";
-      const chance = hitChance(lv.attack, weaponAtk, c.enemyDef ?? 4);
+      const soft = !vsDragon && (c.enemyId === "runt" || (c.enemyDef ?? 9) <= 2);
+      let chance = hitChance(lv.attack, weaponAtk, c.enemyDef ?? 4);
+      if (soft) chance = Math.max(chance, 0.9);
       if (Math.random() > chance) {
         sfx("error");
         const next: CombatState = {
@@ -200,8 +203,8 @@ export function combatSlice(
         setCombatTimer(() => finishEnemyTurn(get, set, { ...next, striking: false }), 700);
         return;
       }
-      const cap = maxHit(lv.strength, weaponAtk, vsDragon ? s.fortLevel : 0);
-      const dmg = Math.max(1, roll(1, cap) + (vsDragon ? Math.floor(s.fortLevel / 2) : 0));
+      const cap = Math.max(soft ? 2 : 1, maxHit(lv.strength, weaponAtk, vsDragon ? s.fortLevel : 0));
+      const dmg = Math.max(soft ? 2 : 1, roll(1, cap) + (vsDragon ? Math.floor(s.fortLevel / 2) : 0));
       const crit = dmg >= cap && cap > 2;
       const enemyHp = Math.max(0, c.enemyHp - dmg);
       sfx("hit");

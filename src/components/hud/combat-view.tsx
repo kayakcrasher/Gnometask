@@ -44,10 +44,10 @@ export function CombatView() {
   const cmb = combatLevel(skills);
 
   return (
-    <div className="pointer-events-none absolute left-3 top-24 z-30 w-[min(20.5rem,calc(100%-1.5rem))]">
+    <div className="absolute inset-0 z-50 flex items-end justify-center bg-ink/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:items-center">
       <div
         className={cn(
-          "pointer-events-auto w-full rounded-[22px] bg-parchment p-3 shadow-panel",
+          "pointer-events-auto w-full max-w-md rounded-[22px] bg-parchment p-3 shadow-panel",
           combat.shake ? "coin-pop" : "",
         )}
       >

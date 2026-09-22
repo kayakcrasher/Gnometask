@@ -100,8 +100,9 @@ export function ClickPopup() {
   const sailTo = useGame((s) => s.sailTo);
   const placed = useGame((s) => s.placed);
   const coins = useGame((s) => s.coins);
+  const combat = useGame((s) => s.combat);
 
-  if (!popup) return null;
+  if (!popup || combat) return null;
 
   const enemy = popup.enemyId ? ENEMIES[popup.enemyId as EnemyId] : null;
   const building = popup.building;

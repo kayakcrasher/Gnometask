@@ -251,7 +251,7 @@ function SceneBody({
           scale={1.15}
         />
         {save.combat && save.combat.splatOnPlayer != null ? (
-          <Html position={[0, 1.6, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+          <Html zIndexRange={[8, 0]} position={[0, 1.6, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
             <p className="font-display text-base font-bold text-berry">
               {save.combat.splatOnPlayer === "miss" ? "miss" : save.combat.splatOnPlayer === "heal" ? "heal" : save.combat.splatOnPlayer}
             </p>

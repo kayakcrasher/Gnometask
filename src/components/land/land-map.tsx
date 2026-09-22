@@ -15,7 +15,7 @@ export function LandMap() {
   const [mode, setMode] = useState<"3d" | "2d">("3d");
 
   return (
-    <div className="absolute inset-0 min-h-0 overflow-hidden bg-water-deep">
+    <div className="absolute inset-0 z-0 isolate min-h-0 overflow-hidden bg-water-deep">
       {mode === "3d" ? (
         <IslandCanvas
           pos={pos}

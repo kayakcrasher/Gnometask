@@ -3,6 +3,10 @@ import { useGame } from "@/lib/game/store";
 export function Speech() {
   const speech = useGame((s) => s.speech);
   const bounceKey = useGame((s) => s.bounceKey);
+  const panel = useGame((s) => s.panel);
+  const combat = useGame((s) => s.combat);
+  const interior = useGame((s) => s.interior);
+  if (combat || interior || panel !== "place") return null;
   return (
     <div className="pointer-events-none absolute left-3 top-[4.75rem] z-20 max-w-[min(100%-1.5rem,22rem)] md:top-[5.25rem]">
       <div

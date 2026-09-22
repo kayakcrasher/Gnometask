@@ -2,6 +2,7 @@ import { Html } from "@react-three/drei";
 import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
 import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
+import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
 const ROOF: Record<string, string> = {
@@ -26,6 +27,10 @@ function TimberHouse({
   sign?: string;
   onEnter?: () => void;
 }) {
+  const panel = useGame((s) => s.panel);
+  const combat = useGame((s) => s.combat);
+  const interior = useGame((s) => s.interior);
+  const showLabel = !combat && !interior && panel === "place";
   const h = tall ? 2.4 : 1.7;
   const w = tall ? 2.1 : 1.7;
   const d = 1.5;
@@ -64,8 +69,8 @@ function TimberHouse({
         <boxGeometry args={[0.28, 0.28, 0.04]} />
         <meshStandardMaterial color="#cfe8c9" emissive="#9ec3b8" emissiveIntensity={0.15} />
       </mesh>
-      {sign ? (
-        <Html position={[0, h + 0.2, d / 2 + 0.08]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+      {sign && showLabel ? (
+        <Html zIndexRange={[8, 0]} position={[0, h + 0.2, d / 2 + 0.08]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
           <span className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
             {sign}
           </span>

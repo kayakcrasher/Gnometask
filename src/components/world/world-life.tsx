@@ -10,6 +10,13 @@ import type { NpcPose } from "@/hooks/use-npc-wander";
 import type { EnemyId } from "@/lib/game/combat";
 import type { GamePopup } from "@/lib/game/types";
 
+function useLabels() {
+  const panel = useGame((s) => s.panel);
+  const combat = useGame((s) => s.combat);
+  const interior = useGame((s) => s.interior);
+  return !combat && !interior && panel === "place";
+}
+
 function treeStageOf(choppedAt: number | undefined, now: number) {
   if (!choppedAt) return "grown";
   const age = now - choppedAt;
@@ -69,6 +76,7 @@ export function Npcs3({
   poses: Record<string, NpcPose>;
   onNpc: (id: string, x: number, y: number) => void;
 }) {
+  const showLabels = useLabels();
   return (
     <group>
       {NPCS.map((n) => {
@@ -101,11 +109,13 @@ export function Npcs3({
             }}
           >
             <GnomeRig hat={n.hat} scale={n.id === "pappy" ? 1 : n.id === "greg" ? 0.92 : 0.85} coat={coat} beard={n.id === "pappy"} />
-            <Html position={[0, n.id === "pappy" ? 1.7 : 1.5, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+            {showLabels ? (
+            <Html zIndexRange={[8, 0]} position={[0, n.id === "pappy" ? 1.7 : 1.5, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
                 {n.shortName ?? n.name}
               </p>
             </Html>
+            ) : null}
           </group>
         );
       })}
@@ -189,6 +199,7 @@ export function Fights3({
   const combat = useGame((s) => s.combat);
   const dragon = useGame((s) => s.lifeDragon);
   const absence = useGame((s) => s.absencePending);
+  const showLabels = useLabels();
   return (
     <group>
       {WORLD_PACK.map((p) => {
@@ -219,8 +230,8 @@ export function Fights3({
             }}
           >
             <EnemyMesh kind={p.enemy} />
-            {fighting && combat ? (
-              <Html position={[0, 1.2, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+            {showLabels && fighting && combat ? (
+              <Html zIndexRange={[8, 0]} position={[0, 1.2, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
                 <div className="w-16">
                   <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
                     <div className="h-full bg-berry" style={{ width: `${(combat.enemyHp / combat.enemyMax) * 100}%` }} />
@@ -306,6 +317,7 @@ export function Towers3({
   const placingId = useGame((s) => s.placingId);
   const placeAt = useGame((s) => s.placeAt);
   const placingTower = placingId ? CATALOG_BY_ID[placingId]?.slotPrefix === "t" : false;
+  const showLabels = useLabels();
   return (
     <group>
       {TOWER_SLOTS.map((slot) => {
@@ -334,8 +346,8 @@ export function Towers3({
                 <meshBasicMaterial color="#d6a84c" transparent opacity={0.55} />
               </mesh>
             ) : null}
-            {built ? (
-              <Html position={[0, 1.6 + rank * 0.35, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+            {built && showLabels ? (
+              <Html zIndexRange={[8, 0]} position={[0, 1.6 + rank * 0.35, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
                 <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
                   {item?.name}
                 </p>
@@ -355,6 +367,7 @@ export function Landing3({
 }) {
   const landing = useGame((s) => s.landing);
   const combat = useGame((s) => s.combat);
+  const showLabels = useLabels();
   if (!landing) return null;
   const boat = to3(landing.boatX, landing.boatY, -0.05);
   return (
@@ -369,11 +382,13 @@ export function Landing3({
           <boxGeometry args={[0.02, 0.5, 0.38]} />
           <meshStandardMaterial color="#4c7a3a" />
         </mesh>
-        <Html position={[0, 1.55, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+        {showLabels ? (
+        <Html zIndexRange={[8, 0]} position={[0, 1.55, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
           <p className="whitespace-nowrap rounded-full bg-moss px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
             {landing.tribe}
           </p>
         </Html>
+        ) : null}
       </group>
       {landing.goblins.map((g) => {
         if (!g.alive) return null;
@@ -389,21 +404,21 @@ export function Landing3({
             }}
           >
             <EnemyMesh kind="runt" />
-            {fighting && combat ? (
-              <Html position={[0, 1.05, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+            {showLabels && fighting && combat ? (
+              <Html zIndexRange={[8, 0]} position={[0, 1.05, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
                 <div className="w-16">
                   <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
                     <div className="h-full bg-berry" style={{ width: `${(combat.enemyHp / combat.enemyMax) * 100}%` }} />
                   </div>
                 </div>
               </Html>
-            ) : (
-              <Html position={[0, 1.05, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+            ) : showLabels ? (
+              <Html zIndexRange={[8, 0]} position={[0, 1.05, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
                 <p className="rounded-full bg-moss/90 px-1.5 py-0.5 font-display text-[9px] font-semibold text-parchment">
                   runt
                 </p>
               </Html>
-            )}
+            ) : null}
           </group>
         );
       })}

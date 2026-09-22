@@ -51,11 +51,11 @@ export const ENEMIES: Record<
   },
   runt: {
     name: "Mucktooth runt",
-    blurb: "Green, loud, and new to boats. The Mucktooth Clan sent their shortest.",
-    hp: 5,
+    blurb: "Green, short, and new to boats. A first fight. They drop in two swings.",
+    hp: 3,
     dmg: 1,
     coins: 4,
-    def: 1,
+    def: 0,
     area: 1,
   },
   goblin: {

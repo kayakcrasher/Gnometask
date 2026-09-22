@@ -27,11 +27,12 @@ export function MenuView() {
   const fortLevel = useGame((s) => s.fortLevel);
   const guardLevel = useGame((s) => s.guardLevel);
   const absencePending = useGame((s) => s.absencePending);
+  const combat = useGame((s) => s.combat);
 
-  if (panel !== "menu") return null;
+  if (combat || panel !== "menu") return null;
 
   return (
-    <div className="absolute inset-0 z-30" onClick={() => setPanel("place")}>
+    <div className="absolute inset-0 z-40 bg-ink/45" onClick={() => setPanel("place")}>
       <div
         className="absolute inset-x-3 bottom-3 mx-auto max-h-[78dvh] w-full max-w-md overflow-y-auto rounded-[24px] bg-parchment p-4 shadow-panel md:inset-x-auto md:bottom-6 md:right-4 md:top-24 md:w-[22rem]"
         onClick={(e) => e.stopPropagation()}

@@ -98,7 +98,12 @@ export function makeCombat(
   },
 ): CombatState {
   const e = ENEMIES[enemyId];
-  const scaled = extra?.skills ? scaleEnemy(enemyId, extra.skills) : { hp: e.hp, dmg: e.dmg, def: e.def, coins: e.coins };
+  const scaled =
+    enemyId === "runt"
+      ? { hp: 3, dmg: 1, def: 0, coins: e.coins }
+      : extra?.skills
+        ? scaleEnemy(enemyId, extra.skills)
+        : { hp: e.hp, dmg: e.dmg, def: e.def, coins: e.coins };
   const label = extra?.name ?? e.name;
   const playerMax = extra?.playerMax ?? Math.max(PLAYER_MAX_HP, playerHp);
   return {
