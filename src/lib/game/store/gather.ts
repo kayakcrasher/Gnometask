@@ -2,7 +2,8 @@ import { bestHatchet, gearStats } from "../catalog";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "../data/trees";
 import { sfx } from "../juice";
 import { PLACE_ANCHORS } from "../data/layout";
-import { levelsOf } from "../xp";
+import { boatById } from "../data/boats";
+import { levelFromXp, levelsOf } from "../xp";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -80,11 +81,24 @@ export function gatherSlice(
       if (chore) get().toggleTask(chore.id);
     },
 
-    sailTo: (dest) => {
+    sailTo: (dest, boatId) => {
       const s = get();
       if (s.combat) return;
+      if (dest === "dock" && s.selectedPlace !== "haven") {
+        set({ speech: "The town dock is already under your boots.", popup: null });
+        return;
+      }
+      const boat = boatById(boatId ?? "row") ?? boatById("row")!;
+      const lv = levelFromXp(s.skills.sailing);
+      if (lv < boat.need) {
+        set({
+          speech: `${boat.name} wants Sailing ${boat.need}. You are ${lv}. Take the rowboat a few more times.`,
+          popup: null,
+        });
+        return;
+      }
       const target = dest === "haven" ? PLACE_ANCHORS.haven : PLACE_ANCHORS.dock;
-      const gained = withXp(s.skills, { sailing: 22 });
+      const gained = withXp(s.skills, { sailing: boat.xp });
       set({
         gnomeX: target.x,
         gnomeY: target.y,
@@ -92,7 +106,11 @@ export function gatherSlice(
         skills: gained.skills,
         popup: null,
         interior: null,
-        speech: gained.ding ?? (dest === "haven" ? "The dinghy noses into Haven's quiet water." : "Back to the town dock. Rope coiled."),
+        speech:
+          gained.ding ??
+          (dest === "haven"
+            ? `The ${boat.name.toLowerCase()} noses into Haven. +${boat.xp} Sailing.`
+            : `Back to the town dock in the ${boat.name.toLowerCase()}. +${boat.xp} Sailing.`),
         bounceKey: s.bounceKey + 1,
       });
       sfx("open");

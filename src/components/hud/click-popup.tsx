@@ -2,7 +2,9 @@ import { X } from "lucide-react";
 import { CATALOG_BY_ID } from "@/lib/game/catalog";
 import { nextTowerId } from "@/lib/game/data/catalog/towers";
 import { ENEMIES } from "@/lib/game/combat";
+import { BOATS } from "@/lib/game/data/boats";
 import { BUILDING_MAX } from "@/lib/game/types";
+import { levelFromXp } from "@/lib/game/xp";
 import { useGame } from "@/lib/game/store";
 import { NPCS } from "@/lib/game/world";
 import { QUEST_BY_ID } from "@/lib/game/quests";
@@ -99,6 +101,7 @@ export function ClickPopup() {
   const woodsGreeted = useGame((s) => s.woodsGreeted);
   const chopTree = useGame((s) => s.chopTree);
   const sailTo = useGame((s) => s.sailTo);
+  const skills = useGame((s) => s.skills);
   const placed = useGame((s) => s.placed);
   const coins = useGame((s) => s.coins);
   const combat = useGame((s) => s.combat);
@@ -223,10 +226,31 @@ export function ClickPopup() {
             <Action label="Attack" tone="berry" onClick={strikeFlag} />
           ) : null}
 
+          {popup.hotspotId === "captain" ? (
+            <Action
+              label="Talk-to"
+              onClick={() =>
+                speak("Cute as a bun. Mean past the bar. Row the little boat until Sailing 5, then the sloop is yours.")
+              }
+            />
+          ) : null}
+
           {popup.kind === "boat" ? (
             <>
-              <Action label="Sail to Haven" onClick={() => sailTo("haven")} />
-              <Action label="Dock" tone="quiet" onClick={() => sailTo("dock")} />
+              {BOATS.map((boat) => {
+                const lv = levelFromXp(skills.sailing);
+                const locked = lv < boat.need;
+                return (
+                  <Action
+                    key={boat.id}
+                    label={locked ? `${boat.name} · ${boat.need}` : boat.name}
+                    tone={boat.id === "sloop" ? "berry" : boat.id === popup.hotspotId ? "gold" : "pine"}
+                    disabled={locked}
+                    onClick={() => sailTo("haven", boat.id)}
+                  />
+                );
+              })}
+              <Action label="Back to dock" tone="quiet" onClick={() => sailTo("dock", "row")} />
             </>
           ) : null}
 

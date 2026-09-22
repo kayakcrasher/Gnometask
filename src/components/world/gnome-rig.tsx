@@ -59,7 +59,7 @@ function HatModel({ id }: { id: string }) {
   return (
     <group position={[0, 1.02, 0]}>
       <mesh castShadow>
-        <coneGeometry args={[0.28, 0.62, 10]} />
+        <coneGeometry args={[0.32, 0.78, 12]} />
         <meshStandardMaterial color={hat.peak} roughness={0.55} />
       </mesh>
       <mesh position={[0, 0.3, 0]} castShadow>
@@ -145,9 +145,13 @@ export function GnomeRig({
           <meshStandardMaterial color={coat} roughness={0.7} />
         </mesh>
         {armor ? <ArmorTint id={armor} /> : null}
-        <mesh position={[0, 0.22, 0.02]}>
-          <torusGeometry args={[0.2, 0.03, 8, 16]} />
-          <meshStandardMaterial color="#d6a84c" roughness={0.45} metalness={0.25} />
+        <mesh position={[0, 0.34, 0]}>
+          <boxGeometry args={[0.52, 0.07, 0.34]} />
+          <meshStandardMaterial color="#1c1a17" roughness={0.7} />
+        </mesh>
+        <mesh position={[0, 0.34, 0.17]}>
+          <boxGeometry args={[0.1, 0.07, 0.03]} />
+          <meshStandardMaterial color="#d6a84c" metalness={0.35} roughness={0.4} />
         </mesh>
         <mesh position={[0, 0.86, 0]} castShadow>
           <sphereGeometry args={[0.22, 14, 12]} />
@@ -175,13 +179,13 @@ export function GnomeRig({
             <meshStandardMaterial color="#f4efe4" roughness={0.9} />
           </mesh>
         ) : null}
-        <mesh position={[-0.13, 0.16, 0.06]} rotation={[0.35, 0, 0.15]} castShadow>
-          <coneGeometry args={[0.08, 0.22, 6]} />
-          <meshStandardMaterial color="#2f3d34" />
+        <mesh position={[-0.1, 0.07, 0.04]} castShadow>
+          <boxGeometry args={[0.14, 0.12, 0.18]} />
+          <meshStandardMaterial color="#1c1a17" roughness={0.8} />
         </mesh>
-        <mesh position={[0.13, 0.16, 0.06]} rotation={[0.35, 0, -0.15]} castShadow>
-          <coneGeometry args={[0.08, 0.22, 6]} />
-          <meshStandardMaterial color="#2f3d34" />
+        <mesh position={[0.1, 0.07, 0.04]} castShadow>
+          <boxGeometry args={[0.14, 0.12, 0.18]} />
+          <meshStandardMaterial color="#1c1a17" roughness={0.8} />
         </mesh>
         <HatModel id={hat} />
         <WeaponInHand weaponId={weapon ?? null} striking={striking} />

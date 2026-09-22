@@ -1,5 +1,6 @@
 import { Html } from "@react-three/drei";
 import { Kenney } from "./kenney";
+import { BoatMesh } from "./boats";
 import { FighterMotion, GnomeRig } from "./gnome-rig";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "@/lib/game/data/trees";
 import { NPCS } from "@/lib/game/world";
@@ -401,7 +402,7 @@ export function Landing3({
   return (
     <group>
       <group position={boat} rotation={[0, -0.6, 0]}>
-        <Kenney name="canoe" scale={1.7} />
+        <BoatMesh kind="goblin" />
         {landing.flagDown ? (
           <mesh position={[0.25, 0.08, 0.05]} rotation={[0, 0, Math.PI / 2.4]} castShadow>
             <boxGeometry args={[0.04, 0.7, 0.04]} />

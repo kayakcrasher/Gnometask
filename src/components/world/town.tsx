@@ -5,15 +5,6 @@ import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
-const ROOF: Record<string, string> = {
-  gold: "#d6a84c",
-  berry: "#a8433b",
-  pine: "#35543f",
-  stone: "#6b5340",
-  moss: "#5c7a54",
-  cream: "#c4a574",
-};
-
 function TimberHouse({
   position,
   roof = "cream",
@@ -31,10 +22,11 @@ function TimberHouse({
   const combat = useGame((s) => s.combat);
   const interior = useGame((s) => s.interior);
   const showLabel = !combat && !interior && panel === "place";
-  const h = tall ? 2.4 : 1.7;
-  const w = tall ? 2.1 : 1.7;
-  const d = 1.5;
-  const rc = ROOF[roof] ?? ROOF.cream!;
+  const h = tall ? 2.35 : 1.7;
+  const w = tall ? 2.15 : 1.75;
+  const d = 1.45;
+  const upper = h - 0.84;
+  const rc = roof === "pine" || roof === "moss" ? "#8d4e3c" : "#c4553a";
   return (
     <group
       position={position}
@@ -43,32 +35,66 @@ function TimberHouse({
         onEnter?.();
       }}
     >
-      <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[w, h, d]} />
-        <meshStandardMaterial color="#efe4c8" roughness={0.85} />
+      <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
+        <boxGeometry args={[w, 0.84, d]} />
+        <meshStandardMaterial color="#d5d0c4" roughness={0.9} />
       </mesh>
-      {[-0.55, 0, 0.55].map((x) => (
-        <mesh key={x} position={[x * (w / 2.2), h / 2, d / 2 + 0.01]}>
-          <boxGeometry args={[0.08, h, 0.04]} />
-          <meshStandardMaterial color="#5b4230" />
+      <mesh position={[0, 0.84 + upper / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[w * 0.94, upper, d * 0.94]} />
+        <meshStandardMaterial color="#f0e2c4" roughness={0.8} />
+      </mesh>
+      {[-1, 0, 1].map((i) => (
+        <mesh key={i} position={[(i * w) / 3.2, 0.84 + upper / 2, d / 2 + 0.01]}>
+          <boxGeometry args={[0.06, upper, 0.04]} />
+          <meshStandardMaterial color="#6b5340" />
         </mesh>
       ))}
-      <mesh position={[0, h + 0.55, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
-        <coneGeometry args={[w * 0.78, 1.15, 4]} />
-        <meshStandardMaterial color={rc} roughness={0.7} />
+      <mesh position={[0, 0.84 + upper * 0.55, d / 2 + 0.02]}>
+        <boxGeometry args={[w * 0.94, 0.06, 0.04]} />
+        <meshStandardMaterial color="#6b5340" />
       </mesh>
-      <mesh position={[0, 0.42, d / 2 + 0.02]} castShadow>
-        <boxGeometry args={[0.32, 0.7, 0.06]} />
+      <mesh position={[0, h + 0.22, 0]} rotation={[0.5, 0, 0]} castShadow>
+        <boxGeometry args={[w + 0.28, 0.08, d * 0.78]} />
+        <meshStandardMaterial color={rc} roughness={0.65} />
+      </mesh>
+      <mesh position={[0, h + 0.22, 0]} rotation={[-0.5, 0, 0]} castShadow>
+        <boxGeometry args={[w + 0.28, 0.08, d * 0.78]} />
+        <meshStandardMaterial color={rc} roughness={0.65} />
+      </mesh>
+      <mesh position={[w * 0.28, h + 0.48, -d * 0.12]} castShadow>
+        <boxGeometry args={[0.16, 0.42, 0.16]} />
+        <meshStandardMaterial color="#cfc8ba" />
+      </mesh>
+      <mesh position={[0, 0.28, d / 2 + 0.02]} castShadow>
+        <boxGeometry args={[0.32, 0.56, 0.06]} />
         <meshStandardMaterial color="#5b4230" />
       </mesh>
-      <mesh position={[-0.45, 0.95, d / 2 + 0.02]}>
-        <boxGeometry args={[0.28, 0.28, 0.04]} />
-        <meshStandardMaterial color="#cfe8c9" emissive="#9ec3b8" emissiveIntensity={0.15} />
+      <mesh position={[0, 0.08, d / 2 + 0.22]} receiveShadow>
+        <boxGeometry args={[0.55, 0.12, 0.32]} />
+        <meshStandardMaterial color="#b7b1a4" />
       </mesh>
-      <mesh position={[0.45, 0.95, d / 2 + 0.02]}>
-        <boxGeometry args={[0.28, 0.28, 0.04]} />
-        <meshStandardMaterial color="#cfe8c9" emissive="#9ec3b8" emissiveIntensity={0.15} />
-      </mesh>
+      {[-0.42, 0.42].map((x) => (
+        <group key={x} position={[x, 1.15, d / 2 + 0.02]}>
+          <mesh>
+            <boxGeometry args={[0.26, 0.26, 0.04]} />
+            <meshStandardMaterial color="#cfe4ef" emissive="#9ec3d4" emissiveIntensity={0.12} />
+          </mesh>
+          <mesh>
+            <boxGeometry args={[0.26, 0.03, 0.05]} />
+            <meshStandardMaterial color="#6b5340" />
+          </mesh>
+          <mesh>
+            <boxGeometry args={[0.03, 0.26, 0.05]} />
+            <meshStandardMaterial color="#6b5340" />
+          </mesh>
+        </group>
+      ))}
+      {tall ? (
+        <mesh position={[0, 1.35, d / 2 + 0.16]}>
+          <boxGeometry args={[w * 0.7, 0.06, 0.08]} />
+          <meshStandardMaterial color="#6b5340" />
+        </mesh>
+      ) : null}
       {sign && showLabel ? (
         <Html zIndexRange={[8, 0]} position={[0, h + 0.2, d / 2 + 0.08]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
           <span className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">

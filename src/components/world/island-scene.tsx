@@ -11,7 +11,8 @@ import {
 } from "react";
 import * as THREE from "three";
 import { Terrain } from "./terrain";
-import { Cottage3, DockBoat, Town3, VillageHouses } from "./town";
+import { Cottage3, Town3, VillageHouses } from "./town";
+import { Harbor3 } from "./boats";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
 import { Fights3, Landing3, LootFlash3, Npcs3, Towers3, Trees3 } from "./world-life";
@@ -145,13 +146,22 @@ function SceneBody({
           })
         }
       />
-      <DockBoat
-        onClick={() =>
-          interact(90, 500, {
+      <Harbor3
+        onBoat={(id, x, y, title, blurb) =>
+          interact(x, y, {
             kind: "boat",
-            hotspotId: "dinghy",
-            title: "The dinghy",
-            blurb: "A Kenney canoe, more or less. Sailing is a skill now.",
+            hotspotId: id,
+            title,
+            blurb: `${blurb} Sailing levels open the bigger hulls.`,
+            place: "dock",
+          })
+        }
+        onCaptain={() =>
+          interact(48, 430, {
+            kind: "npc",
+            hotspotId: "captain",
+            title: "Captain Moth",
+            blurb: "Round, red, and smiling. The cutlass is not a toy.",
             place: "dock",
           })
         }
@@ -270,6 +280,7 @@ function SceneBody({
           walking={walking}
           striking={striking}
           scale={1.15}
+          beard
         />
         {save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost" ? (
           <Html zIndexRange={[8, 0]} position={[0, 1.85, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
