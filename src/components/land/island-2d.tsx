@@ -48,7 +48,7 @@ export function Island2d({
   });
 
   const villageCount = save.placed.filter((p) => p.slotId.startsWith("v")).length;
-  const watered = save.tasks.some((t) => t.builtinKey === "water-garden" && t.done && t.doneOn === localDate());
+  const watered = save.tasks.some((t) => t.builtinKey === "water-beds" && t.done && t.doneOn === localDate());
   const hLevel = havenLevel(villageCount, save.daysPlayed, save.wildWins);
   const raiding = save.lifeDragon.state === "raiding";
 
@@ -114,6 +114,7 @@ export function Island2d({
           <MapPlayer pos={pos} facing={facing} walking={walking} marker={marker} />
         </g>
       </svg>
+      {save.named ? (
       <div className="pointer-events-none absolute bottom-4 right-3 z-20 flex flex-col gap-1 md:bottom-6 md:right-4">
         {[
           { label: "Zoom in", fn: () => zoomBy(1 / 1.18) },
@@ -131,6 +132,7 @@ export function Island2d({
           </button>
         ))}
       </div>
+      ) : null}
     </div>
   );
 }

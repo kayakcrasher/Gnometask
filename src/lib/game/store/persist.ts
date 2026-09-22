@@ -2,7 +2,7 @@ import type { GameSave } from "../types";
 import { writeSave } from "../save";
 import { applyXp, type SkillId, type Skills } from "../xp";
 import { pickStartingQuests } from "../quests";
-import type { GameState, StoreGet } from "./types";
+import type { GameState, StoreGet, StoreSet } from "./types";
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 export let combatTimer: ReturnType<typeof setTimeout> | null = null;
@@ -98,10 +98,26 @@ export function withXp(skills: Skills, grants: Partial<Record<SkillId, number>>)
 }
 
 export function seedQuests(s: Pick<GameSave, "quests" | "chicken">) {
-  const quests = s.quests.length ? s.quests : pickStartingQuests();
+  let quests = s.quests.length ? [...s.quests] : pickStartingQuests();
+  if (!quests.some((q) => q.id === "pappy-timber")) {
+    quests = [{ id: "pappy-timber", stage: "active" }, ...quests];
+  }
+  if (!quests.some((q) => q.id === "pappy-expand")) {
+    quests = [...quests, { id: "pappy-expand", stage: "active" }];
+  }
   const needsChicken = quests.some((q) => q.id === "lost-chicken" && q.stage !== "done");
   const chicken = s.chicken ?? (needsChicken ? { x: 280, y: 780 } : null);
   return { quests, chicken };
+}
+
+export function markPappyExpand(get: StoreGet, set: StoreSet) {
+  const s = get();
+  if (!s.quests.some((q) => q.id === "pappy-expand" && q.stage === "active")) return;
+  set({
+    quests: s.quests.map((q) =>
+      q.id === "pappy-expand" && q.stage === "active" ? { ...q, stage: "ready" as const } : q,
+    ),
+  });
 }
 
 export function foodCount(s: GameSave) {

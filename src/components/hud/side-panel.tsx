@@ -23,9 +23,9 @@ export function ChoresDrawer() {
       >
         <div className="mb-2 flex items-center gap-2">
           <h2 className="min-w-0 flex-1 font-display text-xl font-semibold leading-none text-ink">
-            Today's chores
+            Today's works
             <span className="ml-2 font-sans text-sm font-semibold text-bark/60">
-              {remaining === 0 ? "all done" : `${remaining} left`}
+              {remaining === 0 ? "the hollow holds" : `${remaining} left`}
             </span>
           </h2>
           <button

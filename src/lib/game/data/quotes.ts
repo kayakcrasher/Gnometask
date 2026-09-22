@@ -1,30 +1,30 @@
 export const GREETS = [
   "Click the land. I'll walk. That's the whole personality.",
-  "The land woke up. So can we.",
-  "One small chore. Then another. That's how villages happen.",
-  "I already stretched. Your turn.",
+  "The ridge is awake. So is the hollow.",
+  "Timber, walls, watch. That's how a village lasts.",
+  "I already stretched. Your turn to raise the gate.",
 ];
 
 export const CHEERS = [
-  "Nicely done. That's off the list.",
-  "You're on a roll today.",
-  "Small steps, big garden.",
-  "The land just got a tiny bit happier.",
-  "Look at you. Another one done.",
+  "The wall is a little taller.",
+  "That's off the list. The ridge noticed.",
+  "Small works, big hollow.",
+  "The land just got harder to burn.",
+  "Look at you. Another stone in the gate.",
   "I shall now stand here proudly.",
 ];
 
 export const NUDGES = [
-  "No rush. I'll be here.",
-  "Even a tiny task counts.",
-  "The mushrooms are patient. Mostly.",
+  "No rush. The palisade can wait a minute.",
+  "Even a short patrol counts.",
+  "The mushrooms are patient. The dragon is not.",
 ];
 
 export const PLACE_LINES: Record<string, string[]> = {
   cottage: [
     "Home is the hat stand and the kettle.",
     "A cottage is just a hat that you live in.",
-    "Boots off. Chores on.",
+    "Boots off. The kettle's on. Then the wall.",
   ],
   garden: [
     "If you water it, it remembers.",
@@ -52,7 +52,7 @@ export const PLACE_LINES: Record<string, string[]> = {
     "Don't rush the trees. They've got time.",
   ],
   wildlands: [
-    "The wildlands do not do chores. They do arguments.",
+    "The wildlands do not do gardens. They do arguments.",
     "Boars first. Dragons later. Bring honey either way.",
     "Past the village the ground gets honest.",
   ],

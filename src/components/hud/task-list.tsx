@@ -48,7 +48,7 @@ export function TaskList() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           maxLength={80}
-          placeholder="Add a task…"
+          placeholder="Add a work…"
           className="h-10 min-w-0 flex-1 rounded-[12px] bg-parchment-dark/60 px-3 text-sm font-semibold text-ink outline-none ring-gold/0 transition-[box-shadow] duration-150 placeholder:text-bark/50 focus:ring-2 focus:ring-gold"
           suppressHydrationWarning
         />
@@ -64,7 +64,7 @@ export function TaskList() {
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-2">
         {grouped.length === 0 && done.length === 0 ? (
           <p className="py-8 text-center text-sm font-semibold text-bark/60">
-            Nothing on the list. Add a chore, or enjoy the quiet.
+            Nothing on the list. Raise a wall, or enjoy the quiet.
           </p>
         ) : null}
 

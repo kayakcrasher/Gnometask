@@ -25,13 +25,13 @@ export function gatherSlice(
         const gained = withXp(s.skills, { prayer: 12 });
         set({ praying: true, skills: gained.skills, speech: gained.ding ?? "A small prayer. The next bruise will be politer." });
         scheduleWrite(get);
-        const chore = get().tasks.find((t) => t.builtinKey === "say-prayer" && !t.done);
+        const chore = get().tasks.find((t) => t.builtinKey === "bless-gate" && !t.done);
         if (chore) get().toggleTask(chore.id);
         return;
       }
       set({ praying: on, speech: on ? "Protect melee. Half the bruise, twice the humming." : "Prayer down." });
       if (on) {
-        const chore = s.tasks.find((t) => t.builtinKey === "say-prayer" && !t.done);
+        const chore = s.tasks.find((t) => t.builtinKey === "bless-gate" && !t.done);
         if (chore) get().toggleTask(chore.id);
       }
     },
@@ -57,17 +57,26 @@ export function gatherSlice(
       const wc = gearStats(hatchet).wc || 1;
       const xp = 18 + wc * 8;
       const gained = withXp(s.skills, { woodcutting: xp });
+      const nextLogs = s.logs + 1;
+      const quests = s.quests.map((q) =>
+        q.id === "pappy-timber" && q.stage === "active" ? { ...q, stage: "ready" as const } : q,
+      );
       set({
-        logs: s.logs + 1,
+        logs: nextLogs,
         trees: { ...s.trees, [treeId]: { stage: "stump", choppedAt: Date.now() } },
         skills: gained.skills,
         popup: null,
-        speech: gained.ding ?? `The ${spot.kind} yields. +1 log. +${xp} Woodcutting.`,
+        quests,
+        speech:
+          gained.ding ??
+          (quests.some((q) => q.id === "pappy-timber" && q.stage === "ready")
+            ? `A log for Ol Pappy. +${xp} Woodcutting. He's by the cottage.`
+            : `The ${spot.kind} yields. +1 log. +${xp} Woodcutting.`),
         bounceKey: s.bounceKey + 1,
       });
       sfx("place");
       scheduleWrite(get);
-      const chore = get().tasks.find((t) => t.builtinKey === "chop-kindling" && !t.done);
+      const chore = get().tasks.find((t) => t.builtinKey === "chop-stakes" && !t.done);
       if (chore) get().toggleTask(chore.id);
     },
 
@@ -88,7 +97,7 @@ export function gatherSlice(
       });
       sfx("open");
       scheduleWrite(get);
-      const chore = get().tasks.find((t) => t.builtinKey === "take-dinghy" && !t.done);
+      const chore = get().tasks.find((t) => t.builtinKey === "coil-watch" && !t.done);
       if (chore) get().toggleTask(chore.id);
     },
   };

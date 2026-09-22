@@ -1,5 +1,3 @@
-import { uid } from "@/lib/utils";
-import { ENEMIES } from "../combat";
 import { GREETS, PLACE_LINES, randOf } from "../quotes";
 import { applyDailyRollover, loadSave, writeSave } from "../save";
 import type { DragonHorn, DragonLook, GamePopup, InteriorId, MetricId, PanelId, PlaceId } from "../types";
@@ -47,7 +45,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
           current.named && current.raids.length
             ? current.raids
             : loaded.named
-              ? [{ id: "raid-dock", kind: "goblin" as const, x: 108, y: 498, hp: ENEMIES.goblin.hp }]
+              ? current.raids
               : [],
         popup: current.named ? current.popup : null,
         interior: current.named ? current.interior : null,
@@ -77,27 +75,36 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     setName: (name) => {
       const trimmed = name.trim().slice(0, 24) || "Pip";
       const s = get();
-      const raids = s.raids.length
-        ? s.raids
-        : [{ id: uid("raid"), kind: "goblin" as const, x: 108, y: 498, hp: ENEMIES.goblin.hp }];
       const seeded = seedQuests({ quests: s.quests, chicken: s.chicken });
       set({
         gnomeName: trimmed,
         named: true,
-        raids,
         quests: seeded.quests,
         chicken: seeded.chicken,
-        speech: `Welcome, ${trimmed}. Click the land to walk. Neighbours Talk or Trade. Pipkin lost a chicken.`,
+        interior: null,
+        panel: "place",
+        selectedPlace: "cottage",
+        speech: `Welcome, ${trimmed}. Ol Pappy St. Francis is waving by the cottage. Talk-to him.`,
+        popup: {
+          kind: "npc",
+          hotspotId: "pappy",
+          title: "Ol Pappy St. Francis",
+          blurb: "Ho there, young root! Come talk. The hollow needs a keeper.",
+          place: "cottage",
+          npcId: "pappy",
+        },
       });
       writeSave(snap(get()));
     },
 
     setDragonLook: (patch: Partial<{ name: string; look: DragonLook; horn: DragonHorn }>) => {
       const s = get();
-      const name = patch.name?.trim().slice(0, 18) || s.lifeDragon.name;
+      const name = patch.name !== undefined ? patch.name.slice(0, 18) : s.lifeDragon.name;
+      const next = { ...s.lifeDragon, ...patch, name };
+      const lookChanged = patch.look !== undefined || patch.horn !== undefined;
       set({
-        lifeDragon: { ...s.lifeDragon, ...patch, name },
-        speech: `${name} on the ridge. That's the thing we're facing.`,
+        lifeDragon: next,
+        speech: lookChanged ? `${name} on the ridge. That's the thing we're facing.` : s.speech,
       });
       scheduleWrite(get);
     },

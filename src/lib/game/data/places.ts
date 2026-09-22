@@ -9,7 +9,7 @@ export const PLACES: { id: PlaceId; name: string; blurb: string }[] = [
   {
     id: "garden",
     name: "The Garden",
-    blurb: "Rows of beds that remember every chore. Water them and they forgive yesterday.",
+    blurb: "Rows of beds that feed the village. Water them and they forgive yesterday.",
   },
   {
     id: "shop",
@@ -24,7 +24,7 @@ export const PLACES: { id: PlaceId; name: string; blurb: string }[] = [
   {
     id: "pond",
     name: "The Pond",
-    blurb: "Still water, lily pads, and a good spot to think about the next small thing.",
+    blurb: "Still water, lily pads, and a good spot to think about the next timber run.",
   },
   {
     id: "woods",

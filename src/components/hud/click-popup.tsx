@@ -91,7 +91,9 @@ export function ClickPopup() {
 
   const kindLabel =
     popup.kind === "npc"
-      ? "Neighbour"
+      ? popup.npcId === "pappy"
+        ? "The old watch"
+        : "Neighbour"
       : popup.kind === "enemy" || popup.kind === "raid"
         ? "A fight"
         : popup.kind === "dragon"
@@ -142,7 +144,11 @@ export function ClickPopup() {
                 ? "Hand over the pie."
                 : q.id === "mushroom-hello" && woodsGreeted
                   ? "The mushrooms were greeted. Talk-to Bramble."
-                  : def.hint;
+                : q.id === "pappy-timber" && q.stage === "ready"
+                  ? "Log in hand. Talk-to Ol Pappy."
+                  : q.id === "pappy-expand" && q.stage === "ready"
+                    ? "The town grew. Tell Ol Pappy."
+                    : def.hint;
           return (
             <p key={q.id} className="mt-1 rounded-[10px] bg-gold/25 px-2 py-1 text-xs font-bold text-ink">
               {def.title} — {hint}

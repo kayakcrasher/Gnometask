@@ -7,7 +7,7 @@ import type { Skills } from "./xp";
 import type { QuestSave } from "./quests";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -155,12 +155,32 @@ export function migrate(raw: unknown): GameSave {
       ? { x: s.chicken.x, y: s.chicken.y }
       : null;
 
+  const IRL_KEYS = new Set([
+    "out-of-bed",
+    "brush-teeth",
+    "make-bed",
+    "breakfast",
+    "water-garden",
+    "chop-kindling",
+    "say-prayer",
+    "take-dinghy",
+    "good-morning",
+    "village-walk",
+    "coil-rope",
+    "sweep-stones",
+    "patrol",
+    "dragon-honey",
+  ]);
+  const rawTasks = Array.isArray(s.tasks) ? s.tasks : base.tasks;
+  const stripped = rawTasks.filter((t) => !t.builtin || !t.builtinKey || !IRL_KEYS.has(t.builtinKey));
+  const tasks = (s.version ?? 0) < 9 ? stripped : rawTasks;
+
   return {
     ...base,
     ...s,
     version: SAVE_VERSION,
     named: Boolean(s.named || (s.gnomeName && s.gnomeName.length > 0)),
-    tasks: Array.isArray(s.tasks) ? s.tasks : base.tasks,
+    tasks,
     ownedHats: asStringArray(s.ownedHats, base.ownedHats),
     houseUpgrades: asStringArray(s.houseUpgrades, []),
     inventory: asStringArray(s.inventory, []),

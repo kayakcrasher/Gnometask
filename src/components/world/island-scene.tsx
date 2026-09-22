@@ -268,6 +268,7 @@ export function IslandCanvas({
 }) {
   const [ready, setReady] = useState(false);
   const [epoch, setEpoch] = useState(0);
+  const named = useGame((s) => s.named);
   const camRef = useRef<Cam>({ ...DEFAULT_CAM });
   const drag = useRef<{ x: number; y: number; yaw: number; pitch: number; pointer: number } | null>(null);
   const dragged = useRef(false);
@@ -403,30 +404,37 @@ export function IslandCanvas({
           />
         </Canvas>
       </CanvasGate>
-      <Minimap pos={pos} facingYaw={yaw} walkTo={walk} npcPoses={npcPoses} compassRef={compassNeedle} />
-      <div className="pointer-events-none absolute bottom-4 right-3 z-20 flex flex-col gap-1 md:bottom-6 md:right-4">
-        {[
-          { label: "Zoom in", fn: () => zoom(1 / 1.18) },
-          { label: "Zoom out", fn: () => zoom(1.18) },
-          {
-            label: "Reset view",
-            fn: () => {
-              camRef.current = { ...DEFAULT_CAM };
-              syncCompass();
-            },
-          },
-        ].map((b) => (
-          <button
-            key={b.label}
-            type="button"
-            aria-label={b.label}
-            onClick={b.fn}
-            className="pointer-events-auto flex h-11 min-w-11 items-center justify-center rounded-[12px] bg-parchment px-3 font-display text-xs font-semibold text-ink shadow-panel"
-          >
-            {b.label}
-          </button>
-        ))}
-      </div>
+      {named ? (
+        <>
+          <Minimap pos={pos} facingYaw={yaw} walkTo={walk} npcPoses={npcPoses} compassRef={compassNeedle} />
+          <div className="pointer-events-none absolute bottom-4 right-3 z-20 flex flex-col gap-1 md:bottom-6 md:right-4">
+            {[
+              { label: "Zoom in", text: "+" },
+              { label: "Zoom out", text: "−" },
+              { label: "Reset view", text: "⌂" },
+            ].map((b) => (
+              <button
+                key={b.label}
+                type="button"
+                aria-label={b.label}
+                onClick={
+                  b.label === "Zoom in"
+                    ? () => zoom(1 / 1.18)
+                    : b.label === "Zoom out"
+                      ? () => zoom(1.18)
+                      : () => {
+                          camRef.current = { ...DEFAULT_CAM };
+                          syncCompass();
+                        }
+                }
+                className="pointer-events-auto flex size-10 items-center justify-center rounded-[12px] bg-parchment font-display text-lg font-semibold text-ink shadow-panel"
+              >
+                {b.text}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { sfx } from "../juice";
 import { BUILDING_MAX, type BuildingId, type EquipSlot } from "../types";
 import { havenLevel, HALL_COST, hallUnlocks } from "../world";
 import { applyXp, levelsOf, SKILL_LABEL, totalLevel } from "../xp";
-import { scheduleWrite } from "./persist";
+import { scheduleWrite, markPappyExpand } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
 export function economySlice(
@@ -102,6 +102,7 @@ export function economySlice(
         });
         sfx("buy");
         scheduleWrite(get);
+        markPappyExpand(get, set);
         return true;
       }
 
@@ -139,6 +140,7 @@ export function economySlice(
         });
         sfx("buy");
         scheduleWrite(get);
+        markPappyExpand(get, set);
         return true;
       }
 
@@ -228,6 +230,7 @@ export function economySlice(
       });
       sfx("place");
       scheduleWrite(get);
+      markPappyExpand(get, set);
       return true;
     },
 

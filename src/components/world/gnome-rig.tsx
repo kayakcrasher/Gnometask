@@ -79,6 +79,7 @@ export function GnomeRig({
   striking,
   scale = 1,
   coat = "#35543f",
+  beard = false,
 }: {
   hat: string;
   weapon?: string | null;
@@ -88,6 +89,7 @@ export function GnomeRig({
   striking?: boolean;
   scale?: number;
   coat?: string;
+  beard?: boolean;
 }) {
   const bob = useRef<THREE.Group>(null);
   const t = useRef(0);
@@ -126,10 +128,16 @@ export function GnomeRig({
           <sphereGeometry args={[0.045, 8, 8]} />
           <meshStandardMaterial color="#dd8f72" />
         </mesh>
-        <mesh position={[0, 0.72, 0.12]} castShadow>
-          <sphereGeometry args={[0.09, 8, 8]} />
-          <meshStandardMaterial color="#e6d8bc" roughness={0.85} />
+        <mesh position={[0, 0.7, 0.14]} castShadow>
+          <sphereGeometry args={[beard ? 0.14 : 0.09, 8, 8]} />
+          <meshStandardMaterial color={beard ? "#f4efe4" : "#e6d8bc"} roughness={0.85} />
         </mesh>
+        {beard ? (
+          <mesh position={[0, 0.58, 0.12]} castShadow>
+            <sphereGeometry args={[0.1, 8, 8]} />
+            <meshStandardMaterial color="#f4efe4" roughness={0.9} />
+          </mesh>
+        ) : null}
         <mesh position={[-0.13, 0.16, 0.06]} rotation={[0.35, 0, 0.15]} castShadow>
           <coneGeometry args={[0.08, 0.22, 6]} />
           <meshStandardMaterial color="#2f3d34" />

@@ -6,21 +6,18 @@ export const BUILTIN_CHORES: {
   location: PlaceId;
   coins: number;
 }[] = [
-  { key: "out-of-bed", text: "Get out of bed", location: "cottage", coins: 6 },
-  { key: "brush-teeth", text: "Brush your teeth", location: "cottage", coins: 6 },
-  { key: "make-bed", text: "Make the bed", location: "cottage", coins: 5 },
-  { key: "breakfast", text: "Have a little breakfast", location: "cottage", coins: 5 },
-  { key: "water-garden", text: "Water the garden", location: "garden", coins: 7 },
-  { key: "chop-kindling", text: "Chop a tree for kindling", location: "woods", coins: 7 },
-  { key: "say-prayer", text: "Say a small prayer", location: "cottage", coins: 5 },
-  { key: "take-dinghy", text: "Take the dinghy out", location: "dock", coins: 6 },
-  { key: "good-morning", text: "Say good morning to the mushrooms", location: "woods", coins: 5 },
-  { key: "village-walk", text: "Walk the village path", location: "village", coins: 5 },
-  { key: "coil-rope", text: "Coil the dock rope", location: "dock", coins: 6 },
+  { key: "stack-timber", text: "Stack timber for the walls", location: "woods", coins: 7 },
+  { key: "chop-stakes", text: "Chop stakes for the palisade", location: "woods", coins: 7 },
+  { key: "water-beds", text: "Water the garden beds", location: "garden", coins: 6 },
+  { key: "coil-watch", text: "Coil the dock watch-rope", location: "dock", coins: 6 },
+  { key: "hall-report", text: "Report to Town Hall", location: "village", coins: 6 },
+  { key: "inspect-roofs", text: "Inspect village roofs", location: "village", coins: 6 },
+  { key: "patrol-ridge", text: "Patrol the wildlands", location: "wildlands", coins: 8 },
+  { key: "ridge-honey", text: "Leave honey on the ridge", location: "wildlands", coins: 6 },
   { key: "mine-lanterns", text: "Check the mine lanterns", location: "mines", coins: 7 },
-  { key: "sweep-stones", text: "Sweep the old stones", location: "ruins", coins: 6 },
-  { key: "patrol", text: "Patrol the wildlands", location: "wildlands", coins: 8 },
-  { key: "dragon-honey", text: "Leave honey for the dragon", location: "wildlands", coins: 6 },
+  { key: "bless-gate", text: "Bless the gate", location: "cottage", coins: 5 },
+  { key: "kettle-watch", text: "Keep the cottage kettle on", location: "cottage", coins: 5 },
+  { key: "train-guard", text: "Drill with the Guardsgnome", location: "haven", coins: 7 },
 ];
 
 export function makeBuiltinTasks(today: string): Task[] {

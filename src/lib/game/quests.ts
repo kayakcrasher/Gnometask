@@ -26,8 +26,9 @@ export const QUEST_BY_ID: Record<string, QuestDef> = Object.fromEntries(
 );
 
 export function pickStartingQuests() {
-  const chicken = QUEST_POOL.find((q) => q.id === "lost-chicken")!;
-  const rest = QUEST_POOL.filter((q) => q.id !== "lost-chicken");
-  const extra = rest[Math.floor(Math.random() * rest.length)]!;
-  return [chicken, extra].map((q) => ({ id: q.id, stage: "active" as const }));
+  return [
+    { id: "pappy-timber", stage: "active" as const },
+    { id: "pappy-expand", stage: "active" as const },
+    { id: "lost-chicken", stage: "active" as const },
+  ];
 }

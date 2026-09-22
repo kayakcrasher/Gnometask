@@ -37,9 +37,9 @@ export function TopBar() {
       <div className="pointer-events-auto mx-auto flex max-w-[1600px] items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-3 rounded-[20px] bg-pine/92 px-3 py-2 text-parchment shadow-panel md:px-4">
           <div className="min-w-0">
-            <p className="font-display text-lg font-semibold leading-none tracking-tight md:text-xl">Gnome Tasks</p>
+            <p className="font-display text-lg font-semibold leading-none tracking-tight md:text-xl">Hollow Watch</p>
             <p className="truncate text-xs font-semibold text-parchment-dark">
-              {gnomeName ? gnomeName : "An unnamed gnome"} · click to walk
+              {gnomeName ? gnomeName : "An unnamed gnome"} · the island grows
             </p>
           </div>
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -110,7 +110,7 @@ export function TopBar() {
             )}
           >
             <ScrollText className="size-4" strokeWidth={2.4} />
-            <span className="hidden md:inline">Chores</span>
+            <span className="hidden md:inline">Works</span>
             <span className="rounded-full bg-gold px-1.5 py-0.5 text-[11px] font-bold text-ink tabular-nums">{remaining}</span>
           </button>
           <button

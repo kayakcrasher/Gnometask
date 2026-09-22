@@ -2,6 +2,26 @@ import type { QuestDef } from "../quests";
 
 export const QUEST_POOL: QuestDef[] = [
   {
+    id: "pappy-timber",
+    title: "A log for Ol Pappy",
+    giver: "pappy",
+    offer: "Ho! Goblins on the tide, pirates with bad manners, and a dragon on the ridge. Chop a tree in the woods and bring me a log. We'll raise a wall yet.",
+    hint: "Chop a tree in the woods, then Talk-to Ol Pappy by the cottage.",
+    done: "That's a proper log. Ha! The palisade will thank you. +24 coins. Now the yard — plant a wall or a neighbour.",
+    coins: 24,
+    xp: { woodcutting: 40, crafting: 40 },
+  },
+  {
+    id: "pappy-expand",
+    title: "Grow the hollow",
+    giver: "pappy",
+    offer: "The builder's yard is on the square. Buy a palisade, a lamp, a bench — anything that says gnomefolk live here. Then come tell me.",
+    hint: "Buy something at the builder's yard or hat shops, place it, then Talk-to Ol Pappy.",
+    done: "Look at that! Roofs, walls, a bit of pride. Gnomefolk will come if we keep the gate. +20 coins.",
+    coins: 20,
+    xp: { crafting: 60, defence: 30 },
+  },
+  {
     id: "lost-chicken",
     title: "Find my chicken",
     giver: "pipkin",

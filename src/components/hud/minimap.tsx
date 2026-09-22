@@ -36,7 +36,7 @@ export function Minimap({
     walkTo(x, y);
   };
   return (
-    <div className="pointer-events-auto absolute right-3 top-20 z-20 flex flex-col items-center gap-1 md:right-4 md:top-24">
+    <div className="pointer-events-auto absolute right-3 top-[5.5rem] z-20 flex flex-col items-center gap-1 md:right-4 md:top-24">
       <div className="relative size-11 overflow-hidden rounded-full bg-parchment shadow-panel">
         <div
           ref={(el) => {
@@ -52,7 +52,7 @@ export function Minimap({
       </div>
       <svg
         viewBox={`0 0 ${VW} ${VH}`}
-        className="h-36 w-36 cursor-pointer rounded-full bg-water-deep shadow-panel ring-2 ring-parchment md:h-44 md:w-44"
+        className="h-20 w-20 cursor-pointer rounded-full bg-water-deep shadow-panel ring-2 ring-parchment md:h-28 md:w-28"
         onClick={onClick}
         aria-label="Island map. Click to walk."
       >
@@ -74,7 +74,9 @@ export function Minimap({
           <polygon points="0,-34 22,28 -22,28" fill="#24402f" stroke="#f2e8d5" strokeWidth="6" />
         </g>
       </svg>
-      <p className="rounded-full bg-parchment/90 px-2 py-0.5 font-display text-[10px] font-semibold text-ink">Click map to walk</p>
+      <p className="hidden rounded-full bg-parchment/90 px-2 py-0.5 font-display text-[10px] font-semibold text-ink md:block">
+        Walk
+      </p>
     </div>
   );
 }

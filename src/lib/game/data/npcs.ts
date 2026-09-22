@@ -27,7 +27,28 @@ export const NPCS: {
   place: PlaceId;
   lines: string[];
   tradeInterior?: InteriorId;
+  stay?: boolean;
+  shortName?: string;
 }[] = [
+  {
+    id: "pappy",
+    name: "Ol Pappy St. Francis",
+    shortName: "Ol Pappy",
+    x: 448,
+    y: 508,
+    hat: "hat-straw",
+    place: "cottage",
+    stay: true,
+    lines: [
+      "Ho there, young root! The hollow's still standing. That's a good start, that is.",
+      "Goblins by sea, pirates by cheek, and a dragon with opinions. We'll handle 'em.",
+      "A town that grows is a town that holds. Plant a roof, plant a neighbour.",
+      "I been waving at this chimney since it was a rumour. Now look at us.",
+      "Cheer up the palisade and it'll cheer you back. That's timber law.",
+      "Prosperity isn't gold, child. It's a kettle on and a gate that shuts.",
+      "Ha! I like you. You've got a walk that means business.",
+    ],
+  },
   {
     id: "stoic",
     name: "The Stoic Gnome",

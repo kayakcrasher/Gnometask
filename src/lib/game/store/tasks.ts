@@ -65,32 +65,36 @@ export function tasksSlice(set: StoreSet, get: StoreGet): Pick<GameState, "addTa
         const allBuiltinsDone = builtinsToday.length > 0 && builtinsToday.every((t) => t.done);
         const craft = applyXp(skills, "crafting", 14);
         skills = craft.skills;
-        if (task.builtinKey === "water-garden") {
+        if (task.builtinKey === "water-beds") {
           const farm = applyXp(skills, "farming", 18);
           skills = farm.skills;
         }
-        if (task.builtinKey === "say-prayer") {
+        if (task.builtinKey === "bless-gate") {
           const pray = applyXp(skills, "prayer", 16);
           skills = pray.skills;
         }
-        if (task.builtinKey === "take-dinghy") {
+        if (task.builtinKey === "coil-watch") {
           const sail = applyXp(skills, "sailing", 16);
           skills = sail.skills;
         }
-        if (task.builtinKey === "chop-kindling") {
+        if (task.builtinKey === "chop-stakes" || task.builtinKey === "stack-timber") {
           const wc = applyXp(skills, "woodcutting", 16);
           skills = wc.skills;
+        }
+        if (task.builtinKey === "patrol-ridge" || task.builtinKey === "train-guard") {
+          const atk = applyXp(skills, "defence", 12);
+          skills = atk.skills;
         }
         if (allBuiltinsDone && perfectBonusOn !== today) {
           coins += 12;
           perfectBonusOn = today;
-          speech = "A perfect little day. The land noticed. Extra coins for you.";
+          speech = "A perfect watch. The hollow noticed. Extra coins for you.";
         } else if (planted) {
           speech = `${state.gnomeName ? state.gnomeName + ", " : ""}a tree for your ${planted}-day streak. The garden remembers.`;
         } else {
           speech = craft.ding ?? randOf(CHEERS);
         }
-        if (task.builtinKey === "good-morning") woodsGreeted = true;
+        if (task.builtinKey === "ridge-honey" || task.builtinKey === "hall-report") woodsGreeted = true;
         bounceKey += 1;
         sfx("done");
       } else {

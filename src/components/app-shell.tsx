@@ -45,7 +45,7 @@ export function AppShell() {
         ) : null}
       </div>
       <Welcome />
-      <CombatView />
+      {named ? <CombatView /> : null}
     </div>
   );
 }

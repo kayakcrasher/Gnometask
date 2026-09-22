@@ -40,11 +40,28 @@ export function questsSlice(
         sfx("win");
       };
 
+      const timberAtStart = s.quests.find((q) => q.id === "pappy-timber");
+      const grew =
+        s.placed.length > 0 || s.fortLevel > 0 || s.houseUpgrades.length > 0;
+
       for (const q of quests) {
         if (q.stage === "done") continue;
         const def = QUEST_BY_ID[q.id];
         if (!def) continue;
-        if (q.id === "lost-chicken" && npcId === "pipkin") {
+        if (q.id === "pappy-timber" && npcId === "pappy") {
+          if (s.logs >= 1 || q.stage === "ready") {
+            finish(q.id);
+          } else {
+            speech = def.offer;
+          }
+        } else if (q.id === "pappy-expand" && npcId === "pappy") {
+          if (timberAtStart && timberAtStart.stage !== "done") continue;
+          if (grew || q.stage === "ready") {
+            finish(q.id);
+          } else {
+            speech = def.offer;
+          }
+        } else if (q.id === "lost-chicken" && npcId === "pipkin") {
           if (chickenHeld || q.stage === "ready") {
             finish(q.id);
             chickenHeld = false;

@@ -102,7 +102,11 @@ export function InventoryView() {
                       ? "Cluckers is with you."
                       : q.id === "pie-run" && pieHeld
                         ? "Pie in hand."
-                        : def.hint;
+                      : q.id === "pappy-timber" && q.stage === "ready"
+                        ? "Take the log to Ol Pappy."
+                        : q.id === "pappy-expand" && q.stage === "ready"
+                          ? "Tell Ol Pappy the town grew."
+                          : def.hint;
                   return (
                     <li key={q.id} className="rounded-[12px] bg-gold/20 px-3 py-2">
                       <p className="font-display text-sm font-semibold text-ink">{def.title}</p>

@@ -31,7 +31,7 @@ export function regionValue(save: GameSave, place: PlaceId, metric: MetricId): n
 
   if (metric === "bloom") {
     const watered = save.tasks.some(
-      (t) => t.builtinKey === "water-garden" && t.done && t.doneOn === localDate(),
+      (t) => t.builtinKey === "water-beds" && t.done && t.doneOn === localDate(),
     );
     const gardenFill =
       save.placed.filter((p) => p.slotId.startsWith("g") || p.slotId.startsWith("gf")).length /

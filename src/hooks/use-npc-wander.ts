@@ -11,7 +11,7 @@ function facingOf(dx: number, dy: number): GnomeFacing {
 }
 
 export function useNpcWander(
-  homes: { id: string; x: number; y: number }[],
+  homes: { id: string; x: number; y: number; stay?: boolean }[],
   frozen: boolean,
 ) {
   const [poses, setPoses] = useState<Record<string, NpcPose>>(() =>
@@ -58,7 +58,7 @@ export function useNpcWander(
           }
           if (t.wait <= 0) {
             const ang = Math.random() * Math.PI * 2;
-            const rad = 18 + Math.random() * 42;
+            const rad = home.stay ? 8 + Math.random() * 16 : 18 + Math.random() * 42;
             t.x = home.x + Math.cos(ang) * rad;
             t.y = home.y + Math.sin(ang) * rad * 0.72;
           }
