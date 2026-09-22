@@ -30,7 +30,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       const named = current.named || loaded.named || Boolean(loaded.gnomeName);
       const gnomeName = current.named ? current.gnomeName : loaded.gnomeName;
       const lifeDragon = current.named && current.lifeDragon.name !== "Ember" ? current.lifeDragon : loaded.lifeDragon;
-      const seeded = named ? seedQuests(loaded) : { quests: loaded.quests, chicken: loaded.chicken };
+      const seeded = named ? seedQuests(loaded) : { quests: loaded.quests, chicken: loaded.chicken, landing: loaded.landing };
       set({
         ...loaded,
         gnomeName,
@@ -38,6 +38,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         lifeDragon,
         quests: seeded.quests,
         chicken: seeded.chicken,
+        landing: seeded.landing,
         hydrated: true,
         combat: current.named ? current.combat : null,
         clearedPack: current.clearedPack,
@@ -75,12 +76,13 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     setName: (name) => {
       const trimmed = name.trim().slice(0, 24) || "Pip";
       const s = get();
-      const seeded = seedQuests({ quests: s.quests, chicken: s.chicken });
+      const seeded = seedQuests({ quests: s.quests, chicken: s.chicken, landing: s.landing });
       set({
         gnomeName: trimmed,
         named: true,
         quests: seeded.quests,
         chicken: seeded.chicken,
+        landing: seeded.landing,
         interior: null,
         panel: "place",
         selectedPlace: "cottage",

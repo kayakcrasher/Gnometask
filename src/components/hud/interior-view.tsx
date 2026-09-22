@@ -40,6 +40,11 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
     title: "Town Hall",
     blurb: "The square's spine. Upgrade the hall to unlock weapons and change who raids the dock.",
   },
+  watch: {
+    title: "Greg's watch",
+    blurb: "Stakes perch is twelve coins. Plant it, then level the tower at the tower.",
+    kinds: ["tower"],
+  },
 };
 
 function HallPanel() {
@@ -175,6 +180,16 @@ function RoomScene({ id }: { id: InteriorId }) {
           <line x1="160" y1="48" x2="168" y2="52" stroke="#a8433b" strokeWidth="1.6" />
           <rect x="70" y="88" width="28" height="18" fill="#8a7a68" />
           <rect x="222" y="88" width="28" height="18" fill="#8a7a68" />
+        </g>
+      ) : null}
+      {id === "watch" ? (
+        <g>
+          <rect x="138" y="48" width="16" height="70" fill="#8a7a68" />
+          <rect x="122" y="44" width="48" height="10" fill="#c4a574" />
+          <polygon points="130,44 146,28 162,44" fill="#35543f" />
+          <rect x="200" y="70" width="6" height="40" fill="#5b4230" />
+          <circle cx="203" cy="66" r="8" fill="#6f8f40" />
+          <ellipse cx="70" y="108" rx="28" ry="10" fill="#4e7370" opacity="0.4" />
         </g>
       ) : null}
     </svg>

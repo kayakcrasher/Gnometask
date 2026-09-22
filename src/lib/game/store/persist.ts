@@ -2,6 +2,7 @@ import type { GameSave } from "../types";
 import { writeSave } from "../save";
 import { applyXp, type SkillId, type Skills } from "../xp";
 import { pickStartingQuests } from "../quests";
+import { landingCleared, makeLanding } from "../data/landing";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -76,6 +77,7 @@ export function snap(s: GameSave): GameSave {
     townHallLevel: s.townHallLevel,
     logs: s.logs,
     trees: s.trees,
+    landing: s.landing,
   };
 }
 
@@ -97,7 +99,7 @@ export function withXp(skills: Skills, grants: Partial<Record<SkillId, number>>)
   return { skills: next, ding };
 }
 
-export function seedQuests(s: Pick<GameSave, "quests" | "chicken">) {
+export function seedQuests(s: Pick<GameSave, "quests" | "chicken" | "landing">) {
   let quests = s.quests.length ? [...s.quests] : pickStartingQuests();
   if (!quests.some((q) => q.id === "pappy-timber")) {
     quests = [{ id: "pappy-timber", stage: "active" }, ...quests];
@@ -105,9 +107,20 @@ export function seedQuests(s: Pick<GameSave, "quests" | "chicken">) {
   if (!quests.some((q) => q.id === "pappy-expand")) {
     quests = [...quests, { id: "pappy-expand", stage: "active" }];
   }
+  if (!quests.some((q) => q.id === "pappy-landing")) {
+    quests = [...quests, { id: "pappy-landing", stage: "active" }];
+  }
   const needsChicken = quests.some((q) => q.id === "lost-chicken" && q.stage !== "done");
   const chicken = s.chicken ?? (needsChicken ? { x: 280, y: 780 } : null);
-  return { quests, chicken };
+  const landingQ = quests.find((q) => q.id === "pappy-landing");
+  let landing = s.landing ?? null;
+  if (landingQ && landingQ.stage !== "done") {
+    landing = landing ?? makeLanding();
+  }
+  if (landing && landingCleared(landing) && landingQ?.stage === "active") {
+    quests = quests.map((q) => (q.id === "pappy-landing" ? { ...q, stage: "ready" as const } : q));
+  }
+  return { quests, chicken, landing };
 }
 
 export function markPappyExpand(get: StoreGet, set: StoreSet) {

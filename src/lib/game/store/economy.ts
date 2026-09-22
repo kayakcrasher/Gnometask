@@ -1,5 +1,6 @@
 import { uid } from "@/lib/utils";
 import { CATALOG_BY_ID, slotsForPrefix } from "../catalog";
+import { nextTowerId, TOWERS } from "../data/catalog/towers";
 import { sfx } from "../juice";
 import { BUILDING_MAX, type BuildingId, type EquipSlot } from "../types";
 import { havenLevel, HALL_COST, hallUnlocks } from "../world";
@@ -21,6 +22,7 @@ export function economySlice(
   | "repairBuilding"
   | "upgradeGuard"
   | "upgradeHall"
+  | "upgradeTower"
 > {
   return {
     buy: (catalogId) => {
@@ -167,7 +169,7 @@ export function economySlice(
         placingId: item.id,
         panel: "place",
         interior: null,
-        selectedPlace: item.kind === "village" ? "village" : "garden",
+        selectedPlace: item.kind === "village" ? "village" : item.kind === "tower" ? "dock" : "garden",
         coinPopKey: s.coinPopKey + 1,
         speech: `${item.name} is in your satchel. Tap a glowing plot to place it.`,
       });
@@ -183,7 +185,7 @@ export function economySlice(
       if (!item?.slotPrefix) return;
       set({
         placingId: catalogId,
-        selectedPlace: item.kind === "village" ? "village" : "garden",
+        selectedPlace: item.kind === "village" ? "village" : item.kind === "tower" ? "dock" : "garden",
         panel: "place",
         interior: null,
         speech: `Find a plot for the ${item.name.toLowerCase()}.`,
@@ -339,6 +341,46 @@ export function economySlice(
       });
       sfx("buy");
       scheduleWrite(get);
+    },
+
+    upgradeTower: (slotId) => {
+      const s = get();
+      const placed = s.placed.find((p) => p.slotId === slotId);
+      if (!placed || !placed.catalogId.startsWith("tower-")) {
+        set({ speech: "That's not a perch. Greg would know." });
+        return;
+      }
+      const nextId = nextTowerId(placed.catalogId);
+      if (!nextId) {
+        set({ speech: "The longbow keep is as keep as it gets." });
+        return;
+      }
+      const next = CATALOG_BY_ID[nextId] ?? TOWERS.find((t) => t.id === nextId);
+      if (!next) return;
+      if (s.coins < next.price) {
+        sfx("error");
+        set({ speech: `${next.name} wants ${next.price} coins. Greg taps the post.` });
+        return;
+      }
+      const craft = applyXp(s.skills, "defence", 18);
+      set({
+        coins: s.coins - next.price,
+        placed: s.placed.map((p) => (p.slotId === slotId ? { ...p, catalogId: nextId } : p)),
+        coinPopKey: s.coinPopKey + 1,
+        bounceKey: s.bounceKey + 1,
+        skills: craft.skills,
+        popup: {
+          kind: "tower",
+          hotspotId: slotId,
+          title: next.name,
+          blurb: next.blurb,
+          place: "dock",
+        },
+        speech: craft.ding ?? `${next.name} raised. Greg nods like a weathercock.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+      markPappyExpand(get, set);
     },
   };
 }

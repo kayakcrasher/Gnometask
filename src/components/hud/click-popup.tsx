@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { CATALOG_BY_ID } from "@/lib/game/catalog";
+import { nextTowerId } from "@/lib/game/data/catalog/towers";
 import { ENEMIES } from "@/lib/game/combat";
 import { BUILDING_MAX } from "@/lib/game/types";
 import { useGame } from "@/lib/game/store";
@@ -38,6 +39,33 @@ function Action({
   );
 }
 
+function TowerActions({
+  slotId,
+  placed,
+  coins,
+  onUpgrade,
+}: {
+  slotId: string;
+  placed: { slotId: string; catalogId: string }[];
+  coins: number;
+  onUpgrade: (id: string) => void;
+}) {
+  const built = placed.find((p) => p.slotId === slotId);
+  const nextId = built ? nextTowerId(built.catalogId) : null;
+  const next = nextId ? CATALOG_BY_ID[nextId] : null;
+  if (!next) {
+    return <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-moss">Longbow keep. The watch is full.</p>;
+  }
+  return (
+    <Action
+      label={`Upgrade · ${next.price}`}
+      tone="gold"
+      disabled={coins < next.price}
+      onClick={() => onUpgrade(slotId)}
+    />
+  );
+}
+
 export function ClickPopup() {
   const popup = useGame((s) => s.popup);
   const close = useGame((s) => s.closePopup);
@@ -45,6 +73,8 @@ export function ClickPopup() {
   const startCreature = useGame((s) => s.startCreature);
   const startDragon = useGame((s) => s.startDragon);
   const startRaid = useGame((s) => s.startRaidFight);
+  const startLanding = useGame((s) => s.startLandingFight);
+  const upgradeTower = useGame((s) => s.upgradeTower);
   const startPatrol = useGame((s) => s.startPatrol);
   const repair = useGame((s) => s.repairBuilding);
   const rally = useGame((s) => s.rallyWalls);
@@ -68,6 +98,8 @@ export function ClickPopup() {
   const woodsGreeted = useGame((s) => s.woodsGreeted);
   const chopTree = useGame((s) => s.chopTree);
   const sailTo = useGame((s) => s.sailTo);
+  const placed = useGame((s) => s.placed);
+  const coins = useGame((s) => s.coins);
 
   if (!popup) return null;
 
@@ -86,6 +118,7 @@ export function ClickPopup() {
     if (popup.npcId && (def.giver === popup.npcId || (q.id === "pie-run" && popup.npcId === "brine"))) {
       return true;
     }
+    if (popup.npcId === "greg" && q.id === "pappy-landing") return true;
     return false;
   });
 
@@ -93,8 +126,12 @@ export function ClickPopup() {
     popup.kind === "npc"
       ? popup.npcId === "pappy"
         ? "The old watch"
-        : "Neighbour"
-      : popup.kind === "enemy" || popup.kind === "raid"
+        : popup.npcId === "greg"
+          ? "The watch"
+          : "Neighbour"
+      : popup.kind === "tower"
+        ? "The watch"
+        : popup.kind === "enemy" || popup.kind === "raid"
         ? "A fight"
         : popup.kind === "dragon"
           ? "Dragon"
@@ -144,11 +181,13 @@ export function ClickPopup() {
                 ? "Hand over the pie."
                 : q.id === "mushroom-hello" && woodsGreeted
                   ? "The mushrooms were greeted. Talk-to Bramble."
-                : q.id === "pappy-timber" && q.stage === "ready"
-                  ? "Log in hand. Talk-to Ol Pappy."
-                  : q.id === "pappy-expand" && q.stage === "ready"
-                    ? "The town grew. Tell Ol Pappy."
-                    : def.hint;
+                  : q.id === "pappy-timber" && q.stage === "ready"
+                    ? "Log in hand. Talk-to Ol Pappy."
+                    : q.id === "pappy-expand" && q.stage === "ready"
+                      ? "The town grew. Tell Ol Pappy."
+                      : q.id === "pappy-landing" && q.stage === "ready"
+                        ? "Shore is clear. Talk-to Ol Pappy."
+                        : def.hint;
           return (
             <p key={q.id} className="mt-1 rounded-[10px] bg-gold/25 px-2 py-1 text-xs font-bold text-ink">
               {def.title} — {hint}
@@ -197,8 +236,19 @@ export function ClickPopup() {
             <Action label="Enter" onClick={() => enter(popup.interior!)} />
           ) : null}
 
-          {popup.packId && popup.enemyId ? (
+          {popup.packId && popup.enemyId === "runt" ? (
+            <Action label="Attack" tone="berry" onClick={() => startLanding(popup.packId!)} />
+          ) : popup.packId && popup.enemyId ? (
             <Action label="Attack" tone="berry" onClick={() => startCreature(popup.packId!, popup.enemyId as EnemyId)} />
+          ) : null}
+
+          {popup.kind === "tower" ? (
+            <TowerActions
+              slotId={popup.hotspotId}
+              placed={placed}
+              coins={coins}
+              onUpgrade={upgradeTower}
+            />
           ) : null}
 
           {popup.raidId ? (

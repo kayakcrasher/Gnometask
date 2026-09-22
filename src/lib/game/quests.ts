@@ -29,6 +29,7 @@ export function pickStartingQuests() {
   return [
     { id: "pappy-timber", stage: "active" as const },
     { id: "pappy-expand", stage: "active" as const },
+    { id: "pappy-landing", stage: "active" as const },
     { id: "lost-chicken", stage: "active" as const },
   ];
 }

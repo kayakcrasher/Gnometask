@@ -34,7 +34,7 @@ export const PLACES: { id: PlaceId; name: string; blurb: string }[] = [
   {
     id: "dock",
     name: "The Dock",
-    blurb: "Goblins and dark elves come in by sea. Coil the rope. Mind the pier.",
+    blurb: "Goblins land in painted boats. Watcher Greg keeps the perch. Mind the pier.",
   },
   {
     id: "mines",

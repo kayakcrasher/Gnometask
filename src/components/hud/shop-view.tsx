@@ -17,6 +17,7 @@ const ALL_KINDS: { id: ShopKind; label: string }[] = [
   { id: "garden", label: "Garden" },
   { id: "village", label: "Village" },
   { id: "fort", label: "Walls" },
+  { id: "tower", label: "Towers" },
   { id: "haven", label: "Haven" },
 ];
 
@@ -81,6 +82,7 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
           const ownedHat = item.kind === "hat" && ownedHats.includes(item.id);
           const ownedHouse = item.kind === "house" && houseUpgrades.includes(item.id);
           const ownedFort = Boolean(item.fortLevel && fortLevel >= item.fortLevel);
+          const towerUpgradeOnly = item.kind === "tower" && item.id !== "tower-1";
           const ownedEquip = Boolean(item.slot && ownedGear.includes(item.id) && item.kind !== "food");
           const inBag = inventory.includes(item.id);
           const placedCount = placed.filter((p) => p.catalogId === item.id).length;
@@ -140,6 +142,10 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
                 >
                   Place
                 </button>
+              ) : towerUpgradeOnly ? (
+                <span className="h-10 rounded-full bg-parchment-dark px-3 font-display text-[11px] font-semibold leading-10 text-bark/70">
+                  At the tower
+                </span>
               ) : (
                 <button
                   type="button"

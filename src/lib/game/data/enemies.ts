@@ -49,6 +49,15 @@ export const ENEMIES: Record<
     def: 4,
     area: 7,
   },
+  runt: {
+    name: "Mucktooth runt",
+    blurb: "Green, loud, and new to boats. The Mucktooth Clan sent their shortest.",
+    hp: 5,
+    dmg: 1,
+    coins: 4,
+    def: 1,
+    area: 1,
+  },
   goblin: {
     name: "Green goblin",
     blurb: "Came in on a raft. Wants the pies, not the conversation.",

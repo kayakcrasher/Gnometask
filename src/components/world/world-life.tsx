@@ -3,7 +3,7 @@ import { Kenney } from "./kenney";
 import { GnomeRig } from "./gnome-rig";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "@/lib/game/data/trees";
 import { NPCS } from "@/lib/game/world";
-import { WORLD_PACK, ABSENCE_SPOT, DRAGON_RIDGE } from "@/lib/game/catalog";
+import { WORLD_PACK, ABSENCE_SPOT, DRAGON_RIDGE, TOWER_SLOTS, CATALOG_BY_ID } from "@/lib/game/catalog";
 import { to3, groundY } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
@@ -86,7 +86,9 @@ export function Npcs3({
                 ? "#4c6b47"
                 : n.id === "brine"
                   ? "#3d5a6a"
-                  : n.id === "pipkin"
+                  : n.id === "greg"
+                    ? "#2f4a3a"
+                    : n.id === "pipkin"
                     ? "#6b5340"
                     : "#8a7a68";
         return (
@@ -98,7 +100,7 @@ export function Npcs3({
               onNpc(n.id, x, y);
             }}
           >
-            <GnomeRig hat={n.hat} scale={n.id === "pappy" ? 1 : 0.85} coat={coat} beard={n.id === "pappy"} />
+            <GnomeRig hat={n.hat} scale={n.id === "pappy" ? 1 : n.id === "greg" ? 0.92 : 0.85} coat={coat} beard={n.id === "pappy"} />
             <Html position={[0, n.id === "pappy" ? 1.7 : 1.5, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
                 {n.shortName ?? n.name}
@@ -162,8 +164,8 @@ function EnemyMesh({ kind }: { kind: EnemyId }) {
       </mesh>
     );
   }
-  if (kind === "goblin") {
-    return <GnomeRig hat="hat-moss" scale={0.7} coat="#4c7a3a" />;
+  if (kind === "goblin" || kind === "runt") {
+    return <GnomeRig hat="hat-moss" scale={kind === "runt" ? 0.55 : 0.7} coat="#3d6a28" skinColor="#6f8f40" />;
   }
   if (kind === "darkelf") {
     return <GnomeRig hat="hat-night" scale={0.8} coat="#1d2a22" />;
@@ -250,6 +252,161 @@ export function Fights3({
           <EnemyMesh kind="absence" />
         </group>
       ) : null}
+    </group>
+  );
+}
+
+function ArcherTowerMesh({ rank }: { rank: number }) {
+  const h = 0.9 + rank * 0.45;
+  const wood = rank >= 4 ? "#6b5340" : "#8a7a68";
+  const roof = rank >= 3 ? "#35543f" : "#c4a574";
+  return (
+    <group>
+      <mesh position={[0, h / 2, 0]} castShadow>
+        <cylinderGeometry args={[0.18, 0.28, h, 6]} />
+        <meshStandardMaterial color={wood} roughness={0.9} />
+      </mesh>
+      <mesh position={[0, h + 0.08, 0]} castShadow>
+        <cylinderGeometry args={[0.42, 0.42, 0.1, 6]} />
+        <meshStandardMaterial color="#c4a574" roughness={0.8} />
+      </mesh>
+      {rank >= 2 ? (
+        <mesh position={[0.28, h + 0.35, 0]} castShadow>
+          <boxGeometry args={[0.06, 0.55, 0.06]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+      ) : null}
+      {rank >= 3 ? (
+        <mesh position={[0, h + 0.42, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+          <coneGeometry args={[0.48, 0.55, 4]} />
+          <meshStandardMaterial color={roof} roughness={0.7} />
+        </mesh>
+      ) : null}
+      {rank >= 4 ? (
+        <mesh position={[0, h + 0.85, 0]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
+          <meshStandardMaterial color="#d6a84c" />
+        </mesh>
+      ) : (
+        <mesh position={[0, 0.2, 0.22]}>
+          <boxGeometry args={[0.5, 0.08, 0.08]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+export function Towers3({
+  onTower,
+}: {
+  onTower: (slotId: string, x: number, y: number, title: string, blurb: string) => void;
+}) {
+  const placed = useGame((s) => s.placed);
+  const placingId = useGame((s) => s.placingId);
+  const placeAt = useGame((s) => s.placeAt);
+  const placingTower = placingId ? CATALOG_BY_ID[placingId]?.slotPrefix === "t" : false;
+  return (
+    <group>
+      {TOWER_SLOTS.map((slot) => {
+        const built = placed.find((p) => p.slotId === slot.id);
+        const p = to3(slot.x, slot.y, groundY(slot.x, slot.y));
+        const item = built ? CATALOG_BY_ID[built.catalogId] : null;
+        const rank = item?.towerRank ?? 1;
+        return (
+          <group
+            key={slot.id}
+            position={p}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!built && placingTower) {
+                placeAt(slot.id);
+                return;
+              }
+              if (built && item) onTower(slot.id, slot.x, slot.y, item.name, item.blurb);
+            }}
+          >
+            {built ? (
+              <ArcherTowerMesh rank={rank} />
+            ) : placingTower ? (
+              <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <circleGeometry args={[0.55, 12]} />
+                <meshBasicMaterial color="#d6a84c" transparent opacity={0.55} />
+              </mesh>
+            ) : null}
+            {built ? (
+              <Html position={[0, 1.6 + rank * 0.35, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+                <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
+                  {item?.name}
+                </p>
+              </Html>
+            ) : null}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+export function Landing3({
+  onGoblin,
+}: {
+  onGoblin: (id: string, x: number, y: number) => void;
+}) {
+  const landing = useGame((s) => s.landing);
+  const combat = useGame((s) => s.combat);
+  if (!landing) return null;
+  const boat = to3(landing.boatX, landing.boatY, -0.05);
+  return (
+    <group>
+      <group position={boat} rotation={[0, -0.6, 0]}>
+        <Kenney name="canoe" scale={1.7} />
+        <mesh position={[0, 0.85, 0]}>
+          <boxGeometry args={[0.04, 0.9, 0.04]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+        <mesh position={[0.02, 1.15, 0.02]} rotation={[0, 0.2, 0.15]}>
+          <boxGeometry args={[0.02, 0.5, 0.38]} />
+          <meshStandardMaterial color="#4c7a3a" />
+        </mesh>
+        <Html position={[0, 1.55, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+          <p className="whitespace-nowrap rounded-full bg-moss px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
+            {landing.tribe}
+          </p>
+        </Html>
+      </group>
+      {landing.goblins.map((g) => {
+        if (!g.alive) return null;
+        const fighting = combat?.packId === g.id;
+        const pos = to3(g.x, g.y, groundY(g.x, g.y));
+        return (
+          <group
+            key={g.id}
+            position={pos}
+            onClick={(e) => {
+              e.stopPropagation();
+              onGoblin(g.id, g.x, g.y);
+            }}
+          >
+            <EnemyMesh kind="runt" />
+            {fighting && combat ? (
+              <Html position={[0, 1.05, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+                <div className="w-16">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
+                    <div className="h-full bg-berry" style={{ width: `${(combat.enemyHp / combat.enemyMax) * 100}%` }} />
+                  </div>
+                </div>
+              </Html>
+            ) : (
+              <Html position={[0, 1.05, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+                <p className="rounded-full bg-moss/90 px-1.5 py-0.5 font-display text-[9px] font-semibold text-parchment">
+                  runt
+                </p>
+              </Html>
+            )}
+          </group>
+        );
+      })}
     </group>
   );
 }

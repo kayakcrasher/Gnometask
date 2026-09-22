@@ -3,6 +3,7 @@ import { useGame } from "@/lib/game/store";
 import type { GamePopup } from "@/lib/game/types";
 import { AbsenceDragon, Dragon, FlameBurst, PackCreature } from "./creatures";
 import { MapHotspot } from "./map-hotspot";
+import { GoblinBoat } from "./art/foes";
 
 type Hover = (label: string, clientX: number, clientY: number) => void;
 
@@ -18,6 +19,7 @@ export function MapFights({
   interact: (x: number, y: number, popup: GamePopup, range?: number) => void;
 }) {
   const save = useGame();
+  const landing = save.landing;
   return (
     <>
       {raiding
@@ -28,6 +30,44 @@ export function MapFights({
             [780, 500],
           ].map(([x, y], i) => <FlameBurst key={i} x={x!} y={y!} />)
         : null}
+
+      {landing ? (
+        <>
+          <GoblinBoat x={landing.boatX} y={landing.boatY} tribe={landing.tribe} />
+          {landing.goblins.map((g) => {
+            if (!g.alive) return null;
+            if (save.combat?.packId === g.id) return null;
+            return (
+              <MapHotspot
+                key={g.id}
+                x={g.x}
+                y={g.y}
+                rx={26}
+                ry={24}
+                selected={save.popup?.hotspotId === g.id}
+                label="Mucktooth runt"
+                onHover={hoverTip}
+                onActivate={() =>
+                  interact(g.x, g.y, {
+                    kind: "enemy",
+                    hotspotId: g.id,
+                    title: "Mucktooth runt",
+                    blurb: `${landing.tribe} sent their shortest. Green, loud, and on the sand.`,
+                    place: "dock",
+                    enemyId: "runt",
+                    packId: g.id,
+                    x: g.x,
+                    y: g.y,
+                  })
+                }
+              >
+                <ellipse cx={g.x} cy={g.y + 14} rx="18" ry="8" fill="#4c7a3a" opacity="0.4" className="pulse-slot" />
+                <PackCreature kind="runt" x={g.x} y={g.y} />
+              </MapHotspot>
+            );
+          })}
+        </>
+      ) : null}
 
       {WORLD_PACK.map((pack) => {
         if (save.clearedPack.includes(pack.id)) return null;

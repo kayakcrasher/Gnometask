@@ -4,6 +4,7 @@ import { ENEMIES, roll, type CombatState } from "../combat";
 import { sfx } from "../juice";
 import { PLAYER_START, type GameSave } from "../types";
 import { hitChance, levelsOf, maxHit, maxHitpoints } from "../xp";
+import { landingAlive, landingCleared } from "../data/landing";
 import { armAutoAttack, clearCombatTimer, foodCount, scheduleWrite, setCombatTimer, withXp } from "./persist";
 import type { StoreGet, StoreSet, GameState } from "./types";
 
@@ -121,6 +122,24 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
       : s.ownedHats;
   const cleared = c.packId && !s.clearedPack.includes(c.packId) ? [...s.clearedPack, c.packId] : s.clearedPack;
   const raids = c.raidId ? s.raids.filter((r) => r.id !== c.raidId) : s.raids;
+  let landing = s.landing;
+  let quests = s.quests;
+  let speech: string | undefined;
+  if (landing && c.packId && landing.goblins.some((g) => g.id === c.packId)) {
+    landing = {
+      ...landing,
+      goblins: landing.goblins.map((g) => (g.id === c.packId ? { ...g, alive: false } : g)),
+    };
+    const left = landingAlive(landing);
+    if (landingCleared(landing)) {
+      quests = quests.map((q) =>
+        q.id === "pappy-landing" && q.stage !== "done" ? { ...q, stage: "ready" as const } : q,
+      );
+      speech = "The Mucktooth boat is empty. Tell Ol Pappy — or Watcher Greg.";
+    } else {
+      speech = `A runt down. ${left} still green on the shore.`;
+    }
+  }
   let lifeDragon = s.lifeDragon;
   let absencePending = s.absencePending;
   if (c.enemyId === "dragon") {
@@ -141,8 +160,11 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
     hat: c.enemyId === "dragon" || c.enemyId === "absence" ? "hat-dragon" : s.hat,
     clearedPack: cleared,
     raids,
+    landing,
+    quests,
     coinPopKey: s.coinPopKey + 1,
     bounceKey: s.bounceKey + 1,
+    ...(speech ? { speech } : {}),
   });
   sfx("win");
   scheduleWrite(get);

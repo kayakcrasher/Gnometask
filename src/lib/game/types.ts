@@ -28,6 +28,7 @@ export type ShopKind =
   | "tool"
   | "food"
   | "fort"
+  | "tower"
   | "haven";
 
 export type PanelId = "place" | "chores" | "inventory" | "menu";
@@ -39,7 +40,8 @@ export type InteriorId =
   | "bakery"
   | "general"
   | "haven-shop"
-  | "townhall";
+  | "townhall"
+  | "watch";
 
 export type DragonLook = "ember" | "moss" | "night" | "gold";
 export type DragonHorn = "short" | "long" | "crown";
@@ -74,7 +76,22 @@ export type Raid = {
   hp: number;
 };
 
-export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat";
+export type LandingGoblin = {
+  id: string;
+  x: number;
+  y: number;
+  alive: boolean;
+};
+
+export type GoblinLanding = {
+  tribe: string;
+  boatX: number;
+  boatY: number;
+  newsTold: boolean;
+  goblins: LandingGoblin[];
+};
+
+export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat" | "tower";
 
 export type GamePopup = {
   kind: PopupKind;
@@ -116,7 +133,7 @@ export type CatalogItem = {
   blurb: string;
   price: number;
   kind: ShopKind;
-  slotPrefix?: "g" | "gf" | "v";
+  slotPrefix?: "g" | "gf" | "v" | "t";
   slot?: EquipSlot;
   atk?: number;
   def?: number;
@@ -124,6 +141,7 @@ export type CatalogItem = {
   wc?: number;
   farm?: number;
   fortLevel?: number;
+  towerRank?: number;
   reqSkill?: SkillId;
   reqLevel?: number;
   reqHall?: number;
@@ -175,6 +193,7 @@ export type GameSave = {
   pieHeld: boolean;
   woodsGreeted: boolean;
   trees: Record<string, TreeSave>;
+  landing: GoblinLanding | null;
 };
 
 export type GameUi = {

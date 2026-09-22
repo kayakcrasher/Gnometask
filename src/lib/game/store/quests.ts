@@ -3,6 +3,7 @@ import { QUEST_BY_ID } from "../quests";
 import { randOf } from "../quotes";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
+import { landingAlive, landingCleared } from "../data/landing";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -25,6 +26,7 @@ export function questsSlice(
       let ding: string | null = null;
       let coinPop = false;
       let bounce = false;
+      let landing = s.landing;
 
       const finish = (id: string) => {
         const def = QUEST_BY_ID[id];
@@ -60,6 +62,25 @@ export function questsSlice(
             finish(q.id);
           } else {
             speech = def.offer;
+          }
+        } else if (q.id === "pappy-landing" && (npcId === "pappy" || npcId === "greg")) {
+          if (npcId === "pappy" && timberAtStart && timberAtStart.stage !== "done") continue;
+          const cleared = landingCleared(s.landing) || q.stage === "ready";
+          if (cleared && npcId === "pappy") {
+            finish(q.id);
+          } else if (cleared && npcId === "greg") {
+            speech =
+              "Shore's quiet. Banner's drooping. Tell Ol Pappy — then come back and buy a perch if you haven't.";
+          } else if (npcId === "greg") {
+            speech =
+              "News from the watch! A Mucktooth Clan boat — five green runts, low as weeds. Stakes perch is twelve coins. Plant it, then pick them off the shore.";
+            if (landing && !landing.newsTold) landing = { ...landing, newsTold: true };
+          } else if (npcId === "pappy") {
+            const left = landingAlive(s.landing);
+            speech =
+              left > 0
+                ? `${def.offer} ${left} still on the sand.`
+                : def.offer;
           }
         } else if (q.id === "lost-chicken" && npcId === "pipkin") {
           if (chickenHeld || q.stage === "ready") {
@@ -102,6 +123,7 @@ export function questsSlice(
         chickenHeld,
         chicken,
         pieHeld,
+        landing,
         hp: s.hp + grown,
         bounceKey: bounce ? s.bounceKey + 1 : s.bounceKey,
         coinPopKey: coinPop ? s.coinPopKey + 1 : s.coinPopKey,

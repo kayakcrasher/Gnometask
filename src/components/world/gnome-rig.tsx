@@ -80,6 +80,7 @@ export function GnomeRig({
   scale = 1,
   coat = "#35543f",
   beard = false,
+  skinColor = "#e8b98c",
 }: {
   hat: string;
   weapon?: string | null;
@@ -90,10 +91,11 @@ export function GnomeRig({
   scale?: number;
   coat?: string;
   beard?: boolean;
+  skinColor?: string;
 }) {
   const bob = useRef<THREE.Group>(null);
   const t = useRef(0);
-  const skin = useMemo(() => new THREE.Color("#e8b98c"), []);
+  const skin = useMemo(() => new THREE.Color(skinColor), [skinColor]);
   useFrame((_, d) => {
     t.current += d * (walking ? 8 : 2);
     if (!bob.current) return;

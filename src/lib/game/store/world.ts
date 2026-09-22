@@ -13,7 +13,7 @@ export function worldSlice(
   get: StoreGet,
 ): Pick<
   GameState,
-  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "sipTea" | "sootheDragon" | "tickWorld"
+  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "startLandingFight" | "sipTea" | "sootheDragon" | "tickWorld"
 > {
   return {
     rallyWalls: () => {
@@ -185,6 +185,29 @@ export function worldSlice(
         panel: "place",
         selectedPlace: "dock",
         speech: raid.kind === "goblin" ? "A green goblin from the raft. It wants pie." : "A dark elf from the night tide.",
+      });
+      armAutoAttack(get, 800);
+    },
+
+    startLandingFight: (goblinId) => {
+      const s = get();
+      if (s.combat) return;
+      const g = s.landing?.goblins.find((x) => x.id === goblinId && x.alive);
+      if (!g || !s.landing) return;
+      set({
+        combat: makeCombat("runt", s.hp, {
+          packId: g.id,
+          name: `Mucktooth runt`,
+          playerMax: maxHitpoints(s.skills),
+          atX: g.x,
+          atY: g.y,
+          skills: s.skills,
+        }),
+        popup: null,
+        interior: null,
+        panel: "place",
+        selectedPlace: "dock",
+        speech: `A green Mucktooth runt from the ${s.landing.tribe} boat.`,
       });
       armAutoAttack(get, 800);
     },

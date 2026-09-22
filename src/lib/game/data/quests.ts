@@ -22,6 +22,16 @@ export const QUEST_POOL: QuestDef[] = [
     xp: { crafting: 60, defence: 30 },
   },
   {
+    id: "pappy-landing",
+    title: "Five at the shore",
+    giver: "pappy",
+    offer: "Watcher Greg's waving like a weathercock. A painted boat of five just beached — Mucktooth Clan, green as envy. Hear Greg, then send those runts home.",
+    hint: "Talk to Watcher Greg by the dock, then fight the five green goblins on the south shore.",
+    done: "Ha! The Mucktooth banner droops. That's how a hollow starts. +28 coins. Keep Greg's perch fed.",
+    coins: 28,
+    xp: { attack: 50, defence: 40, strength: 30 },
+  },
+  {
     id: "lost-chicken",
     title: "Find my chicken",
     giver: "pipkin",

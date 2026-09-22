@@ -61,11 +61,20 @@ export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; p
   { id: "pack-crab", enemy: "crab", x: 90, y: 520, place: "dock" },
 ];
 
+export const TOWER_SLOTS: { id: string; x: number; y: number }[] = [
+  { id: "t0", x: 186, y: 528 },
+  { id: "t1", x: 292, y: 358 },
+  { id: "t2", x: 108, y: 388 },
+  { id: "t3", x: 470, y: 268 },
+  { id: "t4", x: 1088, y: 372 },
+];
+
 export const DRAGON_RIDGE = { x: 1760, y: 340 };
 export const ABSENCE_SPOT = { x: 96, y: 430 };
 
-export function slotsForPrefix(prefix: "g" | "gf" | "v") {
+export function slotsForPrefix(prefix: "g" | "gf" | "v" | "t") {
   if (prefix === "g") return GARDEN_SLOTS;
   if (prefix === "gf") return GARDEN_FEATURE_SLOTS;
+  if (prefix === "t") return TOWER_SLOTS;
   return VILLAGE_SLOTS;
 }

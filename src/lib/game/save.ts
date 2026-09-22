@@ -5,9 +5,10 @@ import { makeBuiltinTasks } from "./catalog";
 import { BUILDING_MAX, PLAYER_START, type BuildingId, type GameSave, type Task } from "./types";
 import type { Skills } from "./xp";
 import type { QuestSave } from "./quests";
+import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -66,6 +67,7 @@ export function defaultSave(): GameSave {
     woodsGreeted: false,
     logs: 0,
     trees: {},
+    landing: null,
   };
 }
 
@@ -103,6 +105,28 @@ function asQuests(raw: unknown): QuestSave[] {
       return { id, stage };
     })
     .filter((q): q is QuestSave => Boolean(q));
+}
+
+function asLanding(raw: unknown): GoblinLanding | null {
+  if (!raw || typeof raw !== "object") return null;
+  const l = raw as Partial<GoblinLanding>;
+  if (typeof l.tribe !== "string" || typeof l.boatX !== "number" || typeof l.boatY !== "number") return null;
+  if (!Array.isArray(l.goblins)) return null;
+  const goblins: LandingGoblin[] = l.goblins
+    .map((g) => {
+      if (!g || typeof g !== "object") return null;
+      if (typeof g.id !== "string" || typeof g.x !== "number" || typeof g.y !== "number") return null;
+      return { id: g.id, x: g.x, y: g.y, alive: Boolean(g.alive) };
+    })
+    .filter((g): g is LandingGoblin => Boolean(g));
+  if (!goblins.length) return null;
+  return {
+    tribe: l.tribe,
+    boatX: l.boatX,
+    boatY: l.boatY,
+    newsTold: Boolean(l.newsTold),
+    goblins,
+  };
 }
 
 export function migrate(raw: unknown): GameSave {
@@ -211,6 +235,7 @@ export function migrate(raw: unknown): GameSave {
     woodsGreeted: Boolean(s.woodsGreeted),
     logs: typeof s.logs === "number" ? s.logs : 0,
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
+    landing: asLanding(s.landing),
   };
 }
 

@@ -5,6 +5,7 @@ import { GARDEN } from "./garden";
 import { ARMOUR, GEAR, TOOLS, WEAPONS } from "./gear";
 import { HATS } from "./hats";
 import { HOUSE } from "./house";
+import { TOWERS } from "./towers";
 import { VILLAGE } from "./village";
 
 export const CATALOG: CatalogItem[] = [
@@ -17,6 +18,7 @@ export const CATALOG: CatalogItem[] = [
   ...TOOLS,
   ...FOOD,
   ...FORTS,
+  ...TOWERS,
 ];
 
 export const CATALOG_BY_ID: Record<string, CatalogItem> = Object.fromEntries(
@@ -36,4 +38,4 @@ export function bestHatchet(owned: string[]) {
   return order.find((id) => owned.includes(id)) ?? null;
 }
 
-export { ARMOUR, FOOD, FORTS, GARDEN, GEAR, HATS, HOUSE, TOOLS, VILLAGE, WEAPONS };
+export { ARMOUR, FOOD, FORTS, GARDEN, GEAR, HATS, HOUSE, TOOLS, TOWERS, VILLAGE, WEAPONS };

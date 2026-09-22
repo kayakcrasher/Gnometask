@@ -14,7 +14,7 @@ import { Terrain } from "./terrain";
 import { Cottage3, DockBoat, Town3, VillageHouses } from "./town";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
-import { Fights3, Npcs3, Trees3 } from "./world-life";
+import { Fights3, Landing3, Npcs3, Towers3, Trees3 } from "./world-life";
 import { Kenney } from "./kenney";
 import { groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
@@ -192,6 +192,37 @@ function SceneBody({
             title: save.lifeDragon.name,
             blurb: "The ridge has opinions.",
             place: "wildlands",
+          })
+        }
+      />
+      <Landing3
+        onGoblin={(id, x, y) =>
+          interact(
+            x,
+            y,
+            {
+              kind: "enemy",
+              hotspotId: id,
+              title: "Mucktooth runt",
+              blurb: `${save.landing?.tribe ?? "Mucktooth Clan"} sent their shortest. Green, loud, and on the sand.`,
+              place: "dock",
+              enemyId: "runt",
+              packId: id,
+              x,
+              y,
+            },
+            50,
+          )
+        }
+      />
+      <Towers3
+        onTower={(slotId, x, y, title, blurb) =>
+          interact(x, y, {
+            kind: "tower",
+            hotspotId: slotId,
+            title,
+            blurb,
+            place: "dock",
           })
         }
       />

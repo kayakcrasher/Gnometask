@@ -14,6 +14,7 @@ export type EnemyId =
   | "cobble"
   | "crab"
   | "goblin"
+  | "runt"
   | "darkelf";
 
 export type PackEnemy = Exclude<EnemyId, "dragon" | "absence" | "goblin" | "darkelf">;

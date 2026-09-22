@@ -126,6 +126,21 @@ export function Rat({ x, y, scale = 1 }: { x: number; y: number; scale?: number 
   );
 }
 
+export function GoblinBoat({ x, y, tribe }: { x: number; y: number; tribe: string }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <ellipse cx="0" cy="18" rx="46" ry="12" fill="#3e2e20" opacity="0.2" />
+      <path d="M-48 8 C-40 18 40 18 48 8 C40 2 -40 2 -48 8 Z" fill="#6b5340" />
+      <path d="M-36 6 C-28 0 28 0 36 6" fill="#8a7a68" />
+      <rect x="-2" y="-28" width="4" height="34" fill="#5b4230" />
+      <path d="M2 -26 L28 -8 L2 2 Z" fill="#4c7a3a" />
+      <text x="2" y="-10" textAnchor="middle" fill="#f2e8d5" fontSize="9" fontFamily="serif" fontWeight="700">
+        {tribe}
+      </text>
+    </g>
+  );
+}
+
 export function PackCreature({
   kind,
   x,
@@ -143,7 +158,7 @@ export function PackCreature({
   if (kind === "wyrmling") return <Wyrmling x={x} y={y} scale={1.2} />;
   if (kind === "bat") return <Bat x={x} y={y} scale={1.35} />;
   if (kind === "cobble") return <Cobble x={x} y={y} scale={1.2} />;
-  if (kind === "goblin") return <Goblin x={x} y={y} scale={1.25} striking={striking} />;
+  if (kind === "goblin" || kind === "runt") return <Goblin x={x} y={y} scale={kind === "runt" ? 1.05 : 1.25} striking={striking} />;
   if (kind === "darkelf") return <DarkElf x={x} y={y} scale={1.25} striking={striking} />;
   if (kind === "absence") return <AbsenceDragon x={x} y={y} scale={0.7} />;
   if (kind === "dragon") return <Dragon x={x} y={y} scale={0.7} />;

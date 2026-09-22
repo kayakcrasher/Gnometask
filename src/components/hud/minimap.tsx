@@ -28,6 +28,7 @@ export function Minimap({
 }) {
   const cleared = useGame((s) => s.clearedPack);
   const dragon = useGame((s) => s.lifeDragon);
+  const landing = useGame((s) => s.landing);
   const onClick = (e: ReactMouseEvent<SVGSVGElement>) => {
     const svg = e.currentTarget;
     const r = svg.getBoundingClientRect();
@@ -68,6 +69,9 @@ export function Minimap({
         })}
         {WORLD_PACK.filter((p) => !cleared.includes(p.id)).map((p) => (
           <circle key={p.id} cx={p.x} cy={p.y} r={14} fill="#a8433b" />
+        ))}
+        {landing?.goblins.filter((g) => g.alive).map((g) => (
+          <circle key={g.id} cx={g.x} cy={g.y} r={12} fill="#4c7a3a" />
         ))}
         {dragon.state !== "defeated" ? <circle cx={1760} cy={340} r={22} fill="#8a3a32" /> : null}
         <g transform={`translate(${pos.x} ${pos.y}) rotate(${(facingYaw * 180) / Math.PI})`}>
