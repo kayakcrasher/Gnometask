@@ -76,6 +76,7 @@ export function snap(s: GameSave): GameSave {
     woodsGreeted: s.woodsGreeted,
     townHallLevel: s.townHallLevel,
     logs: s.logs,
+    bones: s.bones,
     trees: s.trees,
     landing: s.landing,
     combatStyle: s.combatStyle,
@@ -118,7 +119,7 @@ export function seedQuests(s: Pick<GameSave, "quests" | "chicken" | "landing">) 
   if (landingQ && landingQ.stage !== "done") {
     landing = landing ?? makeLanding();
   }
-  if (landing && landingCleared(landing) && landingQ?.stage === "active") {
+  if (landing && landingCleared(landing) && landing.flagDown && landingQ?.stage === "active") {
     quests = quests.map((q) => (q.id === "pappy-landing" ? { ...q, stage: "ready" as const } : q));
   }
   return { quests, chicken, landing };
@@ -132,6 +133,23 @@ export function markPappyExpand(get: StoreGet, set: StoreSet) {
       q.id === "pappy-expand" && q.stage === "active" ? { ...q, stage: "ready" as const } : q,
     ),
   });
+}
+
+export function rememberLoot(get: StoreGet, set: StoreSet, x: number, y: number, bones: number, coins: number) {
+  const s = get();
+  const id = s.bounceKey + 1;
+  if (typeof window !== "undefined") {
+    window.setTimeout(() => {
+      if (get().lootFlash?.id === id) set({ lootFlash: null });
+    }, 2600);
+  }
+  return {
+    bones: s.bones + bones,
+    coins: s.coins + coins,
+    coinPopKey: coins > 0 ? s.coinPopKey + 1 : s.coinPopKey,
+    bounceKey: id,
+    lootFlash: { id, x, y, bones, coins },
+  };
 }
 
 export function foodCount(s: GameSave) {
@@ -155,6 +173,7 @@ export const UI_SEED: Pick<
   | "raids"
   | "followWalk"
   | "praying"
+  | "lootFlash"
 > = {
   hydrated: false,
   selectedPlace: null,
@@ -171,4 +190,5 @@ export const UI_SEED: Pick<
   raids: [],
   followWalk: true,
   praying: false,
+  lootFlash: null,
 };

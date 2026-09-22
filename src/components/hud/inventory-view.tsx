@@ -38,6 +38,7 @@ export function InventoryView() {
   const pieHeld = useGame((s) => s.pieHeld);
   const chickenHeld = useGame((s) => s.chickenHeld);
   const logs = useGame((s) => s.logs);
+  const bones = useGame((s) => s.bones);
   const combat = useGame((s) => s.combat);
 
   if (combat || panel !== "inventory") return null;
@@ -182,7 +183,7 @@ export function InventoryView() {
           ))}
         </div>
         <p className="mt-3 text-sm font-semibold text-bark/70">
-          Food · honey {honey} · loaves {bread} · logs {logs}. Fort {fortLevel}/5. Guard {guardLevel}/5.
+          Food · honey {honey} · loaves {bread} · logs {logs} · bones {bones}. Fort {fortLevel}/5. Guard {guardLevel}/5.
         </p>
       </div>
     </div>

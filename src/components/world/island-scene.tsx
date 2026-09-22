@@ -14,7 +14,7 @@ import { Terrain } from "./terrain";
 import { Cottage3, DockBoat, Town3, VillageHouses } from "./town";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
-import { Fights3, Landing3, Npcs3, Towers3, Trees3 } from "./world-life";
+import { Fights3, Landing3, LootFlash3, Npcs3, Towers3, Trees3 } from "./world-life";
 import { Kenney } from "./kenney";
 import { groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
@@ -216,7 +216,26 @@ function SceneBody({
             50,
           )
         }
+        onFlag={() => {
+          const land = save.landing;
+          if (!land || land.flagDown) return;
+          interact(
+            land.boatX,
+            land.boatY,
+            {
+              kind: "flag",
+              hotspotId: "muck-flag",
+              title: "Mucktooth banner",
+              blurb: "Their cloth on a pole. Tear it down.",
+              place: "dock",
+              x: land.boatX,
+              y: land.boatY,
+            },
+            50,
+          );
+        }}
       />
+      <LootFlash3 />
       <Towers3
         onTower={(slotId, x, y, title, blurb) =>
           interact(x, y, {

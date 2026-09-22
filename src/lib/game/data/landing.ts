@@ -1,6 +1,7 @@
 import type { GoblinLanding } from "../types";
 
 export const MUCKTOOTH = "Mucktooth Clan";
+export const FLAG_MAX = 10;
 
 export const LANDING_BOAT = { x: 52, y: 572 };
 
@@ -10,6 +11,8 @@ export function makeLanding(): GoblinLanding {
     boatX: LANDING_BOAT.x,
     boatY: LANDING_BOAT.y,
     newsTold: false,
+    flagHp: FLAG_MAX,
+    flagDown: false,
     goblins: [
       { id: "land-0", x: 78, y: 548, alive: true },
       { id: "land-1", x: 38, y: 544, alive: true },

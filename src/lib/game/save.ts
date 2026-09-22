@@ -66,6 +66,7 @@ export function defaultSave(): GameSave {
     pieHeld: false,
     woodsGreeted: false,
     logs: 0,
+    bones: 0,
     trees: {},
     landing: null,
     combatStyle: "attack",
@@ -126,6 +127,8 @@ function asLanding(raw: unknown): GoblinLanding | null {
     boatX: l.boatX,
     boatY: l.boatY,
     newsTold: Boolean(l.newsTold),
+    flagHp: l.flagDown ? 0 : typeof l.flagHp === "number" ? l.flagHp : 10,
+    flagDown: Boolean(l.flagDown),
     goblins,
   };
 }
@@ -235,6 +238,7 @@ export function migrate(raw: unknown): GameSave {
     pieHeld: Boolean(s.pieHeld),
     woodsGreeted: Boolean(s.woodsGreeted),
     logs: typeof s.logs === "number" ? s.logs : 0,
+    bones: typeof s.bones === "number" ? s.bones : 0,
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",

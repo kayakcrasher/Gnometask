@@ -55,6 +55,7 @@ export type GameState = GameSave &
     startCreature: (packId: string, enemyId: EnemyId) => void;
     startRaidFight: (raidId: string) => void;
     startLandingFight: (goblinId: string) => void;
+    strikeFlag: () => void;
     sipTea: () => void;
     sootheDragon: () => void;
     tickWorld: () => void;

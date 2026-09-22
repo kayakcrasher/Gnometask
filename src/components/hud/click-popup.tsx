@@ -74,6 +74,7 @@ export function ClickPopup() {
   const startDragon = useGame((s) => s.startDragon);
   const startRaid = useGame((s) => s.startRaidFight);
   const startLanding = useGame((s) => s.startLandingFight);
+  const strikeFlag = useGame((s) => s.strikeFlag);
   const upgradeTower = useGame((s) => s.upgradeTower);
   const startPatrol = useGame((s) => s.startPatrol);
   const repair = useGame((s) => s.repairBuilding);
@@ -216,6 +217,10 @@ export function ClickPopup() {
 
           {popup.kind === "tree" && popup.treeId ? (
             <Action label="Chop" tone="gold" onClick={() => chopTree(popup.treeId!)} />
+          ) : null}
+
+          {popup.kind === "flag" ? (
+            <Action label="Attack" tone="berry" onClick={strikeFlag} />
           ) : null}
 
           {popup.kind === "boat" ? (

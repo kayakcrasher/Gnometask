@@ -198,6 +198,22 @@ function FightSplat({ value, shake }: { value: number | "miss" | "heal"; shake: 
   );
 }
 
+function HpPlate({ hp, max, y }: { hp: number; max: number; y: number }) {
+  const pct = Math.max(0, Math.min(100, (hp / Math.max(1, max)) * 100));
+  return (
+    <Html zIndexRange={[8, 0]} position={[0, y, 0]} center distanceFactor={11} style={{ pointerEvents: "none" }}>
+      <div className="w-[4.5rem] rounded-full bg-parchment/95 px-1.5 py-0.5 shadow-panel">
+        <div className="h-2 overflow-hidden rounded-full bg-ink/25">
+          <div className="h-full bg-berry" style={{ width: `${pct}%` }} />
+        </div>
+        <p className="text-center font-display text-[10px] font-bold tabular-nums leading-tight text-ink">
+          {hp}/{max}
+        </p>
+      </div>
+    </Html>
+  );
+}
+
 export function Fights3({
   onEnemy,
   onDragon,
@@ -248,13 +264,7 @@ export function Fights3({
             </FighterMotion>
             {fighting && combat ? (
               <>
-                <Html zIndexRange={[8, 0]} position={[0, 1.15, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-                  <div className="w-16">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
-                      <div className="h-full bg-berry" style={{ width: `${(combat.enemyHp / combat.enemyMax) * 100}%` }} />
-                    </div>
-                  </div>
-                </Html>
+                <HpPlate hp={combat.enemyHp} max={combat.enemyMax} y={1.35} />
                 {combat.splatOnEnemy != null ? <FightSplat value={combat.splatOnEnemy} shake={combat.shake} /> : null}
               </>
             ) : null}
@@ -376,8 +386,10 @@ export function Towers3({
 
 export function Landing3({
   onGoblin,
+  onFlag,
 }: {
   onGoblin: (id: string, x: number, y: number) => void;
+  onFlag: () => void;
 }) {
   const landing = useGame((s) => s.landing);
   const combat = useGame((s) => s.combat);
@@ -390,21 +402,36 @@ export function Landing3({
     <group>
       <group position={boat} rotation={[0, -0.6, 0]}>
         <Kenney name="canoe" scale={1.7} />
-        <mesh position={[0, 0.85, 0]}>
-          <boxGeometry args={[0.04, 0.9, 0.04]} />
-          <meshStandardMaterial color="#5b4230" />
-        </mesh>
-        <mesh position={[0.02, 1.15, 0.02]} rotation={[0, 0.2, 0.15]}>
-          <boxGeometry args={[0.02, 0.5, 0.38]} />
-          <meshStandardMaterial color="#4c7a3a" />
-        </mesh>
-        {showLabels ? (
-        <Html zIndexRange={[8, 0]} position={[0, 1.55, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-          <p className="whitespace-nowrap rounded-full bg-moss px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
-            {landing.tribe}
-          </p>
-        </Html>
-        ) : null}
+        {landing.flagDown ? (
+          <mesh position={[0.25, 0.08, 0.05]} rotation={[0, 0, Math.PI / 2.4]} castShadow>
+            <boxGeometry args={[0.04, 0.7, 0.04]} />
+            <meshStandardMaterial color="#5b4230" />
+          </mesh>
+        ) : (
+          <group
+            onClick={(e) => {
+              e.stopPropagation();
+              onFlag();
+            }}
+          >
+            <mesh position={[0, 0.85, 0]}>
+              <boxGeometry args={[0.04, 0.9, 0.04]} />
+              <meshStandardMaterial color="#5b4230" />
+            </mesh>
+            <mesh position={[0.02, 1.15, 0.02]} rotation={[0, 0.2, 0.15]}>
+              <boxGeometry args={[0.02, 0.5, 0.38]} />
+              <meshStandardMaterial color="#4c7a3a" />
+            </mesh>
+            <HpPlate hp={landing.flagHp ?? 10} max={10} y={1.85} />
+            {showLabels ? (
+              <Html zIndexRange={[8, 0]} position={[0, 2.35, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+                <p className="whitespace-nowrap rounded-full bg-moss px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
+                  {landing.tribe}
+                </p>
+              </Html>
+            ) : null}
+          </group>
+        )}
       </group>
       {landing.goblins.map((g) => {
         if (!g.alive) return null;
@@ -425,10 +452,13 @@ export function Landing3({
             <FighterMotion striking={fighting && Boolean(combat?.foeSwing)} recoil={recoil}>
               <EnemyMesh kind="runt" />
             </FighterMotion>
-            {fighting && combat ? (
-              <>
-                {combat.splatOnEnemy != null ? <FightSplat value={combat.splatOnEnemy} shake={combat.shake} /> : null}
-              </>
+            <HpPlate
+              hp={fighting && combat ? combat.enemyHp : 3}
+              max={fighting && combat ? combat.enemyMax : 3}
+              y={1.25}
+            />
+            {fighting && combat && combat.splatOnEnemy != null ? (
+              <FightSplat value={combat.splatOnEnemy} shake={combat.shake} />
             ) : showLabels ? (
               <Html zIndexRange={[8, 0]} position={[0, 1.05, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
                 <p className="rounded-full bg-moss/90 px-1.5 py-0.5 font-display text-[9px] font-semibold text-parchment">
@@ -439,6 +469,33 @@ export function Landing3({
           </group>
         );
       })}
+    </group>
+  );
+}
+
+export function LootFlash3() {
+  const flash = useGame((s) => s.lootFlash);
+  if (!flash || (flash.bones < 1 && flash.coins < 1)) return null;
+  const p = to3(flash.x, flash.y, groundY(flash.x, flash.y));
+  return (
+    <group position={p}>
+      <mesh position={[0.16, 0.08, 0]} castShadow>
+        <sphereGeometry args={[0.09, 10, 10]} />
+        <meshStandardMaterial color="#d6a84c" metalness={0.35} roughness={0.4} />
+      </mesh>
+      <mesh position={[-0.12, 0.05, 0.04]} rotation={[0.5, 0.2, 0.8]}>
+        <boxGeometry args={[0.18, 0.045, 0.045]} />
+        <meshStandardMaterial color="#f2e8d5" />
+      </mesh>
+      <mesh position={[-0.05, 0.07, -0.04]} rotation={[0.2, 0.4, -0.5]}>
+        <boxGeometry args={[0.14, 0.04, 0.04]} />
+        <meshStandardMaterial color="#e7d7c3" />
+      </mesh>
+      <Html zIndexRange={[8, 0]} position={[0, 0.55, 0]} center distanceFactor={12} style={{ pointerEvents: "none" }}>
+        <p className="whitespace-nowrap rounded-full bg-parchment px-2 py-0.5 font-display text-[11px] font-bold text-ink shadow-panel">
+          bones {flash.bones} · {flash.coins} coins
+        </p>
+      </Html>
     </group>
   );
 }

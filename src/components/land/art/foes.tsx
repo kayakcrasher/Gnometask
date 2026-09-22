@@ -126,17 +126,23 @@ export function Rat({ x, y, scale = 1 }: { x: number; y: number; scale?: number 
   );
 }
 
-export function GoblinBoat({ x, y, tribe }: { x: number; y: number; tribe: string }) {
+export function GoblinBoat({ x, y, tribe, flagDown = false }: { x: number; y: number; tribe: string; flagDown?: boolean }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <ellipse cx="0" cy="18" rx="46" ry="12" fill="#3e2e20" opacity="0.2" />
       <path d="M-48 8 C-40 18 40 18 48 8 C40 2 -40 2 -48 8 Z" fill="#6b5340" />
       <path d="M-36 6 C-28 0 28 0 36 6" fill="#8a7a68" />
-      <rect x="-2" y="-28" width="4" height="34" fill="#5b4230" />
-      <path d="M2 -26 L28 -8 L2 2 Z" fill="#4c7a3a" />
-      <text x="2" y="-10" textAnchor="middle" fill="#f2e8d5" fontSize="9" fontFamily="serif" fontWeight="700">
-        {tribe}
-      </text>
+      {flagDown ? (
+        <path d="M-8 16 L28 8" stroke="#5b4230" strokeWidth="3" />
+      ) : (
+        <>
+          <rect x="-2" y="-28" width="4" height="34" fill="#5b4230" />
+          <path d="M2 -26 L28 -8 L2 2 Z" fill="#4c7a3a" />
+          <text x="8" y="-12" textAnchor="middle" fill="#f2e8d5" fontSize="8" fontFamily="serif" fontWeight="700">
+            {tribe}
+          </text>
+        </>
+      )}
     </g>
   );
 }

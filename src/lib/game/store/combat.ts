@@ -6,7 +6,7 @@ import { sfx } from "../juice";
 import { PLAYER_START, type GameSave } from "../types";
 import { hitChance, levelsOf, maxHit, maxHitpoints } from "../xp";
 import { landingAlive, landingCleared } from "../data/landing";
-import { armAutoAttack, clearCombatTimer, foodCount, scheduleWrite, setCombatTimer, withXp } from "./persist";
+import { armAutoAttack, clearCombatTimer, foodCount, rememberLoot, scheduleWrite, setCombatTimer, withXp } from "./persist";
 import type { StoreGet, StoreSet, GameState } from "./types";
 
 function defencePower(s: GameSave) {
@@ -157,14 +157,22 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
     };
     const left = landingAlive(landing);
     if (landingCleared(landing)) {
-      quests = quests.map((q) =>
-        q.id === "pappy-landing" && q.stage !== "done" ? { ...q, stage: "ready" as const } : q,
-      );
-      speech = "The Mucktooth boat is empty. Tell Ol Pappy — or Watcher Greg.";
+      const banner = landing.flagDown;
+      if (banner) {
+        quests = quests.map((q) =>
+          q.id === "pappy-landing" && q.stage !== "done" ? { ...q, stage: "ready" as const } : q,
+        );
+      }
+      speech = banner
+        ? "Shore and banner are clear. Tell Ol Pappy — or Watcher Greg."
+        : "The runts are down. Their flag still flies. Tear it down.";
     } else {
       speech = `A runt down. ${left} still green on the shore.`;
     }
   }
+  const lootLine = `Drops bones and ${e.coins} coins.`;
+  speech = speech ? `${speech} ${lootLine}` : lootLine;
+  const loot = rememberLoot(get, set, c.atX, c.atY, 1, e.coins);
   let lifeDragon = s.lifeDragon;
   let absencePending = s.absencePending;
   if (c.enemyId === "dragon") {
@@ -175,8 +183,8 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
   }
   clearCombatTimer();
   set({
+    ...loot,
     combat: { ...c, enemyHp: 0, phase: "won", shake: c.shake + 1, log },
-    coins: s.coins + e.coins,
     wildWins: s.wildWins + 1,
     lifeDragon,
     absencePending,
@@ -284,7 +292,7 @@ export function combatSlice(
             sessionXp,
             lastXp,
           },
-          `${who} yields. +${e.coins} coins.${xpBit}${dingBit}`,
+          `${who} yields. Drops bones and ${e.coins} coins.${xpBit}${dingBit}`,
         );
         return;
       }

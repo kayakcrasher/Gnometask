@@ -90,10 +90,20 @@ export type GoblinLanding = {
   boatX: number;
   boatY: number;
   newsTold: boolean;
+  flagHp: number;
+  flagDown: boolean;
   goblins: LandingGoblin[];
 };
 
-export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat" | "tower";
+export type LootFlash = {
+  id: number;
+  x: number;
+  y: number;
+  bones: number;
+  coins: number;
+};
+
+export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat" | "tower" | "flag";
 
 export type GamePopup = {
   kind: PopupKind;
@@ -173,6 +183,7 @@ export type GameSave = {
   honey: number;
   bread: number;
   logs: number;
+  bones: number;
   ownedGear: string[];
   equipment: Equipment;
   wildWins: number;
@@ -215,6 +226,7 @@ export type GameUi = {
   raids: Raid[];
   followWalk: boolean;
   praying: boolean;
+  lootFlash: LootFlash | null;
 };
 
 export { BUILDING_MAX, METRICS, PLACES, PLAYER_START } from "./data/places";

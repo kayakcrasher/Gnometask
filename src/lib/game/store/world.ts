@@ -4,7 +4,7 @@ import { ENEMIES, makeCombat, patrolEnemy, raidKindForHall } from "../combat";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
 import type { PlaceId } from "../types";
-import { armAutoAttack, clearCombatTimer, scheduleWrite } from "./persist";
+import { armAutoAttack, clearCombatTimer, rememberLoot, scheduleWrite } from "./persist";
 import { winCombat } from "./combat";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -13,7 +13,7 @@ export function worldSlice(
   get: StoreGet,
 ): Pick<
   GameState,
-  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "startLandingFight" | "sipTea" | "sootheDragon" | "tickWorld"
+  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "startLandingFight" | "strikeFlag" | "sipTea" | "sootheDragon" | "tickWorld"
 > {
   return {
     rallyWalls: () => {
@@ -216,6 +216,42 @@ export function worldSlice(
         speech: `A green Mucktooth runt from the ${s.landing.tribe} boat.`,
       });
       armAutoAttack(get, 800);
+    },
+
+    strikeFlag: () => {
+      const s = get();
+      const landing = s.landing;
+      if (s.combat || !landing) return;
+      if (landing.flagDown) {
+        set({ popup: null, speech: "The Mucktooth cloth is already in the sand." });
+        return;
+      }
+      const dmg = s.combatStyle === "strength" ? 4 : 3;
+      const flagHp = Math.max(0, (landing.flagHp ?? 10) - dmg);
+      const flagDown = flagHp <= 0;
+      const loot = flagDown ? rememberLoot(get, set, landing.boatX, landing.boatY, 1, 6) : {};
+      const shoreClear = landing.goblins.every((g) => !g.alive);
+      const quests =
+        flagDown && shoreClear
+          ? s.quests.map((q) =>
+              q.id === "pappy-landing" && q.stage === "active" ? { ...q, stage: "ready" as const } : q,
+            )
+          : s.quests;
+      set({
+        ...loot,
+        landing: { ...landing, flagHp, flagDown },
+        quests,
+        popup: null,
+        gnomeX: landing.boatX + 26,
+        gnomeY: landing.boatY,
+        speech: flagDown
+          ? shoreClear
+            ? "The banner is down and the shore is clear. Bones and 6 coins. Tell Ol Pappy."
+            : "Their flag is in the sand. Bones and 6 coins. The runts are still here."
+          : `The banner rips. ${flagHp} left on the cloth.`,
+      });
+      sfx(flagDown ? "win" : "hit");
+      scheduleWrite(get);
     },
 
     sipTea: () => {
