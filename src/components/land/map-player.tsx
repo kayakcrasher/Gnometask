@@ -89,7 +89,7 @@ export function MapPlayer({
                 kind={save.combat.enemyId}
                 x={save.combat.atX}
                 y={save.combat.atY}
-                striking={save.combat.phase === "enemy"}
+                striking={Boolean(save.combat.foeSwing)}
               />
             )}
             <TinyHp x={save.combat.atX} y={save.combat.atY - 52} value={save.combat.enemyHp} max={save.combat.enemyMax} berry />

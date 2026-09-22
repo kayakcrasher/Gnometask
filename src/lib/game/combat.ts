@@ -39,6 +39,7 @@ export type CombatState = {
   atX: number;
   atY: number;
   striking: boolean;
+  foeSwing: boolean;
   splatOnEnemy: Splat | null;
   splatOnPlayer: Splat | null;
   sessionXp: Record<SkillId, number>;
@@ -122,6 +123,7 @@ export function makeCombat(
     atX: extra?.atX ?? 0,
     atY: extra?.atY ?? 0,
     striking: false,
+    foeSwing: false,
     splatOnEnemy: null,
     splatOnPlayer: null,
     sessionXp: emptySessionXp(),

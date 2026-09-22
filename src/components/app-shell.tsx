@@ -4,7 +4,6 @@ import { TopBar } from "@/components/hud/top-bar";
 import { ChoresDrawer } from "@/components/hud/side-panel";
 import { Speech } from "@/components/hud/speech";
 import { Welcome } from "@/components/hud/welcome";
-import { CombatView } from "@/components/hud/combat-view";
 import { ClickPopup } from "@/components/hud/click-popup";
 import { InteriorView } from "@/components/hud/interior-view";
 import { InventoryView } from "@/components/hud/inventory-view";
@@ -45,7 +44,6 @@ export function AppShell() {
         ) : null}
       </div>
       <Welcome />
-      {named ? <CombatView /> : null}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Html } from "@react-three/drei";
 import { Kenney } from "./kenney";
-import { GnomeRig } from "./gnome-rig";
+import { FighterMotion, GnomeRig } from "./gnome-rig";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "@/lib/game/data/trees";
 import { NPCS } from "@/lib/game/world";
 import { WORLD_PACK, ABSENCE_SPOT, DRAGON_RIDGE, TOWER_SLOTS, CATALOG_BY_ID } from "@/lib/game/catalog";
@@ -188,6 +188,16 @@ function EnemyMesh({ kind }: { kind: EnemyId }) {
   );
 }
 
+function FightSplat({ value, shake }: { value: number | "miss" | "heal"; shake: number }) {
+  const miss = value === "miss";
+  const label = miss ? "0" : value === "heal" ? "+" : String(value);
+  return (
+    <Html key={shake} zIndexRange={[8, 0]} position={[0, 1.35, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+      <p className={`splat-rise font-display text-lg font-bold ${miss ? "text-sky-200" : "text-berry"}`}>{label}</p>
+    </Html>
+  );
+}
+
 export function Fights3({
   onEnemy,
   onDragon,
@@ -199,17 +209,21 @@ export function Fights3({
   const combat = useGame((s) => s.combat);
   const dragon = useGame((s) => s.lifeDragon);
   const absence = useGame((s) => s.absencePending);
-  const showLabels = useLabels();
+  const gx = useGame((s) => s.gnomeX);
+  const gy = useGame((s) => s.gnomeY);
   return (
     <group>
       {WORLD_PACK.map((p) => {
         if (cleared.includes(p.id)) return null;
         const pos = to3(p.x, p.y, groundY(p.x, p.y));
         const fighting = combat?.packId === p.id;
+        const face = Math.atan2(gx - p.x, gy - p.y);
+        const recoil = fighting && typeof combat?.splatOnEnemy === "number" && !combat.foeSwing;
         return (
           <group
             key={p.id}
             position={pos}
+            rotation={[0, face, 0]}
             onClick={(e) => {
               e.stopPropagation();
               onEnemy(
@@ -229,20 +243,20 @@ export function Fights3({
               );
             }}
           >
-            <EnemyMesh kind={p.enemy} />
-            {showLabels && fighting && combat ? (
-              <Html zIndexRange={[8, 0]} position={[0, 1.2, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-                <div className="w-16">
-                  <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
-                    <div className="h-full bg-berry" style={{ width: `${(combat.enemyHp / combat.enemyMax) * 100}%` }} />
+            <FighterMotion striking={fighting && Boolean(combat?.foeSwing)} recoil={recoil}>
+              <EnemyMesh kind={p.enemy} />
+            </FighterMotion>
+            {fighting && combat ? (
+              <>
+                <Html zIndexRange={[8, 0]} position={[0, 1.15, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+                  <div className="w-16">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
+                      <div className="h-full bg-berry" style={{ width: `${(combat.enemyHp / combat.enemyMax) * 100}%` }} />
+                    </div>
                   </div>
-                  {combat.splatOnEnemy != null ? (
-                    <p className="text-center font-display text-sm font-bold text-berry">
-                      {combat.splatOnEnemy === "miss" ? "miss" : combat.splatOnEnemy}
-                    </p>
-                  ) : null}
-                </div>
-              </Html>
+                </Html>
+                {combat.splatOnEnemy != null ? <FightSplat value={combat.splatOnEnemy} shake={combat.shake} /> : null}
+              </>
             ) : null}
           </group>
         );
@@ -368,6 +382,8 @@ export function Landing3({
   const landing = useGame((s) => s.landing);
   const combat = useGame((s) => s.combat);
   const showLabels = useLabels();
+  const gx = useGame((s) => s.gnomeX);
+  const gy = useGame((s) => s.gnomeY);
   if (!landing) return null;
   const boat = to3(landing.boatX, landing.boatY, -0.05);
   return (
@@ -394,24 +410,25 @@ export function Landing3({
         if (!g.alive) return null;
         const fighting = combat?.packId === g.id;
         const pos = to3(g.x, g.y, groundY(g.x, g.y));
+        const face = Math.atan2(gx - g.x, gy - g.y);
+        const recoil = fighting && typeof combat?.splatOnEnemy === "number" && !combat.foeSwing;
         return (
           <group
             key={g.id}
             position={pos}
+            rotation={[0, face, 0]}
             onClick={(e) => {
               e.stopPropagation();
               onGoblin(g.id, g.x, g.y);
             }}
           >
-            <EnemyMesh kind="runt" />
-            {showLabels && fighting && combat ? (
-              <Html zIndexRange={[8, 0]} position={[0, 1.05, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-                <div className="w-16">
-                  <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
-                    <div className="h-full bg-berry" style={{ width: `${(combat.enemyHp / combat.enemyMax) * 100}%` }} />
-                  </div>
-                </div>
-              </Html>
+            <FighterMotion striking={fighting && Boolean(combat?.foeSwing)} recoil={recoil}>
+              <EnemyMesh kind="runt" />
+            </FighterMotion>
+            {fighting && combat ? (
+              <>
+                {combat.splatOnEnemy != null ? <FightSplat value={combat.splatOnEnemy} shake={combat.shake} /> : null}
+              </>
             ) : showLabels ? (
               <Html zIndexRange={[8, 0]} position={[0, 1.05, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
                 <p className="rounded-full bg-moss/90 px-1.5 py-0.5 font-display text-[9px] font-semibold text-parchment">

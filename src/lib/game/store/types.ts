@@ -11,6 +11,7 @@ import type {
   MetricId,
   PanelId,
   PlaceId,
+  CombatStyle,
 } from "../types";
 
 export type GameState = GameSave &
@@ -65,6 +66,7 @@ export type GameState = GameSave &
     combatEat: () => void;
     combatFlee: () => void;
     combatEnd: () => void;
+    setCombatStyle: (style: CombatStyle) => void;
   };
 
 export type StoreGet = StoreApi<GameState>["getState"];

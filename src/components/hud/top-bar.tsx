@@ -18,6 +18,11 @@ export function TopBar() {
   const tasks = useGame((s) => s.tasks);
   const equipment = useGame((s) => s.equipment);
   const skills = useGame((s) => s.skills);
+  const combat = useGame((s) => s.combat);
+  const style = useGame((s) => s.combatStyle);
+  const setStyle = useGame((s) => s.setCombatStyle);
+  const eat = useGame((s) => s.combatEat);
+  const flee = useGame((s) => s.combatFlee);
   const today = localDate();
   const remaining = tasks.filter((t) => {
     if (t.builtin) return t.createdOn === today && !t.done;
@@ -100,6 +105,43 @@ export function TopBar() {
             </div>
           </div>
         </div>
+        {combat && combat.phase !== "won" && combat.phase !== "lost" ? (
+          <div className="flex h-14 items-center gap-1 rounded-[20px] bg-pine/92 p-1.5 shadow-panel">
+            {(
+              [
+                ["attack", "Atk"],
+                ["strength", "Str"],
+                ["defence", "Def"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setStyle(id)}
+                className={cn(
+                  "h-11 rounded-[14px] px-2.5 font-display text-xs font-semibold",
+                  style === id ? "bg-parchment text-pine" : "text-parchment",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={eat}
+              className="h-11 rounded-[14px] px-2.5 font-display text-xs font-semibold text-parchment"
+            >
+              Eat
+            </button>
+            <button
+              type="button"
+              onClick={flee}
+              className="h-11 rounded-[14px] px-2.5 font-display text-xs font-semibold text-parchment"
+            >
+              Flee
+            </button>
+          </div>
+        ) : (
         <div className="flex h-14 items-center gap-1 rounded-[20px] bg-pine/92 p-1.5 shadow-panel">
           <button
             type="button"
@@ -136,6 +178,7 @@ export function TopBar() {
             <Settings2 className="size-5" strokeWidth={2.4} />
           </button>
         </div>
+        )}
       </div>
     </header>
   );

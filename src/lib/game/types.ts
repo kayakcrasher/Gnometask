@@ -47,6 +47,8 @@ export type DragonLook = "ember" | "moss" | "night" | "gold";
 export type DragonHorn = "short" | "long" | "crown";
 export type LifeDragonState = "lurking" | "raiding" | "soothed" | "defeated";
 
+export type CombatStyle = "attack" | "strength" | "defence";
+
 export type EquipSlot = "weapon" | "shield" | "armor" | "tool";
 
 export type Equipment = {
@@ -194,6 +196,7 @@ export type GameSave = {
   woodsGreeted: boolean;
   trees: Record<string, TreeSave>;
   landing: GoblinLanding | null;
+  combatStyle: CombatStyle;
 };
 
 export type GameUi = {

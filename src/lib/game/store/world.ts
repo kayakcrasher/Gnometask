@@ -161,6 +161,8 @@ export function worldSlice(
         popup: null,
         interior: null,
         panel: "place",
+        gnomeX: (pack?.x ?? s.gnomeX) - 42,
+        gnomeY: pack?.y ?? s.gnomeY,
         speech: "Something on the land wants a word.",
       });
       armAutoAttack(get, 800);
@@ -184,6 +186,8 @@ export function worldSlice(
         interior: null,
         panel: "place",
         selectedPlace: "dock",
+        gnomeX: raid.x - 42,
+        gnomeY: raid.y,
         speech: raid.kind === "goblin" ? "A green goblin from the raft. It wants pie." : "A dark elf from the night tide.",
       });
       armAutoAttack(get, 800);
@@ -207,6 +211,8 @@ export function worldSlice(
         interior: null,
         panel: "place",
         selectedPlace: "dock",
+        gnomeX: g.x - 42,
+        gnomeY: g.y,
         speech: `A green Mucktooth runt from the ${s.landing.tribe} boat.`,
       });
       armAutoAttack(get, 800);

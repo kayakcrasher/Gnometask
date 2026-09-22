@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ArmorTint, ShieldMesh, WeaponInHand } from "./gear-mesh";
@@ -70,6 +70,40 @@ function HatModel({ id }: { id: string }) {
   );
 }
 
+export function FighterMotion({
+  striking,
+  recoil,
+  children,
+}: {
+  striking?: boolean;
+  recoil?: boolean;
+  children: ReactNode;
+}) {
+  const g = useRef<THREE.Group>(null);
+  const t = useRef(0);
+  const live = useRef(false);
+  useFrame((_, d) => {
+    const on = Boolean(striking || recoil);
+    if (on && !live.current) t.current = 0;
+    live.current = on;
+    if (on) t.current = Math.min(1, t.current + d * 3.6);
+    else t.current = Math.max(0, t.current - d * 5);
+    if (!g.current) return;
+    const a = Math.sin(Math.min(1, t.current) * Math.PI);
+    if (striking) {
+      g.current.position.z = a * 0.38;
+      g.current.rotation.x = -a * 0.7;
+    } else if (recoil) {
+      g.current.position.z = -a * 0.22;
+      g.current.rotation.x = a * 0.28;
+    } else {
+      g.current.position.z = 0;
+      g.current.rotation.x = 0;
+    }
+  });
+  return <group ref={g}>{children}</group>;
+}
+
 export function GnomeRig({
   hat,
   weapon,
@@ -104,6 +138,7 @@ export function GnomeRig({
   });
   return (
     <group scale={scale}>
+      <FighterMotion striking={striking}>
       <group ref={bob}>
         <mesh position={[0, 0.38, 0]} castShadow>
           <capsuleGeometry args={[0.24, 0.32, 6, 12]} />
@@ -152,6 +187,7 @@ export function GnomeRig({
         <WeaponInHand weaponId={weapon ?? null} striking={striking} />
         {shield ? <ShieldMesh id={shield} /> : null}
       </group>
+      </FighterMotion>
     </group>
   );
 }

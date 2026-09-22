@@ -1,6 +1,7 @@
 import { localDate } from "@/lib/utils";
 import { gearStats } from "../catalog";
 import { ENEMIES, roll, type CombatState } from "../combat";
+import type { CombatStyle } from "../types";
 import { sfx } from "../juice";
 import { PLAYER_START, type GameSave } from "../types";
 import { hitChance, levelsOf, maxHit, maxHitpoints } from "../xp";
@@ -19,6 +20,15 @@ function incoming(s: GameSave & { praying?: boolean }, raw: number, vsDragon = f
   return Math.max(1, dmg);
 }
 
+function windUpFoe(get: StoreGet, set: StoreSet, _next: CombatState) {
+  setCombatTimer(() => {
+    const live = get().combat;
+    if (!live || live.phase !== "enemy") return;
+    set({ combat: { ...live, striking: false, foeSwing: true, splatOnEnemy: null } });
+    setCombatTimer(() => finishEnemyTurn(get, set, { ...live, striking: false, foeSwing: true }), 420);
+  }, 480);
+}
+
 export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatState) {
   if (combat.phase !== "enemy") return;
   const live = get().combat;
@@ -32,6 +42,7 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
         ...live,
         phase: "player",
         striking: false,
+        foeSwing: false,
         splatOnPlayer: "miss",
         splatOnEnemy: null,
         log: combat.enemyId === "runt" ? "The runt swings at the air." : "The sprite misses. Leaves everywhere.",
@@ -44,8 +55,10 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
   const raw =
     combat.enemyId === "runt" ? 1 : (combat.enemyDmg ?? e.dmg) + roll(0, 1) + (fire ? 2 : 0);
   const dmg = incoming(s, raw, combat.enemyId === "dragon" || combat.enemyId === "absence");
-  const hp = Math.max(0, combat.playerHp - dmg);
-  sfx("hit");
+  const blocked = s.combatStyle === "defence" ? Math.max(0, dmg - 1) : dmg;
+  const taken = blocked;
+  const hp = Math.max(0, combat.playerHp - taken);
+  if (taken > 0) sfx("hit");
   if (fire && combat.enemyId === "dragon") {
     const scorch = Math.max(1, 5 - s.fortLevel);
     set({
@@ -57,14 +70,15 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
     });
   }
   const who = combat.enemyId === "dragon" ? s.lifeDragon.name : e.name;
-  const defXp = withXp(s.skills, { defence: 4 * dmg });
+  const defGain = 4 * Math.max(taken, 1);
+  const defXp = withXp(s.skills, { defence: defGain });
   const oldMax = maxHitpoints(s.skills);
   const newMax = maxHitpoints(defXp.skills);
   const playerHp = Math.max(0, hp + (newMax - oldMax));
   const dingBit = defXp.ding ? ` ${defXp.ding}` : "";
   const sessionXp = {
     ...live.sessionXp,
-    defence: live.sessionXp.defence + 4 * dmg,
+    defence: live.sessionXp.defence + defGain,
   };
   if (playerHp <= 0) {
     clearCombatTimer();
@@ -75,10 +89,11 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
         playerMax: newMax,
         phase: "lost",
         striking: false,
-        splatOnPlayer: dmg,
+        foeSwing: false,
+        splatOnPlayer: taken,
         splatOnEnemy: null,
         sessionXp,
-        lastXp: { defence: 4 * dmg },
+        lastXp: { defence: defGain },
         shake: live.shake + 1,
         log: fire
           ? `${who} breathes fire. You drop. Back to the cottage.`
@@ -92,6 +107,11 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
       interior: null,
     });
     scheduleWrite(get);
+    setCombatTimer(() => {
+      const live = get().combat;
+      if (!live || live.phase !== "lost") return;
+      get().combatEnd();
+    }, 1400);
     return;
   }
   set({
@@ -101,12 +121,16 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatStat
       playerMax: newMax,
       phase: "player",
       striking: false,
-      splatOnPlayer: dmg,
+      foeSwing: false,
+      splatOnPlayer: taken,
       splatOnEnemy: null,
       sessionXp,
-      lastXp: { defence: 4 * dmg },
+      lastXp: { defence: defGain },
       shake: live.shake + 1,
-      log: (fire ? `${who} breathes fire for ${dmg}.` : `${who} hits ${dmg}.`) + dingBit,
+      log:
+        taken === 0
+          ? `${who} swings. You block.`
+          : (fire ? `${who} breathes fire for ${taken}.` : `${who} hits ${taken}.`) + dingBit,
     },
     hp: playerHp,
     skills: defXp.skills,
@@ -169,12 +193,17 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
   });
   sfx("win");
   scheduleWrite(get);
+  setCombatTimer(() => {
+    const live = get().combat;
+    if (!live || (live.phase !== "won" && live.phase !== "lost")) return;
+    get().combatEnd();
+  }, 1400);
 }
 
 export function combatSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "combatAttack" | "combatEat" | "combatFlee" | "combatEnd"> {
+): Pick<GameState, "combatAttack" | "combatEat" | "combatFlee" | "combatEnd" | "setCombatStyle"> {
   return {
     combatAttack: () => {
       const s = get();
@@ -184,15 +213,18 @@ export function combatSlice(
       const lv = levelsOf(s.skills);
       const weaponAtk = gearStats(s.equipment.weapon).atk;
       const vsDragon = c.enemyId === "dragon" || c.enemyId === "absence";
+      const style: CombatStyle = s.combatStyle ?? "attack";
       const soft = !vsDragon && (c.enemyId === "runt" || (c.enemyDef ?? 9) <= 2);
-      let chance = hitChance(lv.attack, weaponAtk, c.enemyDef ?? 4);
+      let chance = hitChance(lv.attack + (style === "attack" ? 3 : 0), weaponAtk, c.enemyDef ?? 4);
       if (soft) chance = Math.max(chance, 0.9);
+      if (style === "attack") chance = Math.min(0.97, chance + 0.08);
       if (Math.random() > chance) {
         sfx("error");
         const next: CombatState = {
           ...c,
           phase: "enemy",
           striking: true,
+          foeSwing: false,
           splatOnEnemy: "miss",
           splatOnPlayer: null,
           lastXp: {},
@@ -200,34 +232,35 @@ export function combatSlice(
           shake: c.shake + 1,
         };
         set({ combat: next });
-        setCombatTimer(() => finishEnemyTurn(get, set, { ...next, striking: false }), 700);
+        windUpFoe(get, set, next);
         return;
       }
-      const cap = Math.max(soft ? 2 : 1, maxHit(lv.strength, weaponAtk, vsDragon ? s.fortLevel : 0));
+      const cap =
+        Math.max(soft ? 2 : 1, maxHit(lv.strength + (style === "strength" ? 3 : 0), weaponAtk, vsDragon ? s.fortLevel : 0)) +
+        (style === "strength" ? 1 : 0);
       const dmg = Math.max(soft ? 2 : 1, roll(1, cap) + (vsDragon ? Math.floor(s.fortLevel / 2) : 0));
       const crit = dmg >= cap && cap > 2;
       const enemyHp = Math.max(0, c.enemyHp - dmg);
       sfx("hit");
-      const atkXp = 4 * dmg;
-      const strXp = Math.floor(1.33 * dmg);
+      const hitXp = 4 * dmg;
       const hpXp = Math.floor(1.33 * dmg);
+      const trained = style === "attack" ? "attack" : style === "strength" ? "strength" : "defence";
+      const trainedLabel = style === "attack" ? "Attack" : style === "strength" ? "Strength" : "Defence";
       const gained = withXp(s.skills, {
-        attack: atkXp,
-        strength: strXp,
+        [trained]: hitXp,
         hitpoints: hpXp,
       });
       const grown = maxHitpoints(gained.skills) - maxHitpoints(s.skills);
       const playerHp = c.playerHp + grown;
       const playerMax = maxHitpoints(gained.skills);
-      const xpBit = ` +${atkXp} Atk`;
+      const xpBit = ` +${hitXp} ${trainedLabel}`;
       const dingBit = gained.ding ? ` ${gained.ding}` : "";
       const sessionXp = {
         ...c.sessionXp,
-        attack: c.sessionXp.attack + atkXp,
-        strength: c.sessionXp.strength + strXp,
+        [trained]: c.sessionXp[trained] + hitXp,
         hitpoints: c.sessionXp.hitpoints + hpXp,
       };
-      const lastXp = { attack: atkXp, strength: strXp, hitpoints: hpXp };
+      const lastXp = { [trained]: hitXp, hitpoints: hpXp };
       if (c.enemyId === "dragon") {
         set({ lifeDragon: { ...s.lifeDragon, hp: enemyHp } });
       }
@@ -245,6 +278,7 @@ export function combatSlice(
             playerHp,
             playerMax,
             striking: true,
+            foeSwing: false,
             splatOnEnemy: dmg,
             splatOnPlayer: null,
             sessionXp,
@@ -261,6 +295,7 @@ export function combatSlice(
         playerMax,
         phase: "enemy",
         striking: true,
+        foeSwing: false,
         splatOnEnemy: dmg,
         splatOnPlayer: null,
         sessionXp,
@@ -269,7 +304,7 @@ export function combatSlice(
         shake: c.shake + 1,
       };
       set({ combat: next, skills: gained.skills, hp: Math.min(playerHp, playerMax) });
-      setCombatTimer(() => finishEnemyTurn(get, set, { ...next, striking: false }), 700);
+      windUpFoe(get, set, next);
     },
 
     combatEat: () => {
@@ -289,6 +324,7 @@ export function combatSlice(
             ...c,
             phase: "won",
             striking: false,
+        foeSwing: false,
             splatOnEnemy: "heal",
             log: `${s.lifeDragon.name} eats the cake. The fire goes out of the day.`,
           },
@@ -314,6 +350,7 @@ export function combatSlice(
         playerMax: max,
         phase: "enemy",
         striking: false,
+        foeSwing: false,
         splatOnPlayer: "heal",
         splatOnEnemy: null,
         log: heal ? `You eat. +${heal} heart.` : "Already stuffed.",
@@ -325,7 +362,7 @@ export function combatSlice(
         hp: c.playerHp + heal,
       });
       scheduleWrite(get);
-      setCombatTimer(() => finishEnemyTurn(get, set, next), 550);
+      windUpFoe(get, set, next);
     },
 
     combatFlee: () => {
@@ -333,9 +370,9 @@ export function combatSlice(
       const c = s.combat;
       if (!c || (c.phase !== "player" && c.phase !== "lost")) return;
       if (c.phase === "player" && Math.random() < 0.35) {
-        const next: CombatState = { ...c, phase: "enemy", striking: false, log: "The path is blocked. They noticed." };
+        const next: CombatState = { ...c, phase: "enemy", striking: false, foeSwing: true, log: "The path is blocked. They noticed." };
         set({ combat: next });
-        setCombatTimer(() => finishEnemyTurn(get, set, next), 500);
+        setCombatTimer(() => finishEnemyTurn(get, set, next), 420);
         return;
       }
       clearCombatTimer();
@@ -372,6 +409,16 @@ export function combatSlice(
           : "Kettle on. Tomorrow we try again.",
         bounceKey: s.bounceKey + 1,
         popup: null,
+      });
+      scheduleWrite(get);
+    },
+
+    setCombatStyle: (style) => {
+      const label = style === "attack" ? "Attack" : style === "strength" ? "Strength" : "Defence";
+      const c = get().combat;
+      set({
+        combatStyle: style,
+        ...(c ? { combat: { ...c, log: `Style set to ${label}.` } } : {}),
       });
       scheduleWrite(get);
     },

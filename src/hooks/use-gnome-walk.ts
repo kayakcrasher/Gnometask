@@ -14,6 +14,7 @@ function facingOf(dx: number, dy: number): GnomeFacing {
 export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number }>) {
   const savedX = useGame((s) => s.gnomeX);
   const savedY = useGame((s) => s.gnomeY);
+  const combatOn = useGame((s) => Boolean(s.combat));
   const setGnomePos = useGame((s) => s.setGnomePos);
   const setFollowWalk = useGame((s) => s.setFollowWalk);
 
@@ -29,10 +30,12 @@ export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number 
   const speedRef = useRef(0);
 
   useEffect(() => {
-    if (targetRef.current) return;
+    if (targetRef.current && !combatOn) return;
+    targetRef.current = null;
+    setWalking(false);
     setPos({ x: savedX, y: savedY });
     followRef.current = { x: savedX, y: savedY };
-  }, [followRef, savedX, savedY]);
+  }, [followRef, savedX, savedY, combatOn]);
 
   useEffect(() => {
     followRef.current = { x: pos.x, y: pos.y };

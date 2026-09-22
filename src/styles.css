@@ -185,6 +185,57 @@
   animation: coin-pop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@keyframes rs-chop {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  38% {
+    transform: translateX(26px) rotate(-18deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes rs-chop-foe {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  38% {
+    transform: translateX(-26px) rotate(18deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes splat-rise {
+  0% {
+    transform: translateY(8px) scale(0.65);
+    opacity: 0;
+  }
+  16% {
+    transform: translateY(0) scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-26px) scale(1);
+    opacity: 0;
+  }
+}
+
+.rs-chop {
+  animation: rs-chop 0.42s ease-out;
+}
+
+.rs-chop-foe {
+  animation: rs-chop-foe 0.42s ease-out;
+}
+
+.splat-rise {
+  animation: splat-rise 0.85s ease-out forwards;
+}
+
 @keyframes gnome-walk-bob {
   0%,
   100% {

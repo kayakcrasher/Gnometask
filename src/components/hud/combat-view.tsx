@@ -34,6 +34,8 @@ export function CombatView() {
   const praying = useGame((s) => s.praying);
   const setPraying = useGame((s) => s.setPraying);
   const dragon = useGame((s) => s.lifeDragon);
+  const style = useGame((s) => s.combatStyle);
+  const setStyle = useGame((s) => s.setCombatStyle);
 
   if (!combat) return null;
   const enemy = ENEMIES[combat.enemyId];
@@ -46,10 +48,7 @@ export function CombatView() {
   return (
     <div className="absolute inset-0 z-50 flex items-end justify-center bg-ink/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:items-center">
       <div
-        className={cn(
-          "pointer-events-auto w-full max-w-md rounded-[22px] bg-parchment p-3 shadow-panel",
-          combat.shake ? "coin-pop" : "",
-        )}
+        className="pointer-events-auto w-full max-w-md rounded-[22px] bg-parchment p-3 shadow-panel"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -78,6 +77,69 @@ export function CombatView() {
               {combat.enemyHp}/{combat.enemyMax}
             </p>
           </div>
+        </div>
+
+        <div className="relative mt-2 h-16 overflow-hidden rounded-[14px] bg-moss/15">
+          <div
+            key={`you-${combat.shake}-${combat.striking ? "s" : "i"}`}
+            className={cn("absolute bottom-2 left-4 flex flex-col items-center", combat.striking && "rs-chop")}
+          >
+            <span className="size-8 rounded-full bg-pine" />
+            <span className="text-[10px] font-bold text-ink">You</span>
+          </div>
+          <div
+            key={`foe-${combat.shake}-${combat.foeSwing ? "s" : "i"}`}
+            className={cn("absolute bottom-2 right-4 flex flex-col items-center", combat.foeSwing && "rs-chop-foe")}
+          >
+            <span className="size-8 rounded-full bg-berry" />
+            <span className="max-w-16 truncate text-[10px] font-bold text-ink">{who}</span>
+          </div>
+          {combat.splatOnPlayer != null ? (
+            <p
+              key={`sp-${combat.shake}`}
+              className={cn(
+                "splat-rise absolute bottom-6 left-14 font-display text-lg font-bold",
+                combat.splatOnPlayer === "miss" ? "text-sky-700" : "text-berry",
+              )}
+            >
+              {combat.splatOnPlayer === "miss" ? "0" : combat.splatOnPlayer === "heal" ? "+" : combat.splatOnPlayer}
+            </p>
+          ) : null}
+          {combat.splatOnEnemy != null ? (
+            <p
+              key={`se-${combat.shake}`}
+              className={cn(
+                "splat-rise absolute bottom-6 right-16 font-display text-lg font-bold",
+                combat.splatOnEnemy === "miss" ? "text-sky-700" : "text-berry",
+              )}
+            >
+              {combat.splatOnEnemy === "miss" ? "0" : combat.splatOnEnemy}
+            </p>
+          ) : null}
+        </div>
+
+        <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-bark/55">Combat style</p>
+        <div className="mt-1 grid grid-cols-3 gap-1.5">
+          {(
+            [
+              ["attack", "Attack", "Hits more often"],
+              ["strength", "Strength", "Hits harder"],
+              ["defence", "Defence", "You take less"],
+            ] as const
+          ).map(([id, label, hint]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setStyle(id)}
+              className={cn(
+                "rounded-[12px] px-1 py-1.5 text-center",
+                style === id ? "bg-pine text-parchment" : "bg-parchment-dark text-ink",
+              )}
+            >
+              <span className="block font-display text-xs font-semibold">{label}</span>
+              <span className={cn("block text-[9px] font-bold", style === id ? "text-parchment/80" : "text-bark/55")}>{hint}</span>
+            </button>
+          ))}
         </div>
 
         <p className="mt-2 min-h-8 rounded-[12px] bg-parchment-dark/60 px-2.5 py-1.5 text-xs font-bold text-ink">

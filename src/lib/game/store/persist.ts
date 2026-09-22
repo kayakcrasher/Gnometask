@@ -78,6 +78,7 @@ export function snap(s: GameSave): GameSave {
     logs: s.logs,
     trees: s.trees,
     landing: s.landing,
+    combatStyle: s.combatStyle,
   };
 }
 

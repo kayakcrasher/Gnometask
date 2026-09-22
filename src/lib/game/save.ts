@@ -68,6 +68,7 @@ export function defaultSave(): GameSave {
     logs: 0,
     trees: {},
     landing: null,
+    combatStyle: "attack",
   };
 }
 
@@ -236,6 +237,7 @@ export function migrate(raw: unknown): GameSave {
     logs: typeof s.logs === "number" ? s.logs : 0,
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
+    combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",
   };
 }
 

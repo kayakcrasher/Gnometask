@@ -92,6 +92,8 @@ function SceneBody({
 }) {
   const save = useGame();
   const striking = Boolean(save.combat?.striking);
+  const fighting = save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost";
+  const face = fighting ? Math.atan2(save.combat!.atX - pos.x, save.combat!.atY - pos.y) : yaw;
   const villageCount = save.placed.filter((p) => p.slotId.startsWith("v")).length;
   const p3 = to3(pos.x, pos.y, groundY(pos.x, pos.y));
 
@@ -240,7 +242,7 @@ function SceneBody({
         }
       />
       <Kenney name="log_large" position={to3(70, 250, 0.08)} scale={1.0} />
-      <group position={p3} rotation={[0, yaw, 0]}>
+      <group position={p3} rotation={[0, face, 0]}>
         <GnomeRig
           hat={save.hat}
           weapon={save.equipment.weapon}
@@ -250,10 +252,35 @@ function SceneBody({
           striking={striking}
           scale={1.15}
         />
+        {save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost" ? (
+          <Html zIndexRange={[8, 0]} position={[0, 1.85, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+            <div className="w-14">
+              <div className="h-1.5 overflow-hidden rounded-full bg-ink/50">
+                <div
+                  className="h-full bg-moss"
+                  style={{ width: `${(save.combat.playerHp / Math.max(1, save.combat.playerMax)) * 100}%` }}
+                />
+              </div>
+            </div>
+          </Html>
+        ) : null}
         {save.combat && save.combat.splatOnPlayer != null ? (
-          <Html zIndexRange={[8, 0]} position={[0, 1.6, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
-            <p className="font-display text-base font-bold text-berry">
-              {save.combat.splatOnPlayer === "miss" ? "miss" : save.combat.splatOnPlayer === "heal" ? "heal" : save.combat.splatOnPlayer}
+          <Html
+            key={save.combat.shake}
+            zIndexRange={[8, 0]}
+            position={[0, 1.7, 0]}
+            center
+            distanceFactor={14}
+            style={{ pointerEvents: "none" }}
+          >
+            <p
+              className={`splat-rise font-display text-xl font-bold ${save.combat.splatOnPlayer === "miss" ? "text-sky-200" : "text-berry"}`}
+            >
+              {save.combat.splatOnPlayer === "miss"
+                ? "0"
+                : save.combat.splatOnPlayer === "heal"
+                  ? "+"
+                  : save.combat.splatOnPlayer}
             </p>
           </Html>
         ) : null}
