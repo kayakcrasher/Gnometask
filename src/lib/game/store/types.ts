@@ -1,0 +1,69 @@
+import type { StoreApi } from "zustand";
+import type { CombatState, EnemyId } from "../combat";
+import type {
+  BuildingId,
+  DragonHorn,
+  DragonLook,
+  GamePopup,
+  GameSave,
+  GameUi,
+  InteriorId,
+  MetricId,
+  PanelId,
+  PlaceId,
+} from "../types";
+
+export type GameState = GameSave &
+  GameUi & {
+    combat: CombatState | null;
+    hydrate: () => void;
+    persist: () => void;
+    setName: (name: string) => void;
+    setDragonLook: (patch: Partial<{ name: string; look: DragonLook; horn: DragonHorn }>) => void;
+    newLifeDragon: () => void;
+    selectPlace: (place: PlaceId | null) => void;
+    setHover: (place: PlaceId | null) => void;
+    setMetric: (metric: MetricId) => void;
+    setPanel: (panel: PanelId) => void;
+    openPopup: (popup: GamePopup) => void;
+    closePopup: () => void;
+    enterInterior: (id: InteriorId) => void;
+    leaveInterior: () => void;
+    setGnomePos: (x: number, y: number) => void;
+    setFollowWalk: (on: boolean) => void;
+    setPraying: (on: boolean) => void;
+    chopTree: (treeId: string) => void;
+    sailTo: (dest: "haven" | "dock") => void;
+    speak: (text: string, bounce?: boolean) => void;
+    addTask: (text: string, location?: PlaceId) => void;
+    toggleTask: (id: string) => void;
+    deleteTask: (id: string) => void;
+    buy: (catalogId: string) => boolean;
+    startPlacing: (catalogId: string) => void;
+    placeAt: (slotId: string) => boolean;
+    cancelPlace: () => void;
+    equipHat: (id: string) => void;
+    equipGear: (id: string) => void;
+    repairBuilding: (id: BuildingId) => void;
+    upgradeGuard: () => void;
+    upgradeHall: () => void;
+    rallyWalls: () => void;
+    startPatrol: (place?: PlaceId) => void;
+    startDragon: (which?: "dragon" | "absence") => void;
+    startCreature: (packId: string, enemyId: EnemyId) => void;
+    startRaidFight: (raidId: string) => void;
+    sipTea: () => void;
+    sootheDragon: () => void;
+    tickWorld: () => void;
+    talkTo: (npcId: string) => void;
+    tradeWith: (npcId: string) => void;
+    pickChicken: () => void;
+    greetMushrooms: () => void;
+    combatAttack: () => void;
+    combatEat: () => void;
+    combatFlee: () => void;
+    combatEnd: () => void;
+  };
+
+export type StoreGet = StoreApi<GameState>["getState"];
+export type StoreSet = StoreApi<GameState>["setState"];

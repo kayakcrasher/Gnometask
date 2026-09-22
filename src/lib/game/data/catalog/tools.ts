@@ -1,65 +1,54 @@
-import { type MetalTier, TIERS } from "../tiers";
+import type { CatalogItem } from "../../types";
+import { TIER_META, TIERS, type GearTier } from "../tiers";
 
-export type ToolKind = "hatchet" | "hoe";
-
-export type Tool = {
-  id: string;
-  name: string;
-  kind: ToolKind;
-  tier: MetalTier;
-  price: number;
-  power: number;
-  color: string;
-  blurb: string;
+const AXE: Record<GearTier, { name: string; blurb: string }> = {
+  wood: { name: "Wooden hatchet", blurb: "Mostly for kindling. The oaks are patient with you." },
+  bronze: { name: "Bronze hatchet", blurb: "Brown blade, pine handle. The woods start to listen." },
+  iron: { name: "Iron hatchet", blurb: "A proper bite. Chips fly. Woodcutting 5." },
+  steel: { name: "Steel hatchet", blurb: "Sings against oak. Woodcutting 12." },
+  adamant: { name: "Adamant hatchet", blurb: "Green edge. Trees remember being forests." },
 };
 
-function tool(
-  kind: ToolKind,
-  tier: MetalTier,
-  basePrice: number,
-  blurbs: Record<MetalTier, string>,
-): Tool {
-  const t = TIERS.find((x) => x.id === tier)!;
-  const label = kind === "hatchet" ? "hatchet" : "hoe";
-  return {
-    id: `\( {tier}_ \){kind}`,
-    name: `${t.name} ${label}`,
-    kind,
-    tier,
-    price: Math.round(basePrice * t.priceMul),
-    power: t.power,
-    color: t.color,
-    blurb: blurbs[tier],
-  };
-}
-
-const HATCHET_BLURB: Record<MetalTier, string> = {
-  wood: "A stick with an opinion. Kindling only.",
-  bronze: "Brown blade. The woodlot notices.",
-  iron: "Grey, honest, chips bark instead of your shin.",
-  steel: "Pale edge. Trees fall before the kettle boils.",
-  adamant: "Green bite. The stump files a complaint.",
+const HOE: Record<GearTier, { name: string; blurb: string }> = {
+  wood: { name: "Wooden hoe", blurb: "A stick with opinions about soil." },
+  bronze: { name: "Bronze hoe", blurb: "Turns beds the colour of tea." },
+  iron: { name: "Iron hoe", blurb: "The beans take you seriously. Farming 5." },
+  steel: { name: "Steel hoe", blurb: "Rows as straight as a hymn. Farming 12." },
+  adamant: { name: "Adamant hoe", blurb: "Green iron. The garden plots against weeds." },
 };
 
-const HOE_BLURB: Record<MetalTier, string> = {
-  wood: "Scratches dirt. The thyme is unimpressed.",
-  bronze: "Turns a bed without begging.",
-  iron: "Rows stay rows. Hens stay out. Mostly.",
-  steel: "The big garden actually looks planned.",
-  adamant: "Soil parts like it was asked nicely.",
-};
-
-export const TOOLS: Tool[] = [
-  ...TIERS.map((t) => tool("hatchet", t.id, 10, HATCHET_BLURB)),
-  ...TIERS.map((t) => tool("hoe", t.id, 9, HOE_BLURB)),
+export const TOOLS: CatalogItem[] = [
+  ...TIERS.map((tier) => {
+    const t = TIER_META[tier];
+    const a = AXE[tier];
+    return {
+      id: `hatchet-${tier}`,
+      name: a.name,
+      blurb: a.blurb,
+      price: Math.max(8, t.price - 4),
+      kind: "tool" as const,
+      slot: "weapon" as const,
+      atk: Math.max(1, t.atk - 2),
+      wc: t.wc,
+      reqHall: t.hall,
+      reqSkill: t.wc >= 3 ? ("woodcutting" as const) : undefined,
+      reqLevel: t.wc >= 3 ? (t.wc === 3 ? 5 : t.wc === 4 ? 12 : 20) : undefined,
+    };
+  }),
+  ...TIERS.map((tier) => {
+    const t = TIER_META[tier];
+    const h = HOE[tier];
+    return {
+      id: `hoe-${tier}`,
+      name: h.name,
+      blurb: h.blurb,
+      price: Math.max(6, t.price - 8),
+      kind: "tool" as const,
+      slot: "tool" as const,
+      farm: t.farm,
+      reqHall: t.hall,
+      reqSkill: t.farm >= 3 ? ("farming" as const) : undefined,
+      reqLevel: t.farm >= 3 ? (t.farm === 3 ? 5 : t.farm === 4 ? 12 : 20) : undefined,
+    };
+  }),
 ];
-
-export function toolById(id: string): Tool | undefined {
-  return TOOLS.find((t) => t.id === id);
-}
-
-export function toolsOf(kind: ToolKind): Tool[] {
-  return TOOLS.filter((t) => t.kind === kind);
-}
-
-export const STARTING_TOOLS = ["wood_hatchet", "wood_hoe"] as const;

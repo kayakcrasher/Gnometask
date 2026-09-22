@@ -1,33 +1,34 @@
 # Gnome Tasks
 
-A cozy 3D gnome-island chore game. Click to walk, turn the camera like the old school, chop trees, keep shop, and argue with a dragon.
+A cozy point-and-click gnome island. Click the land to walk. Drag to look. Chop trees, keep shop, grow a village, and argue with a dragon.
 
-Nature models are [Kenney Nature Kit](https://kenney.nl/assets/nature-kit) (CC0). Gnomes, houses, and gear are original Three.js meshes. Bronze is brown, iron is grey, steel is pale, adamant is green.
+This repo is the **game source** — the files you edit. It is TypeScript + React. Nature props are [Kenney Nature Kit](https://kenney.nl/assets/nature-kit) (CC0). Gnomes, houses, and gear are original meshes.
 
-## Where to edit
+## Folders
 
-Content lives in `src/lib/game/data/`. Engine and UI stay out of those files.
-
-| File | What it is |
+| Folder | What to edit |
 |---|---|
-| `src/lib/game/data/skills.ts` | Woodcutting, combat, prayer, farming, barter, sailing… |
-| `src/lib/game/data/tiers.ts` | Wood / bronze / iron / steel / adamant colours and stats |
-| `src/lib/game/data/catalog/weapons.ts` | Five-tier swords |
-| `src/lib/game/data/catalog/tools.ts` | Five-tier hatchets and hoes |
-| `src/lib/game/data/catalog/armour.ts` | Five-tier shields and mail |
-| `src/lib/game/data/trees.ts` | Tree spots, stumps, grow timers |
-| `src/lib/game/data/chores.ts` | Daily chores |
-| `src/lib/game/data/catalog/hats.ts` | Hat shop |
-| `src/lib/game/data/catalog/house.ts` | Cottage upgrades |
-| `src/lib/game/data/catalog/garden.ts` | Plants you can place |
-| `src/lib/game/data/catalog/village.ts` | Village pieces (the lane grows as you place them) |
-| `src/lib/game/data/catalog/food.ts` | Honey cakes, pies, stew |
-| `src/lib/game/data/catalog/forts.ts` | Palisade through dragon gate |
-| `src/lib/game/data/npcs.ts` | Town shops and gnome neighbours |
-| `src/lib/game/data/quests.ts` | Side quests |
-| `src/lib/game/data/enemies.ts` | Combat stats (rats start easy) |
-| `src/lib/game/data/layout.ts` | Map slots, pack spawns, dragon ridge |
-| `src/lib/game/data/places.ts` | Place names and blurbs |
-| `src/lib/game/data/quotes.ts` | Speech lines |
+| `src/lib/game/data/` | Chores, skills, trees, NPCs, enemies, quests, layout, place names |
+| `src/lib/game/data/catalog/` | Shops: hats, house, garden, village, weapons, tools, armour, food, forts |
+| `src/lib/game/store/` | Save, combat, walking, chores, shops, chopping / sailing |
+| `src/lib/game/combat.ts` | Hits, XP, prayer |
+| `src/lib/game/world3.ts` | Island shape and 2D ↔ 3D |
+| `src/hooks/use-gnome-walk.ts` | Click-to-walk (no keys) |
+| `src/components/world/` | 3D island, town, gnome, trees, camera |
+| `src/components/hud/` | Inventory, shops, combat, minimap, welcome |
+| `src/components/land/` | Painted 2D island (fallback if 3D drops) + map art |
+| `src/components/app-shell.tsx` | Wires the island + HUD |
 
-3D world lives in `src/components/world/`. HUD panels are in `src/components/hud/`. Game state slices are in `src/lib/game/store/`. Combat math is `src/lib/game/combat.ts`.
+Start with `src/lib/game/data/` if you want to change chores, shops, or enemies.
+
+## Gear colours
+
+Wood, bronze (brown), iron (grey), steel (pale), adamant (green).
+
+## Controls
+
+- Left click land or the round map to walk
+- Drag to look
+- Scroll to zoom
+
+No WASD. No arrow keys.

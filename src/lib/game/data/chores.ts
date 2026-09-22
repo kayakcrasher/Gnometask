@@ -1,152 +1,44 @@
-export type ChoreId =
-  | "get_out_of_bed"
-  | "brush_teeth"
-  | "wash_face"
-  | "make_bed"
-  | "breakfast"
-  | "water_garden"
-  | "feed_chickens"
-  | "chop_kindling"
-  | "sweep_stoop"
-  | "visit_shop"
-  | "say_hello"
-  | "evening_stew"
-  | "wash_up"
-  | "back_to_bed";
+import type { PlaceId, Task } from "../types";
 
-export type Chore = {
-  id: ChoreId;
-  title: string;
-  hint: string;
-  /** Where the player should go. Matches places.ts ids when you add that file. */
-  place: string;
-  /** Minutes of in-game day this unlocks (0–24). */
-  hour: number;
-  xp: { skill: string; amount: number };
-  reward?: { item: string; qty: number };
-};
-
-export const CHORES: Chore[] = [
-  {
-    id: "get_out_of_bed",
-    title: "Get out of bed",
-    hint: "The cottage loft. Feet on the floor before the kettle boils.",
-    place: "cottage",
-    hour: 6,
-    xp: { skill: "prayer", amount: 5 },
-  },
-  {
-    id: "brush_teeth",
-    title: "Brush your teeth",
-    hint: "Basin by the window. Two minutes. No excuses, even for gnomes.",
-    place: "cottage",
-    hour: 6.2,
-    xp: { skill: "prayer", amount: 8 },
-  },
-  {
-    id: "wash_face",
-    title: "Wash your face",
-    hint: "Cold well water. Wakes the beard.",
-    place: "cottage",
-    hour: 6.4,
-    xp: { skill: "prayer", amount: 5 },
-  },
-  {
-    id: "make_bed",
-    title: "Make the bed",
-    hint: "Quilt straight, pillow fluffed, cap on the hook.",
-    place: "cottage",
-    hour: 6.6,
-    xp: { skill: "prayer", amount: 6 },
-  },
-  {
-    id: "breakfast",
-    title: "Eat breakfast",
-    hint: "Honey cake and tea at the little table.",
-    place: "cottage",
-    hour: 7,
-    xp: { skill: "barter", amount: 4 },
-    reward: { item: "honey_cake", qty: 1 },
-  },
-  {
-    id: "water_garden",
-    title: "Water the garden",
-    hint: "The bigger beds behind the cottage. Don't drown the thyme.",
-    place: "garden",
-    hour: 8,
-    xp: { skill: "farming", amount: 12 },
-  },
-  {
-    id: "feed_chickens",
-    title: "Feed the chickens",
-    hint: "Scatter grain near the coop. Count heads.",
-    place: "garden",
-    hour: 8.5,
-    xp: { skill: "farming", amount: 8 },
-  },
-  {
-    id: "chop_kindling",
-    title: "Chop kindling",
-    hint: "Stump by the lane. One hatchet, small logs.",
-    place: "woodlot",
-    hour: 9,
-    xp: { skill: "woodcutting", amount: 15 },
-  },
-  {
-    id: "sweep_stoop",
-    title: "Sweep the stoop",
-    hint: "Leaves pile up where the village starts.",
-    place: "village",
-    hour: 10,
-    xp: { skill: "prayer", amount: 6 },
-  },
-  {
-    id: "visit_shop",
-    title: "Visit the shops",
-    hint: "Hats in one window, house bits in the other.",
-    place: "shops",
-    hour: 11,
-    xp: { skill: "barter", amount: 10 },
-  },
-  {
-    id: "say_hello",
-    title: "Say hello to a neighbour",
-    hint: "Anyone on the lane counts.",
-    place: "village",
-    hour: 12,
-    xp: { skill: "barter", amount: 6 },
-  },
-  {
-    id: "evening_stew",
-    title: "Cook evening stew",
-    hint: "Pot over the cottage fire. Don't burn it.",
-    place: "cottage",
-    hour: 18,
-    xp: { skill: "farming", amount: 8 },
-    reward: { item: "stew", qty: 1 },
-  },
-  {
-    id: "wash_up",
-    title: "Wash up",
-    hint: "Basin again. Teeth, face, hands.",
-    place: "cottage",
-    hour: 20,
-    xp: { skill: "prayer", amount: 8 },
-  },
-  {
-    id: "back_to_bed",
-    title: "Back to bed",
-    hint: "Cap on the pillow. Tomorrow's chores reset at dawn.",
-    place: "cottage",
-    hour: 21,
-    xp: { skill: "prayer", amount: 5 },
-  },
+export const BUILTIN_CHORES: {
+  key: string;
+  text: string;
+  location: PlaceId;
+  coins: number;
+}[] = [
+  { key: "out-of-bed", text: "Get out of bed", location: "cottage", coins: 6 },
+  { key: "brush-teeth", text: "Brush your teeth", location: "cottage", coins: 6 },
+  { key: "make-bed", text: "Make the bed", location: "cottage", coins: 5 },
+  { key: "breakfast", text: "Have a little breakfast", location: "cottage", coins: 5 },
+  { key: "water-garden", text: "Water the garden", location: "garden", coins: 7 },
+  { key: "chop-kindling", text: "Chop a tree for kindling", location: "woods", coins: 7 },
+  { key: "say-prayer", text: "Say a small prayer", location: "cottage", coins: 5 },
+  { key: "take-dinghy", text: "Take the dinghy out", location: "dock", coins: 6 },
+  { key: "good-morning", text: "Say good morning to the mushrooms", location: "woods", coins: 5 },
+  { key: "village-walk", text: "Walk the village path", location: "village", coins: 5 },
+  { key: "coil-rope", text: "Coil the dock rope", location: "dock", coins: 6 },
+  { key: "mine-lanterns", text: "Check the mine lanterns", location: "mines", coins: 7 },
+  { key: "sweep-stones", text: "Sweep the old stones", location: "ruins", coins: 6 },
+  { key: "patrol", text: "Patrol the wildlands", location: "wildlands", coins: 8 },
+  { key: "dragon-honey", text: "Leave honey for the dragon", location: "wildlands", coins: 6 },
 ];
 
-export function choresForHour(hour: number): Chore[] {
-  return CHORES.filter((c) => Math.abs(c.hour - hour) < 0.6);
+export function makeBuiltinTasks(today: string): Task[] {
+  return BUILTIN_CHORES.map((c) => ({
+    id: `b-${c.key}-${today}`,
+    text: c.text,
+    done: false,
+    builtin: true,
+    location: c.location,
+    createdOn: today,
+    builtinKey: c.key,
+  }));
 }
 
-export function choreById(id: ChoreId): Chore | undefined {
-  return CHORES.find((c) => c.id === id);
+export function coinsForTask(task: Task) {
+  if (task.builtinKey) {
+    const chore = BUILTIN_CHORES.find((c) => c.key === task.builtinKey);
+    if (chore) return chore.coins;
+  }
+  return 5;
 }

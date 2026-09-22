@@ -1,95 +1,124 @@
-export type NpcRole = "shopkeep" | "neighbour" | "dragon" | "notice";
+import type { BuildingId, InteriorId, PlaceId } from "../types";
 
-export type Npc = {
+export const TOWN_SHOPS: {
+  id: string;
+  x: number;
+  y: number;
+  label: string;
+  interior: InteriorId;
+  roof: "gold" | "stone" | "pine" | "berry" | "moss";
+  tall?: boolean;
+  sign: string;
+  building?: BuildingId;
+}[] = [
+  { id: "hatshop", x: 628, y: 448, label: "Hat shop", interior: "hatshop", roof: "gold", sign: "Hats", building: "village" },
+  { id: "armory", x: 718, y: 430, label: "Armory", interior: "armory", roof: "stone", sign: "Steel", building: "village" },
+  { id: "townhall", x: 824, y: 398, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village" },
+  { id: "bakery", x: 930, y: 430, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village" },
+  { id: "general", x: 1022, y: 448, label: "Builder's yard", interior: "general", roof: "moss", sign: "Yard", building: "village" },
+];
+
+export const NPCS: {
   id: string;
   name: string;
-  role: NpcRole;
-  place: string;
-  blurb: string;
-  /** Shop catalog they sell, if any */
-  shop?: "hats" | "house" | "food" | "tools";
-  line: string;
-};
-
-export const NPCS: Npc[] = [
+  x: number;
+  y: number;
+  hat: string;
+  place: PlaceId;
+  lines: string[];
+  tradeInterior?: InteriorId;
+}[] = [
   {
-    id: "brim",
-    name: "Brim",
-    role: "shopkeep",
-    place: "shops",
-    shop: "hats",
-    blurb: "Keeps the hat window. Judges sleep caps on sight.",
-    line: "A brim is a promise. That cap is a confession.",
-  },
-  {
-    id: "hearth",
-    name: "Hearth",
-    role: "shopkeep",
-    place: "shops",
-    shop: "house",
-    blurb: "Sells ladders, glass, kettles. Wants you to stand up indoors.",
-    line: "Glass first. Kettle second. Second room when you can afford dignity.",
-  },
-  {
-    id: "pip",
-    name: "Pip",
-    role: "neighbour",
+    id: "stoic",
+    name: "The Stoic Gnome",
+    x: 824,
+    y: 560,
+    hat: "hat-night",
     place: "village",
-    blurb: "Lives in the first hut. Counts chickens that are not theirs.",
-    line: "It is a village when two doors face the same mud.",
+    lines: [
+      "You have power over your mind — not outside events. Realise this, and you will find strength.",
+      "Waste no more time arguing what a good gnome should be. Be one.",
+      "The obstacle is the path.",
+      "He who lives in harmony with himself lives in harmony with the village.",
+      "It is not death a gnome should fear, but never beginning to live.",
+      "The best revenge is not to be like your enemy.",
+      "If it is not right, do not do it. If it is not true, do not say it.",
+      "Luck is what happens when preparation meets a goblin.",
+      "Begin at once to live, and count each day as a life by itself.",
+      "We suffer more in imagination than in the wildlands.",
+    ],
   },
   {
-    id: "noll",
-    name: "Noll",
-    role: "neighbour",
+    id: "nettie",
+    name: "Nettie",
+    x: 650,
+    y: 520,
+    hat: "hat-flower",
     place: "village",
-    blurb: "Second hut. Sweeps the stoop if you forget, then tells you.",
-    line: "I already swept it. You can thank me or do it tomorrow.",
+    tradeInterior: "hatshop",
+    lines: [
+      "If the fountain is wet, the village is trying.",
+      "I sold a turnip to a rumour. The rumour paid in gossip.",
+      "Have you brushed your teeth? I can tell. I don't know how.",
+      "The Guardsgnome salutes the weather. Very professional.",
+    ],
   },
   {
-    id: "crust",
-    name: "Crust",
-    role: "shopkeep",
-    place: "village",
-    shop: "food",
-    blurb: "Baker stall. Honey cakes gone by noon.",
-    line: "Buy it warm or don't bother. Cold cake is just bread in a costume.",
+    id: "bramble",
+    name: "Bramble",
+    x: 168,
+    y: 248,
+    hat: "hat-moss",
+    place: "woods",
+    lines: [
+      "The mushrooms send their regards. Slowly.",
+      "I once raced a tree. Still waiting on the result.",
+      "Pine is a personality, not a colour.",
+    ],
   },
   {
-    id: "edge",
-    name: "Edge",
-    role: "shopkeep",
-    place: "woodlot",
-    shop: "tools",
-    blurb: "Leans on the stump. Sells hatchets like they are opinions.",
-    line: "Wood first. Adamant when the stump files a complaint.",
+    id: "brine",
+    name: "Brine",
+    x: 168,
+    y: 468,
+    hat: "hat-straw",
+    place: "dock",
+    tradeInterior: "bakery",
+    lines: [
+      "Tide's in. So are the opinions.",
+      "If it arrives by sea, it wants something.",
+      "I coil rope so I don't have to coil thoughts.",
+    ],
   },
   {
-    id: "board",
-    name: "Notice board",
-    role: "notice",
-    place: "village",
-    blurb: "Chores, prices, dragon sightings. Mostly chores.",
-    line: "TEETH. BED. HENS. KINDLING. Ridge: still occupied.",
+    id: "pipkin",
+    name: "Pipkin",
+    x: 520,
+    y: 700,
+    hat: "hat-berry",
+    place: "garden",
+    tradeInterior: "general",
+    lines: [
+      "Water first. Philosophy later.",
+      "The beans are plotting. I support them.",
+      "A scarecrow is just a gnome who retired from talking.",
+    ],
   },
   {
-    id: "ash",
-    name: "Ash",
-    role: "dragon",
-    place: "ridge",
-    blurb: "The argument on the ridge. Not a shop. Not a friend. Yet.",
-    line: "You built a lane and called it a village. I am almost impressed.",
+    id: "miller",
+    name: "Miller",
+    x: 940,
+    y: 500,
+    hat: "hat-straw",
+    place: "shop",
+    tradeInterior: "bakery",
+    lines: [
+      "Bread is a kind of courage you can butter.",
+      "The bakery opens when the oven says so.",
+      "Goblins smell pie from the next tide.",
+    ],
   },
 ];
 
-export function npcById(id: string): Npc | undefined {
-  return NPCS.find((n) => n.id === id);
-}
-
-export function npcsAt(place: string): Npc[] {
-  return NPCS.filter((n) => n.place === place);
-}
-
-export function shopkeep(shop: NonNullable<Npc["shop"]>): Npc | undefined {
-  return NPCS.find((n) => n.shop === shop);
-}
+export const HAVEN_ORIGIN = { x: 1340, y: 820 };
+export const TOWN_SQUARE = { x: 824, y: 530 };

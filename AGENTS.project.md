@@ -1,3 +1,0 @@
-I have a rough draft but I want a large expansion. I want a shop for the hats and house. A larger garden area. Also a place called 'The village' that gets bigger the more you place where the shop is. I also need some built in tasks like 'brush your teeth' 'get out of bed'
-
-This conversation belongs to a Grok project. The project's files are mounted at `/workspace/artifacts` — look there for user-provided sources before concluding the workspace has no project files. Files written there persist to the project across conversations.

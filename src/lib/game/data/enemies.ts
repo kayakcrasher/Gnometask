@@ -1,80 +1,106 @@
-export type EnemyId = "rat" | "big_rat" | "fox" | "boar" | "ash_shadow";
+import type { EnemyId } from "../combat";
 
-export type Enemy = {
-  id: EnemyId;
-  name: string;
-  blurb: string;
-  hp: number;
-  attack: number;
-  defence: number;
-  xp: number;
-  coins: number;
-  /** layout slot ids they can spawn on */
-  spawnSlots: string[];
-};
-
-export const ENEMIES: Enemy[] = [
-  {
-    id: "rat",
-    name: "Lane rat",
-    blurb: "Starts easy. Still has teeth.",
+export const ENEMIES: Record<
+  EnemyId,
+  { name: string; blurb: string; hp: number; dmg: number; coins: number; def: number; area: number }
+> = {
+  rat: {
+    name: "Garden rat",
+    blurb: "Bold about crumbs. A first fight, if you can call it that.",
+    hp: 4,
+    dmg: 1,
+    coins: 3,
+    def: 1,
+    area: 1,
+  },
+  crab: {
+    name: "Dock crab",
+    blurb: "Pinches first. Discusses the rope later.",
     hp: 6,
-    attack: 2,
-    defence: 0,
-    xp: 8,
-    coins: 2,
-    spawnSlots: ["pack_rats_a", "pack_rats_b"],
-  },
-  {
-    id: "big_rat",
-    name: "Stoop rat",
-    blurb: "Ate the kindling. Personal now.",
-    hp: 12,
-    attack: 4,
-    defence: 1,
-    xp: 16,
+    dmg: 1,
     coins: 5,
-    spawnSlots: ["pack_rats_a"],
+    def: 2,
+    area: 2,
   },
-  {
-    id: "fox",
-    name: "Garden fox",
-    blurb: "Wants hens. You want hens. Talk with a sword.",
-    hp: 18,
-    attack: 5,
-    defence: 2,
-    xp: 24,
+  sprite: {
+    name: "Moss sprite",
+    blurb: "A handful of leaves with opinions.",
+    hp: 8,
+    dmg: 2,
+    coins: 7,
+    def: 3,
+    area: 3,
+  },
+  boar: {
+    name: "Bristle boar",
+    blurb: "Rude about cabbages. Charges first, thinks later.",
+    hp: 14,
+    dmg: 3,
+    coins: 9,
+    def: 4,
+    area: 6,
+  },
+  bat: {
+    name: "Lantern bat",
+    blurb: "Lives in the mines. Hates being counted.",
+    hp: 12,
+    dmg: 3,
     coins: 8,
-    spawnSlots: ["garden_coop"],
+    def: 4,
+    area: 7,
   },
-  {
-    id: "boar",
-    name: "Woodlot boar",
-    blurb: "Owns a pine until you say otherwise.",
-    hp: 28,
-    attack: 7,
-    defence: 3,
-    xp: 36,
+  goblin: {
+    name: "Green goblin",
+    blurb: "Came in on a raft. Wants the pies, not the conversation.",
+    hp: 16,
+    dmg: 4,
+    coins: 11,
+    def: 5,
+    area: 8,
+  },
+  cobble: {
+    name: "Rubble sprite",
+    blurb: "A pile of old stones that learned to walk.",
+    hp: 20,
+    dmg: 4,
     coins: 12,
-    spawnSlots: ["woodlot"],
+    def: 7,
+    area: 10,
   },
-  {
-    id: "ash_shadow",
-    name: "Ridge shadow",
-    blurb: "Not Ash. Ash's patience, given teeth.",
-    hp: 40,
-    attack: 9,
-    defence: 4,
-    xp: 60,
+  wyrmling: {
+    name: "Cave wyrmling",
+    blurb: "Practice dragon. Still counts.",
+    hp: 24,
+    dmg: 5,
+    coins: 16,
+    def: 8,
+    area: 12,
+  },
+  darkelf: {
+    name: "Dark elf raider",
+    blurb: "Silver at the ear. Arrives by the night tide.",
+    hp: 32,
+    dmg: 6,
     coins: 20,
-    spawnSlots: ["dragon_ridge"],
+    def: 12,
+    area: 16,
   },
-];
-
-export function enemyById(id: string): Enemy | undefined {
-  return ENEMIES.find((e) => e.id === id);
-}
-
-export function enemiesAtSlot(slotId: string): Enemy[] {
-  return ENEMIES.filter((e) => e.spawnSlots.includes(slotId));
-}
+  dragon: {
+    name: "The Life Dragon",
+    blurb: "The big thing on the ridge. Fire, hunger, and a name you chose.",
+    hp: 80,
+    dmg: 7,
+    coins: 80,
+    def: 18,
+    area: 28,
+  },
+  absence: {
+    name: "The Absence Dragon",
+    blurb: "Blue, round, and here because you were not. Mid damage. Enormous mood.",
+    hp: 120,
+    dmg: 5,
+    coins: 90,
+    def: 14,
+    area: 22,
+  },
+};

@@ -1,51 +1,71 @@
-export type SlotKind =
-  | "cottage"
-  | "garden"
-  | "village"
-  | "shop"
-  | "woodlot"
-  | "spawn"
-  | "ridge";
+import type { PackEnemy } from "../combat";
+import type { PlaceId } from "../types";
 
-export type MapSlot = {
-  id: string;
-  kind: SlotKind;
-  pos: [number, number, number];
-  /** Yaw in radians, optional facing */
-  rot?: number;
-};
+export const GARDEN_SLOTS: { id: string; x: number; y: number }[] = [];
+for (let row = 0; row < 4; row++) {
+  for (let col = 0; col < 8; col++) {
+    GARDEN_SLOTS.push({
+      id: `g${row * 8 + col}`,
+      x: 150 + col * 68,
+      y: 640 + row * 72,
+    });
+  }
+}
 
-export const MAP_SLOTS: MapSlot[] = [
-  { id: "cottage", kind: "cottage", pos: [0, 0, 0], rot: 0 },
-  { id: "garden_bed_a", kind: "garden", pos: [5, 0, -4] },
-  { id: "garden_bed_b", kind: "garden", pos: [7, 0, -4] },
-  { id: "garden_bed_c", kind: "garden", pos: [5, 0, -6] },
-  { id: "garden_bed_d", kind: "garden", pos: [7, 0, -6] },
-  { id: "garden_coop", kind: "garden", pos: [9, 0, -5] },
-  { id: "lane_0", kind: "village", pos: [0, 0, 6] },
-  { id: "lane_1", kind: "village", pos: [0, 0, 9] },
-  { id: "lane_2", kind: "village", pos: [0, 0, 12] },
-  { id: "lane_3", kind: "village", pos: [0, 0, 15] },
-  { id: "shop_hats", kind: "shop", pos: [-4, 0, 8], rot: Math.PI / 2 },
-  { id: "shop_house", kind: "shop", pos: [4, 0, 8], rot: -Math.PI / 2 },
-  { id: "woodlot", kind: "woodlot", pos: [13, 0, -2] },
-  { id: "player_spawn", kind: "spawn", pos: [1.5, 0, 2] },
-  { id: "pack_rats_a", kind: "spawn", pos: [11, 0, 4] },
-  { id: "pack_rats_b", kind: "spawn", pos: [15, 0, 1] },
-  { id: "dragon_ridge", kind: "ridge", pos: [-10, 2.5, -14] },
+export const GARDEN_FEATURE_SLOTS: { id: string; x: number; y: number }[] = [
+  { id: "gf0", x: 120, y: 600 },
+  { id: "gf1", x: 700, y: 620 },
+  { id: "gf2", x: 90, y: 780 },
+  { id: "gf3", x: 720, y: 790 },
+  { id: "gf4", x: 400, y: 590 },
+  { id: "gf5", x: 560, y: 880 },
 ];
 
-export function slotsOf(kind: SlotKind): MapSlot[] {
-  return MAP_SLOTS.filter((s) => s.kind === kind);
-}
+export const VILLAGE_SLOTS: { id: string; x: number; y: number }[] = [
+  { id: "v0", x: 1124, y: 428 },
+  { id: "v1", x: 1210, y: 414 },
+  { id: "v2", x: 1296, y: 428 },
+  { id: "v3", x: 1124, y: 548 },
+  { id: "v4", x: 1210, y: 562 },
+  { id: "v5", x: 1296, y: 548 },
+  { id: "v6", x: 1110, y: 668 },
+  { id: "v7", x: 1200, y: 682 },
+  { id: "v8", x: 1290, y: 668 },
+  { id: "v9", x: 1380, y: 500 },
+];
 
-export function slotById(id: string): MapSlot | undefined {
-  return MAP_SLOTS.find((s) => s.id === id);
-}
+export const PLACE_ANCHORS: Record<PlaceId, { x: number; y: number }> = {
+  cottage: { x: 380, y: 430 },
+  garden: { x: 380, y: 720 },
+  shop: { x: 824, y: 450 },
+  village: { x: 1200, y: 540 },
+  pond: { x: 520, y: 190 },
+  woods: { x: 160, y: 240 },
+  wildlands: { x: 1760, y: 420 },
+  mines: { x: 1380, y: 1220 },
+  ruins: { x: 2360, y: 260 },
+  dock: { x: 120, y: 500 },
+  haven: { x: 1340, y: 820 },
+};
 
-/** How many village lane slots are unlocked at this growth score */
-export function unlockedLaneSlots(growth: number): MapSlot[] {
-  const lanes = slotsOf("village");
-  const n = Math.min(lanes.length, 1 + Math.floor(growth / 4));
-  return lanes.slice(0, n);
+export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; place: PlaceId }[] = [
+  { id: "pack-rat", enemy: "rat", x: 460, y: 560, place: "garden" },
+  { id: "pack-boar-a", enemy: "boar", x: 1560, y: 520, place: "wildlands" },
+  { id: "pack-sprite", enemy: "sprite", x: 1680, y: 700, place: "wildlands" },
+  { id: "pack-wyrm", enemy: "wyrmling", x: 1940, y: 480, place: "wildlands" },
+  { id: "pack-boar-b", enemy: "boar", x: 1740, y: 360, place: "wildlands" },
+  { id: "pack-bat-a", enemy: "bat", x: 1240, y: 1180, place: "mines" },
+  { id: "pack-bat-b", enemy: "bat", x: 1520, y: 1280, place: "mines" },
+  { id: "pack-cobble", enemy: "cobble", x: 2280, y: 180, place: "ruins" },
+  { id: "pack-cobble-b", enemy: "cobble", x: 2500, y: 320, place: "ruins" },
+  { id: "pack-crab", enemy: "crab", x: 90, y: 520, place: "dock" },
+];
+
+export const DRAGON_RIDGE = { x: 1760, y: 340 };
+export const ABSENCE_SPOT = { x: 96, y: 430 };
+
+export function slotsForPrefix(prefix: "g" | "gf" | "v") {
+  if (prefix === "g") return GARDEN_SLOTS;
+  if (prefix === "gf") return GARDEN_FEATURE_SLOTS;
+  return VILLAGE_SLOTS;
 }
