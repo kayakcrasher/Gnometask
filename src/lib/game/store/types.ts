@@ -39,6 +39,7 @@ export type GameState = GameSave &
     setPraying: (on: boolean) => void;
     chopTree: (treeId: string) => void;
     sailTo: (dest: "haven" | "dock", boatId?: string) => void;
+    buyBoat: (id: string) => void;
     castLine: (where: "shore" | "sea", x: number, y: number, boatId?: string) => void;
     sellFish: (id: string) => void;
     stockFish: (id: string) => void;

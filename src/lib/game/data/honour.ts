@@ -8,6 +8,7 @@ export const NPC_STATS: Record<string, NpcStat> = {
   greg: { hp: 24, atk: 10, def: 4, valor: 8 },
   stoic: { hp: 20, atk: 5, def: 7, valor: 7 },
   brine: { hp: 16, atk: 6, def: 3, valor: 5 },
+  wim: { hp: 15, atk: 3, def: 3, valor: 4 },
   miller: { hp: 14, atk: 3, def: 3, valor: 4 },
   nettie: { hp: 12, atk: 2, def: 2, valor: 3 },
   bramble: { hp: 14, atk: 4, def: 4, valor: 3 },

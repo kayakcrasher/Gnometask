@@ -171,7 +171,7 @@ function SceneBody({
             kind: "boat",
             hotspotId: id,
             title,
-            blurb: `${blurb} Sailing levels open the bigger hulls.`,
+            blurb: `${blurb} Wim sells the bigger hulls in the dockhouse.`,
             place: "dock",
           })
         }
@@ -180,10 +180,11 @@ function SceneBody({
             kind: "npc",
             hotspotId: "captain",
             title: "Captain Moth",
-            blurb: "Round, red, and smiling. The cutlass is not a toy.",
+            blurb: "Round, red, and smiling. The cutlass is not a toy. Wim sells the boats.",
             place: "dock",
           })
         }
+        onHouse={() => goInside(258, 530, "dockhouse")}
       />
       <group
         position={to3(78, 560, 0.05)}

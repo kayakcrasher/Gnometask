@@ -5,13 +5,15 @@ import { BUILDING_MAX, type InteriorId, type ShopKind } from "@/lib/game/types";
 import { HALL_COST, hallUnlocks } from "@/lib/game/world";
 import { FISH } from "@/lib/game/data/fish";
 import { CROPS } from "@/lib/game/data/crops";
+import { BOATS } from "@/lib/game/data/boats";
 import { BOAT_LOANS, HONOUR_CODE, LAND_OFFERS } from "@/lib/game/data/honour";
+import { levelFromXp } from "@/lib/game/xp";
 import { cn } from "@/lib/utils";
 
 const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[] }> = {
   cottage: {
     title: "Inside the cottage",
-    blurb: "Kettle, boots, the list on the table. Tea restores heart. Chores live here too.",
+    blurb: "Kettle and boots. Tea restores heart. Ol Pappy is down on the dock.",
   },
   hatshop: {
     title: "Hat shop",
@@ -41,6 +43,10 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   bank: {
     title: "The Bank",
     blurb: "The building outside grows with your purse. Sell vegetables at the builder's yard.",
+  },
+  dockhouse: {
+    title: "Dockhouse",
+    blurb: "Two floors. Wim sleeps upstairs. The boats are on the ledger downstairs.",
   },
   townhall: {
     title: "Town Hall",
@@ -114,6 +120,38 @@ function Aquarium() {
           ))}
         </ul>
       ) : null}
+    </div>
+  );
+}
+
+function DockhousePanel() {
+  const coins = useGame((s) => s.coins);
+  const hulls = useGame((s) => s.hulls);
+  const skills = useGame((s) => s.skills);
+  const buy = useGame((s) => s.buyBoat);
+  const lv = levelFromXp(skills.sailing);
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <p className="text-sm font-semibold text-bark/70">Sailing {lv}. The rowboat is already on the pier.</p>
+      {BOATS.filter((b) => b.price > 0).map((boat) => {
+        const owned = hulls.includes(boat.id);
+        return (
+          <button
+            key={boat.id}
+            type="button"
+            disabled={owned || coins < boat.price || lv < boat.need}
+            onClick={() => buy(boat.id)}
+            className="rounded-[14px] bg-parchment-dark px-3 py-2 text-left disabled:opacity-50"
+          >
+            <span className="block font-display text-sm font-semibold text-ink">
+              {owned ? `${boat.name} — yours` : `${boat.name} — ${boat.price} coins`}
+            </span>
+            <span className="text-xs font-semibold text-bark/70">
+              Sailing {boat.need}. {boat.blurb}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -419,6 +457,8 @@ export function InteriorView() {
           </div>
         ) : interior === "townhall" ? (
           <HallPanel />
+        ) : interior === "dockhouse" ? (
+          <DockhousePanel />
         ) : interior === "bank" ? (
           <BankPanel />
         ) : (

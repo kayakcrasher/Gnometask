@@ -44,7 +44,7 @@ export const PLACE_ANCHORS: Record<PlaceId, { x: number; y: number }> = {
   wildlands: { x: 1760, y: 420 },
   mines: { x: 1380, y: 1220 },
   ruins: { x: 2360, y: 260 },
-  dock: { x: 120, y: 500 },
+  dock: { x: 230, y: 540 },
   haven: { x: 1860, y: 760 },
 };
 

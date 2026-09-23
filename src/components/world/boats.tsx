@@ -1,8 +1,10 @@
 import { useMemo, useRef, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { BOATS, type BoatId } from "@/lib/game/data/boats";
-import { to3 } from "@/lib/game/world3";
+import { useGame } from "@/lib/game/store";
+import { groundY, to3 } from "@/lib/game/world3";
 
 const WOOD = "#c4894a";
 const WOOD_DARK = "#8a5a32";
@@ -224,34 +226,155 @@ function Gull({ radius, speed, lift }: { radius: number; speed: number; lift: nu
 }
 
 function Pier() {
+  const posts = [-3.2, -2.2, -1.2, -0.2, 0.8, 1.6];
   return (
-    <group position={to3(118, 512, 0)} rotation={[0, 0.15, 0]}>
-      <mesh position={[-1.15, 0.18, 0]} castShadow receiveShadow>
-        <boxGeometry args={[2.6, 0.08, 0.72]} />
+    <group position={to3(150, 520, 0)} rotation={[0, 0.08, 0]}>
+      <mesh position={[-1.4, 0.22, 0]} castShadow receiveShadow>
+        <boxGeometry args={[4.4, 0.1, 0.9]} />
         <meshStandardMaterial color="#c4894a" roughness={0.8} />
       </mesh>
-      {[-2.2, -1.2, -0.2, 0.8].map((x) => (
-        <mesh key={x} position={[x, -0.05, 0.28]} castShadow>
-          <boxGeometry args={[0.08, 0.42, 0.08]} />
-          <meshStandardMaterial color="#6b4423" />
+      <mesh position={[-1.4, 0.28, 0.42]}>
+        <boxGeometry args={[4.2, 0.06, 0.06]} />
+        <meshStandardMaterial color="#6b4423" />
+      </mesh>
+      {posts.map((x) => (
+        <mesh key={x} position={[x, -0.02, 0.32]} castShadow>
+          <boxGeometry args={[0.1, 0.5, 0.1]} />
+          <meshStandardMaterial color="#5b3a24" />
         </mesh>
       ))}
-      <mesh position={[-2.15, 0.34, 0.28]}>
-        <boxGeometry args={[0.06, 0.5, 0.06]} />
+      <mesh position={[-3.15, 0.55, 0.32]}>
+        <boxGeometry args={[0.06, 0.55, 0.06]} />
         <meshStandardMaterial color="#5b4230" />
       </mesh>
-      <mesh position={[-2.15, 0.58, 0.28]}>
-        <sphereGeometry args={[0.06, 8, 8]} />
-        <meshStandardMaterial color="#e7c56a" emissive="#e7c56a" emissiveIntensity={0.4} />
+      <mesh position={[-3.15, 0.86, 0.32]}>
+        <sphereGeometry args={[0.07, 8, 8]} />
+        <meshStandardMaterial color="#e7c56a" emissive="#e7c56a" emissiveIntensity={0.35} />
       </mesh>
-      <mesh position={[-0.4, 0.28, 0.05]} castShadow>
-        <boxGeometry args={[0.28, 0.2, 0.28]} />
+      <mesh position={[-0.2, 0.34, 0.08]} castShadow>
+        <boxGeometry args={[0.36, 0.24, 0.36]} />
         <meshStandardMaterial color="#3d6ea5" />
       </mesh>
-      <mesh position={[0.35, 0.26, -0.08]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.12, 0.025, 6, 12]} />
+      <mesh position={[0.7, 0.32, -0.1]} rotation={[Math.PI / 2, 0, 0.4]}>
+        <torusGeometry args={[0.14, 0.03, 6, 12]} />
         <meshStandardMaterial color="#8a7a68" />
       </mesh>
+    </group>
+  );
+}
+
+function Dockhouse({ onEnter }: { onEnter: () => void }) {
+  const p = to3(258, 492, groundY(258, 492));
+  return (
+    <group
+      position={p}
+      onClick={(e) => {
+        e.stopPropagation();
+        onEnter();
+      }}
+    >
+      <mesh position={[0, 0.55, 0]} castShadow receiveShadow>
+        <boxGeometry args={[1.7, 1.1, 1.25]} />
+        <meshStandardMaterial color="#efe4cf" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, 0.2, 0]} castShadow>
+        <boxGeometry args={[1.82, 0.28, 1.35]} />
+        <meshStandardMaterial color="#c9c3b4" />
+      </mesh>
+      <mesh position={[0, 0.42, 0.64]} castShadow>
+        <boxGeometry args={[0.36, 0.62, 0.06]} />
+        <meshStandardMaterial color="#5b4230" />
+      </mesh>
+      {[-0.48, 0.48].map((x) => (
+        <mesh key={x} position={[x, 0.62, 0.64]}>
+          <boxGeometry args={[0.28, 0.28, 0.04]} />
+          <meshStandardMaterial color="#9ec3d6" />
+        </mesh>
+      ))}
+      <mesh position={[0, 1.55, 0]} castShadow>
+        <boxGeometry args={[1.5, 0.85, 1.08]} />
+        <meshStandardMaterial color="#f3ead8" />
+      </mesh>
+      <mesh position={[0, 1.18, 0.62]} castShadow>
+        <boxGeometry args={[1.55, 0.08, 0.32]} />
+        <meshStandardMaterial color="#8a5a32" />
+      </mesh>
+      <mesh position={[0, 2.12, 0]} rotation={[0, 0, 0]} castShadow>
+        <boxGeometry args={[1.7, 0.12, 1.3]} />
+        <meshStandardMaterial color="#a33b32" />
+      </mesh>
+      <mesh position={[0.55, 2.45, 0]} castShadow>
+        <boxGeometry args={[0.16, 0.4, 0.16]} />
+        <meshStandardMaterial color="#8a7a68" />
+      </mesh>
+      <Html position={[0, 2.3, 0.7]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+        <p className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">Dockhouse</p>
+      </Html>
+    </group>
+  );
+}
+
+function SupplyHull() {
+  return (
+    <group scale={1.7}>
+      <mesh position={[0, 0.28, 0]} castShadow>
+        <boxGeometry args={[1.1, 0.42, 3.4]} />
+        <meshStandardMaterial color="#4a3428" />
+      </mesh>
+      <mesh position={[0, 0.52, 0]}>
+        <boxGeometry args={[1.05, 0.12, 3.1]} />
+        <meshStandardMaterial color="#6b4423" />
+      </mesh>
+      <mesh position={[0, 0.85, -0.2]} castShadow>
+        <boxGeometry args={[0.7, 0.5, 1.4]} />
+        <meshStandardMaterial color="#efe4cf" />
+      </mesh>
+      <mesh position={[0, 1.2, 0.55]} castShadow>
+        <boxGeometry args={[0.85, 0.35, 0.7]} />
+        <meshStandardMaterial color="#c4553a" />
+      </mesh>
+      <mesh position={[0.28, 1.55, 0.7]} castShadow>
+        <cylinderGeometry args={[0.1, 0.12, 0.45, 8]} />
+        <meshStandardMaterial color="#2a241c" />
+      </mesh>
+      <mesh position={[0, 0.78, 1.15]} castShadow>
+        <boxGeometry args={[0.4, 0.28, 0.4]} />
+        <meshStandardMaterial color="#d6a84c" />
+      </mesh>
+      <mesh position={[-0.28, 0.78, -1.2]} castShadow>
+        <boxGeometry args={[0.35, 0.26, 0.45]} />
+        <meshStandardMaterial color="#3d6ea5" />
+      </mesh>
+      <mesh position={[0, 1.15, -1.35]}>
+        <boxGeometry args={[0.9, 0.55, 0.04]} />
+        <meshStandardMaterial color="#f4efe4" />
+      </mesh>
+    </group>
+  );
+}
+
+function SupplyShip() {
+  const days = useGame((s) => s.daysPlayed);
+  const due = days % 2 === 1;
+  const ref = useRef<THREE.Group>(null);
+  const t = useRef(0);
+  const spoke = useRef(false);
+  useFrame((_, dt) => {
+    if (!due || !ref.current) return;
+    t.current = Math.min(1, t.current + dt / 46);
+    const y = 160 + t.current * 860;
+    const p = to3(28, y, -0.08);
+    ref.current.position.set(p[0], p[1] + Math.sin(t.current * 12) * 0.04, p[2]);
+    ref.current.rotation.y = 0.15;
+    if (!spoke.current && t.current > 0.2 && t.current < 0.85) {
+      spoke.current = true;
+      useGame.getState().speak("Supply ship on the tide. She rolls past every other day, and she does not stop.");
+    }
+  });
+  if (!due) return null;
+  return (
+    <group ref={ref}>
+      <SupplyHull />
     </group>
   );
 }
@@ -259,11 +382,13 @@ function Pier() {
 export function Harbor3({
   onBoat,
   onCaptain,
+  onHouse,
 }: {
   onBoat: (id: BoatId, x: number, y: number, title: string, blurb: string) => void;
   onCaptain: () => void;
+  onHouse: () => void;
 }) {
-  const yard = to3(48, 520, 0);
+  const yard = to3(90, 430, 0);
   return (
     <group>
       {BOATS.map((boat) => {
@@ -294,6 +419,8 @@ export function Harbor3({
         <PirateRig />
       </group>
       <Pier />
+      <Dockhouse onEnter={onHouse} />
+      <SupplyShip />
       <group position={yard}>
         <Gull radius={1.6} speed={0.35} lift={1.8} />
         <Gull radius={2.2} speed={0.22} lift={2.3} />

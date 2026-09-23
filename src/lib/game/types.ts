@@ -44,7 +44,8 @@ export type InteriorId =
   | "haven-shop"
   | "townhall"
   | "watch"
-  | "bank";
+  | "bank"
+  | "dockhouse";
 
 export type DragonLook = "ember" | "moss" | "night" | "gold";
 export type DragonHorn = "short" | "long" | "crown";

@@ -19,7 +19,7 @@ function treeStage(choppedAt: number | undefined, now: number) {
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "castLine" | "sellFish" | "stockFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "buyBoat" | "castLine" | "sellFish" | "stockFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -91,7 +91,15 @@ export function gatherSlice(
       }
       const boat = boatById(boatId ?? "row") ?? boatById("row")!;
       const lv = levelFromXp(s.skills.sailing);
-      if (lv < boat.need && !s.hulls.includes(boat.id)) {
+      const owned = boat.id === "row" || s.hulls.includes(boat.id);
+      if (!owned) {
+        set({
+          speech: `${boat.name} isn't yours. Wim sells her at the dockhouse.`,
+          popup: null,
+        });
+        return;
+      }
+      if (lv < boat.need && s.loan?.boat !== boat.id) {
         set({
           speech: `${boat.name} wants Sailing ${boat.need}. You are ${lv}. Take the rowboat a few more times.`,
           popup: null,
@@ -119,6 +127,40 @@ export function gatherSlice(
       scheduleWrite(get);
       const chore = get().tasks.find((t) => t.builtinKey === "coil-watch" && !t.done);
       if (chore) get().toggleTask(chore.id);
+    },
+
+    buyBoat: (id) => {
+      const s = get();
+      const boat = boatById(id);
+      if (!boat) return;
+      if (boat.id === "row" || boat.price <= 0) {
+        set({ speech: "The rowboat is already yours. She's on the pier." });
+        return;
+      }
+      if (s.hulls.includes(boat.id)) {
+        set({ speech: `${boat.name} is already on your line.` });
+        return;
+      }
+      const lv = levelFromXp(s.skills.sailing);
+      if (lv < boat.need) {
+        set({ speech: `Wim wants Sailing ${boat.need} before he sells a ${boat.name.toLowerCase()}. You are ${lv}.` });
+        sfx("error");
+        return;
+      }
+      if (s.coins < boat.price) {
+        set({ speech: `${boat.name} is ${boat.price} coins. The ledger does not blush.` });
+        sfx("error");
+        return;
+      }
+      set({
+        coins: s.coins - boat.price,
+        hulls: [...s.hulls, boat.id],
+        boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
+        coinPopKey: s.coinPopKey + 1,
+        speech: `Wim slides the ${boat.name.toLowerCase()} onto your account. She's at the pier.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
     },
 
     castLine: (where, x, y, boatId) => {

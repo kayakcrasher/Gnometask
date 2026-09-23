@@ -43,7 +43,7 @@ export function Welcome() {
           The hollow
         </h1>
         <p className="mt-2 text-sm font-semibold leading-relaxed text-bark/75">
-          A defence island that grows as you play. Ember watches the ridge. Ol Pappy is waiting by the cottage.
+          A defence island that grows as you play. You step off at the dock. Ol Pappy is waiting there. Ember stays hidden until the hall is level 3.
         </p>
 
         {mode === "gate" ? (

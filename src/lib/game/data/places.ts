@@ -34,7 +34,7 @@ export const PLACES: { id: PlaceId; name: string; blurb: string }[] = [
   {
     id: "dock",
     name: "The Dock",
-    blurb: "Goblins land in painted boats. Watcher Greg keeps the perch. Mind the pier.",
+    blurb: "A two-story dockhouse, a long pier, and Wim's ledger. The supply ship rolls past every other day.",
   },
   {
     id: "mines",
@@ -70,4 +70,4 @@ export const BUILDING_MAX: Record<BuildingId, number> = {
   haven: 40,
 };
 
-export const PLAYER_START = { x: 980, y: 720 };
+export const PLAYER_START = { x: 210, y: 570 };
