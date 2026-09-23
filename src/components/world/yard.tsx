@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { CROP_BY_ID, YARD_PLOTS, pailBonusMs, plotStage } from "@/lib/game/data/crops";
+import { LAND_OFFERS } from "@/lib/game/data/honour";
 import { useGame } from "@/lib/game/store";
 import { groundY, to3 } from "@/lib/game/world3";
 import type { GamePopup } from "@/lib/game/types";
@@ -11,6 +12,11 @@ export function YardPlots({
 }) {
   const plots = useGame((s) => s.plots);
   const owned = useGame((s) => s.ownedGear);
+  const claimed = useGame((s) => s.claimed);
+  const beds = [
+    ...YARD_PLOTS,
+    ...LAND_OFFERS.filter((t) => t.kind === "yard" && claimed.includes(t.id)).map((t) => ({ id: t.id, x: t.x, y: t.y })),
+  ];
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 1000);
@@ -19,7 +25,7 @@ export function YardPlots({
   const bonus = pailBonusMs(owned) ?? 0;
   return (
     <group>
-      {YARD_PLOTS.map((plot) => {
+      {beds.map((plot) => {
         const save = plots[plot.id];
         const stage = plotStage(save, now, bonus);
         const crop = save ? CROP_BY_ID[save.crop] : null;

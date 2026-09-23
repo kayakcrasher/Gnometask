@@ -3,6 +3,7 @@ import { combatSlice } from "./combat";
 import { farmSlice } from "./farm";
 import { economySlice } from "./economy";
 import { gatherSlice } from "./gather";
+import { honourSlice } from "./honour";
 import { UI_SEED } from "./persist";
 import { questsSlice } from "./quests";
 import { sessionSlice } from "./session";
@@ -27,6 +28,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...combatSlice(set, get),
   ...gatherSlice(set, get),
   ...farmSlice(set, get),
+  ...honourSlice(set, get),
   ...clockSlice(),
 }));
 

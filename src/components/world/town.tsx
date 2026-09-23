@@ -289,6 +289,7 @@ export function Town3({
   hallLevel: number;
   onEnter: (id: InteriorId, x: number, y: number) => void;
 }) {
+  const claimed = useGame((s) => s.claimed);
   return (
     <group>
       {TOWN_SHOPS.map((shop) => {
@@ -327,6 +328,18 @@ export function Town3({
               <meshStandardMaterial color="#8a7a68" />
             </mesh>
           ))}
+          {claimed.includes(lot.id) ? (
+            <mesh position={[0, 0.55, 0]} castShadow>
+              <boxGeometry args={[0.06, 0.7, 0.06]} />
+              <meshStandardMaterial color="#5b4230" />
+            </mesh>
+          ) : null}
+          {claimed.includes(lot.id) ? (
+            <mesh position={[0.16, 0.78, 0]}>
+              <boxGeometry args={[0.28, 0.16, 0.03]} />
+              <meshStandardMaterial color="#d6a84c" />
+            </mesh>
+          ) : null}
         </group>
       ))}
       <Kenney name="fence_gate" position={to3(360, 500, 0)} scale={1.2} />

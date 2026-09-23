@@ -91,7 +91,7 @@ export function gatherSlice(
       }
       const boat = boatById(boatId ?? "row") ?? boatById("row")!;
       const lv = levelFromXp(s.skills.sailing);
-      if (lv < boat.need) {
+      if (lv < boat.need && !s.hulls.includes(boat.id)) {
         set({
           speech: `${boat.name} wants Sailing ${boat.need}. You are ${lv}. Take the rowboat a few more times.`,
           popup: null,

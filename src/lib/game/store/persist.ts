@@ -83,6 +83,13 @@ export function snap(s: GameSave): GameSave {
     plots: s.plots,
     seeds: s.seeds,
     produce: s.produce,
+    respect: s.respect,
+    chart: s.chart,
+    surrendered: s.surrendered,
+    loan: s.loan,
+    claimed: s.claimed,
+    hulls: s.hulls,
+    muckRaiders: s.muckRaiders,
     trees: s.trees,
     landing: s.landing,
     combatStyle: s.combatStyle,
@@ -182,6 +189,7 @@ export const UI_SEED: Pick<
   | "lootFlash"
   | "fishing"
   | "dayPhase"
+  | "abroad"
 > = {
   hydrated: false,
   selectedPlace: null,
@@ -201,4 +209,5 @@ export const UI_SEED: Pick<
   lootFlash: null,
   fishing: null,
   dayPhase: "day",
+  abroad: null,
 };

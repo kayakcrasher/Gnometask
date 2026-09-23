@@ -73,10 +73,29 @@ export function defaultSave(): GameSave {
     plots: {},
     seeds: { carrot: 2 },
     produce: {},
+    respect: 0,
+    chart: false,
+    surrendered: false,
+    loan: null,
+    claimed: [],
+    hulls: [],
+    muckRaiders: [true, true, true],
     trees: {},
     landing: null,
     combatStyle: "attack",
   };
+}
+
+function asLoan(raw: unknown): import("./types").Loan | null {
+  if (!raw || typeof raw !== "object") return null;
+  const loan = raw as { boat?: unknown; owed?: unknown };
+  if (typeof loan.boat !== "string" || typeof loan.owed !== "number") return null;
+  return { boat: loan.boat, owed: Math.max(0, Math.floor(loan.owed)) };
+}
+
+function asRaiders(raw: unknown): boolean[] {
+  if (!Array.isArray(raw) || raw.length !== 3) return [true, true, true];
+  return raw.map((v) => v !== false);
 }
 
 function asPlots(raw: unknown): Record<string, import("./data/crops").PlotSave> {
@@ -280,6 +299,13 @@ export function migrate(raw: unknown): GameSave {
     plots: asPlots(s.plots),
     seeds: s.seeds == null ? { carrot: 2 } : asFishBag(s.seeds),
     produce: asFishBag(s.produce),
+    respect: typeof s.respect === "number" ? Math.max(0, s.respect) : 0,
+    chart: Boolean(s.chart),
+    surrendered: Boolean(s.surrendered),
+    loan: asLoan(s.loan),
+    claimed: asStringArray(s.claimed, []),
+    hulls: asStringArray(s.hulls, []),
+    muckRaiders: asRaiders(s.muckRaiders),
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",

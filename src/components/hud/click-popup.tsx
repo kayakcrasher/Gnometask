@@ -5,6 +5,7 @@ import { ENEMIES } from "@/lib/game/combat";
 import { BOATS } from "@/lib/game/data/boats";
 import { FISH } from "@/lib/game/data/fish";
 import { CROP_BY_ID, CROPS, pailBonusMs, plotStage, type CropId } from "@/lib/game/data/crops";
+import { NPC_STATS } from "@/lib/game/data/honour";
 import { BUILDING_MAX } from "@/lib/game/types";
 import { levelFromXp } from "@/lib/game/xp";
 import { useGame } from "@/lib/game/store";
@@ -137,6 +138,8 @@ export function ClickPopup() {
   const placed = useGame((s) => s.placed);
   const coins = useGame((s) => s.coins);
   const combat = useGame((s) => s.combat);
+  const chart = useGame((s) => s.chart);
+  const sailChart = useGame((s) => s.sailChart);
 
   if (!popup || combat) return null;
 
@@ -198,6 +201,11 @@ export function ClickPopup() {
           </button>
         </div>
         <p className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-bark/75">{popup.blurb}</p>
+        {npc && NPC_STATS[npc.id] ? (
+          <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-bark/55">
+            Heart {NPC_STATS[npc.id]!.hp} · Attack {NPC_STATS[npc.id]!.atk} · Defence {NPC_STATS[npc.id]!.def} · Valor {NPC_STATS[npc.id]!.valor}
+          </p>
+        ) : null}
         {enemy && popup.kind !== "npc" ? (
           <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-bark/55">
             {enemy.hp} heart · hits around {enemy.dmg}
@@ -250,6 +258,15 @@ export function ClickPopup() {
             </>
           ) : null}
 
+          {popup.npcId === "greg" ? (
+            <Action
+              label={chart ? "Follow the goblin map" : "No goblin map yet"}
+              tone="gold"
+              disabled={!chart}
+              onClick={sailChart}
+            />
+          ) : null}
+
           {popup.kind === "tree" && popup.treeId ? (
             <Action label="Chop" tone="gold" onClick={() => chopTree(popup.treeId!)} />
           ) : null}
@@ -259,12 +276,20 @@ export function ClickPopup() {
           ) : null}
 
           {popup.hotspotId === "captain" ? (
-            <Action
-              label="Talk-to"
-              onClick={() =>
-                speak("Cute as a bun. Mean past the bar. Row the little boat until Sailing 5, then the sloop is yours.")
-              }
-            />
+            <>
+              <Action
+                label="Talk-to"
+                onClick={() =>
+                  speak("Cute as a bun. Mean past the bar. Row the little boat until Sailing 5, then the sloop is yours.")
+                }
+              />
+              <Action
+                label={chart ? "Follow the goblin map" : "No goblin map"}
+                tone="gold"
+                disabled={!chart}
+                onClick={sailChart}
+              />
+            </>
           ) : null}
 
           {popup.kind === "boat" ? (

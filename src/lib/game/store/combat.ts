@@ -6,6 +6,7 @@ import { sfx } from "../juice";
 import { PLAYER_START, type GameSave } from "../types";
 import { hitChance, levelsOf, maxHit, maxHitpoints } from "../xp";
 import { landingAlive, landingCleared } from "../data/landing";
+import { rolledChart } from "../data/honour";
 import { armAutoAttack, clearCombatTimer, foodCount, rememberLoot, scheduleWrite, setCombatTimer, withXp } from "./persist";
 import type { StoreGet, StoreSet, GameState } from "./types";
 
@@ -171,8 +172,28 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
     }
   }
   const lootLine = `Drops bones and ${e.coins} coins.`;
+  const chart = rolledChart(c.enemyId, s.chart);
+  let respect = s.respect;
+  let muckRaiders = s.muckRaiders;
+  let surrendered = s.surrendered;
+  let bonusCoins = 0;
+  if (c.enemyId === "goblin") respect += c.raidId ? 2 : 1;
+  if (c.enemyId === "raider") {
+    const idx = Number(c.packId?.replace("muck-r", ""));
+    if (idx >= 0 && idx < muckRaiders.length) {
+      muckRaiders = muckRaiders.map((alive, i) => (i === idx ? false : alive));
+    }
+    respect += 1;
+  }
+  if (c.enemyId === "chief") {
+    surrendered = true;
+    respect += 8;
+    bonusCoins = 40;
+    speech = "Chief Mucktooth drops. The town puts its knives down and pays 40 coins. The hollow hears of it.";
+  }
   speech = speech ? `${speech} ${lootLine}` : lootLine;
-  const loot = rememberLoot(get, set, c.atX, c.atY, 1, e.coins);
+  if (chart) speech = `${speech} A hide map shows their island.`;
+  const loot = rememberLoot(get, set, c.atX, c.atY, 1, e.coins + bonusCoins);
   let lifeDragon = s.lifeDragon;
   let absencePending = s.absencePending;
   if (c.enemyId === "dragon") {
@@ -197,6 +218,10 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
     quests,
     coinPopKey: s.coinPopKey + 1,
     bounceKey: s.bounceKey + 1,
+    respect,
+    chart: s.chart || chart,
+    surrendered,
+    muckRaiders,
     ...(speech ? { speech } : {}),
   });
   sfx("win");
@@ -405,15 +430,19 @@ export function combatSlice(
       clearCombatTimer();
       const won = c.phase === "won";
       const max = maxHitpoints(s.skills);
+      const isle = c.enemyId === "chief" || c.enemyId === "raider";
       set({
         combat: null,
         hp: won ? Math.min(max, c.playerHp + 4) : max,
         gnomeX: won ? s.gnomeX : PLAYER_START.x,
         gnomeY: won ? s.gnomeY : PLAYER_START.y,
+        abroad: won ? s.abroad : null,
         speech: won
-          ? s.lifeDragon.state === "soothed" || s.lifeDragon.state === "defeated"
-            ? "The wildlands hum. The ridge is quieter."
-            : "The wildlands respect a sword."
+          ? isle
+            ? s.speech
+            : s.lifeDragon.state === "soothed" || s.lifeDragon.state === "defeated"
+              ? "The wildlands hum. The ridge is quieter."
+              : "The wildlands respect a sword."
           : "Kettle on. Tomorrow we try again.",
         bounceKey: s.bounceKey + 1,
         popup: null,

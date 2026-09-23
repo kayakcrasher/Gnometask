@@ -1,5 +1,6 @@
 import { clamp, uid } from "@/lib/utils";
 import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
+import { DEFENDERS, NPC_STATS, rolledChart } from "../data/honour";
 import { ENEMIES, makeCombat, patrolEnemy, raidKindForHall } from "../combat";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
@@ -320,7 +321,43 @@ export function worldSlice(
         changed = true;
       }
 
-      if (raids.length < 2 && Math.random() < 0.38) {
+      if (!raids.some((r) => r.swarm) && raids.length === 0 && Math.random() < 0.08) {
+        raids = [0, 1, 2, 3].map((i) => ({
+          id: uid("swarm"),
+          kind: "goblin" as const,
+          x: 48 + i * 26,
+          y: 490 + (i % 2) * 34,
+          hp: 10,
+          swarm: true,
+        }));
+        speech = "A swarm at the dock. Greg, Brine, and Ol Pappy take the shore.";
+        changed = true;
+      } else if (raids.some((r) => r.swarm)) {
+        const who = DEFENDERS[Math.floor(Math.random() * DEFENDERS.length)]!;
+        const stat = NPC_STATS[who]!;
+        const idx = raids.findIndex((r) => r.swarm && r.hp > 0);
+        if (idx >= 0) {
+          const hit = Math.max(1, Math.round(stat.atk / 3));
+          const hp = raids[idx]!.hp - hit;
+          const name = who === "pappy" ? "Ol Pappy" : who === "greg" ? "Watcher Greg" : who[0]!.toUpperCase() + who.slice(1);
+          if (hp <= 0) {
+            const chart = rolledChart("goblin", get().chart);
+            raids = raids.filter((_, i) => i !== idx);
+            speech = chart
+              ? `${name} drops a goblin. A hide map falls out of its belt.`
+              : `${name} drops a goblin. The town's honour holds. +1 respect.`;
+            set({
+              respect: get().respect + 1,
+              chart: get().chart || chart,
+              coins: get().coins + 4,
+            });
+          } else {
+            raids = raids.map((r, i) => (i === idx ? { ...r, hp } : r));
+            speech = `${name} strikes from the shore. The goblin has ${hp} left.`;
+          }
+          changed = true;
+        }
+      } else if (raids.length < 2 && Math.random() < 0.38) {
         const kind = raidKindForHall(s.townHallLevel);
         if (kind === "goblin" && s.guardLevel >= 3 && Math.random() < 0.7) {
           speech = "The Guardsgnome sees off a goblin raft. Haven's spear, town's peace.";

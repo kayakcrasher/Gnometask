@@ -79,7 +79,10 @@ export type Raid = {
   x: number;
   y: number;
   hp: number;
+  swarm?: boolean;
 };
+
+export type Loan = { boat: string; owed: number };
 
 export type LandingGoblin = {
   id: string;
@@ -205,6 +208,13 @@ export type GameSave = {
   plots: Record<string, PlotSave>;
   seeds: Record<string, number>;
   produce: Record<string, number>;
+  respect: number;
+  chart: boolean;
+  surrendered: boolean;
+  loan: Loan | null;
+  claimed: string[];
+  hulls: string[];
+  muckRaiders: boolean[];
   ownedGear: string[];
   equipment: Equipment;
   wildWins: number;
@@ -250,6 +260,7 @@ export type GameUi = {
   lootFlash: LootFlash | null;
   fishing: FishingCast | null;
   dayPhase: DayPhase;
+  abroad: "mucktooth" | null;
 };
 
 export { BUILDING_MAX, METRICS, PLACES, PLAYER_START } from "./data/places";

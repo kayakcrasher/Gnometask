@@ -40,6 +40,8 @@ export function InventoryView() {
   const chickenHeld = useGame((s) => s.chickenHeld);
   const logs = useGame((s) => s.logs);
   const bones = useGame((s) => s.bones);
+  const respect = useGame((s) => s.respect);
+  const chart = useGame((s) => s.chart);
   const fishBag = useGame((s) => s.fishBag);
   const sellFish = useGame((s) => s.sellFish);
   const combat = useGame((s) => s.combat);
@@ -186,7 +188,8 @@ export function InventoryView() {
           ))}
         </div>
         <p className="mt-3 text-sm font-semibold text-bark/70">
-          Food · honey {honey} · loaves {bread} · logs {logs} · bones {bones}. Fort {fortLevel}/5. Guard {guardLevel}/5.
+          Food · honey {honey} · loaves {bread} · logs {logs} · bones {bones}. Respect {respect}.
+          {chart ? " A goblin map is in the satchel." : ""} Fort {fortLevel}/5. Guard {guardLevel}/5.
         </p>
         {FISH.some((f) => (fishBag[f.id] ?? 0) > 0) ? (
           <>
