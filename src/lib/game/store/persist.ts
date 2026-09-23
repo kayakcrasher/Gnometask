@@ -76,6 +76,8 @@ export function snap(s: GameSave): GameSave {
     woodsGreeted: s.woodsGreeted,
     townHallLevel: s.townHallLevel,
     logs: s.logs,
+    saplings: s.saplings,
+    deeds: s.deeds,
     bones: s.bones,
     fishBag: s.fishBag,
     tank: s.tank,

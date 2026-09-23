@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { type MouseEvent as ReactMouseEvent } from "react";
 import { ISLAND_POLY, BEACH_POLY } from "@/lib/game/world3";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { NPCS } from "@/lib/game/world";
 import { WORLD_PACK } from "@/lib/game/catalog";
 import { FAR_ISLES } from "@/lib/game/data/trade";
+import { DeedMap } from "./deed-map";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
@@ -28,6 +30,7 @@ export function Minimap({
   compassRef: { current: HTMLDivElement | null };
 }) {
   const travel = useGame((s) => s.travelIsle);
+  const [deedsOpen, setDeedsOpen] = useState(false);
   const cleared = useGame((s) => s.clearedPack);
   const dragon = useGame((s) => s.lifeDragon);
   const hall = useGame((s) => s.townHallLevel);
@@ -96,9 +99,14 @@ export function Minimap({
           <polygon points="0,-34 22,28 -22,28" fill="#24402f" stroke="#f2e8d5" strokeWidth="6" />
         </g>
       </svg>
-      <p className="hidden rounded-full bg-parchment/90 px-2 py-0.5 font-display text-[10px] font-semibold text-ink md:block">
-        Walk
-      </p>
+      <button
+        type="button"
+        onClick={() => setDeedsOpen(true)}
+        className="rounded-full bg-parchment px-2 py-0.5 font-display text-[10px] font-semibold text-ink shadow-panel"
+      >
+        Deeds
+      </button>
+      {deedsOpen ? <DeedMap onClose={() => setDeedsOpen(false)} /> : null}
     </div>
   );
 }

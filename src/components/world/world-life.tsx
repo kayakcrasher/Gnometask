@@ -20,9 +20,10 @@ function useLabels() {
   return !combat && !interior && panel === "place";
 }
 
-function treeStageOf(choppedAt: number | undefined, now: number) {
-  if (!choppedAt) return "grown";
-  const age = now - choppedAt;
+function treeStageOf(rec: { stage?: string; choppedAt?: number } | undefined, now: number) {
+  if (rec?.stage === "gone") return "gone";
+  if (!rec?.choppedAt) return "grown";
+  const age = now - rec.choppedAt;
   if (age < TREE_SAPLING_MS) return "stump";
   if (age < TREE_GROW_MS) return "sapling";
   return "grown";
@@ -38,8 +39,24 @@ export function Trees3({
   return (
     <group>
       {TREE_SPOTS.map((t) => {
-        const stage = treeStageOf(trees[t.id]?.choppedAt, now);
+        const stage = treeStageOf(trees[t.id], now);
         const p = to3(t.x, t.y, groundY(t.x, t.y));
+        if (stage === "gone") {
+          return (
+            <mesh
+              key={t.id}
+              position={p}
+              rotation={[-Math.PI / 2, 0, 0]}
+              onClick={(e) => {
+                e.stopPropagation();
+                onTree(t.id, t.x, t.y);
+              }}
+            >
+              <circleGeometry args={[0.28, 10]} />
+              <meshStandardMaterial color="#6b5344" />
+            </mesh>
+          );
+        }
         if (stage === "stump") {
           return (
             <Kenney
@@ -68,6 +85,24 @@ export function Trees3({
           />
         );
       })}
+    </group>
+  );
+}
+
+export function EastHills() {
+  const hills = [
+    { x: 2480, y: 420, r: 2.4, h: 0.7 },
+    { x: 2320, y: 560, r: 1.8, h: 0.45 },
+    { x: 2200, y: 720, r: 1.4, h: 0.32 },
+  ];
+  return (
+    <group>
+      {hills.map((h) => (
+        <mesh key={`${h.x}-${h.y}`} position={to3(h.x, h.y, 0.08)} scale={[1, 0.38, 1]} receiveShadow>
+          <sphereGeometry args={[h.r, 18, 12]} />
+          <meshStandardMaterial color="#5f7d52" roughness={0.95} />
+        </mesh>
+      ))}
     </group>
   );
 }

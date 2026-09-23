@@ -20,7 +20,7 @@ import { YardLife } from "./yard-life";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
-import { Fights3, Landing3, LootFlash3, Npcs3, Rocks3, Towers3, Trees3 } from "./world-life";
+import { EastHills, Fights3, Landing3, LootFlash3, Npcs3, Rocks3, Towers3, Trees3 } from "./world-life";
 import { Kenney } from "./kenney";
 import { groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
@@ -237,12 +237,13 @@ function SceneBody({
             hotspotId: id,
             treeId: id,
             title: spot ? `${spot.kind[0]!.toUpperCase()}${spot.kind.slice(1)} tree` : "Tree",
-            blurb: "Click Chop with a hatchet. It will grow back.",
+            blurb: "Chop it down for logs and two saplings. A cleared spot stays gone until you plant one back.",
             place: "woods",
           });
         }}
       />
       <Rocks3 />
+      <EastHills />
       <Npcs3
         poses={npcPoses}
         onNpc={(id, x, y) => {

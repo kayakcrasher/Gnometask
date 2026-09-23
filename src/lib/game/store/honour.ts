@@ -1,4 +1,5 @@
 import { BOAT_LOANS, LAND_OFFERS, rolledChart } from "../data/honour";
+import { parcelAt } from "../data/parcels";
 import { BOAT_RANK, type BoatId } from "../data/boats";
 import { makeCombat } from "../combat";
 import { sfx } from "../juice";
@@ -9,7 +10,7 @@ import type { GameState, StoreGet, StoreSet } from "./types";
 export function honourSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "sailChart" | "leaveIsle" | "startIsleFight" | "claimTile" | "takeLoan" | "repayLoan"> {
+): Pick<GameState, "sailChart" | "leaveIsle" | "startIsleFight" | "claimTile" | "buyParcel" | "takeLoan" | "repayLoan"> {
   return {
     sailChart: () => {
       const s = get();
@@ -88,6 +89,31 @@ export function honourSlice(
           tile.kind === "yard"
             ? `The ${tile.name.toLowerCase()} is yours. Plant it.`
             : `You hold the ${tile.name.toLowerCase()}. The town marks it with your colour.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
+    buyParcel: (id) => {
+      const s = get();
+      const tile = parcelAt(id);
+      if (!tile) return;
+      if (s.deeds.includes(id)) {
+        set({ speech: "You already hold that ground." });
+        return;
+      }
+      if (s.coins < tile.price) {
+        sfx("error");
+        set({ speech: `${tile.ownerName ? tile.ownerName + "'s ground" : "That parcel"} is ${tile.price} coins.` });
+        return;
+      }
+      set({
+        deeds: [...s.deeds, id],
+        coins: s.coins - tile.price,
+        coinPopKey: s.coinPopKey + 1,
+        speech: tile.ownerName
+          ? `${tile.ownerName} sells the deed. They stay. The ground is yours. ${tile.price} coins.`
+          : `A piece of the hollow. ${tile.price} coins. The deed is in your name.`,
       });
       sfx("buy");
       scheduleWrite(get);

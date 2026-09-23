@@ -73,6 +73,18 @@ function Action({
   );
 }
 
+function TreeActions({ treeId }: { treeId: string }) {
+  const trees = useGame((s) => s.trees);
+  const saplings = useGame((s) => s.saplings);
+  const chop = useGame((s) => s.chopTree);
+  const plant = useGame((s) => s.plantSapling);
+  const gone = trees[treeId]?.stage === "gone";
+  if (gone) {
+    return <Action label={saplings > 0 ? "Plant sapling" : "No sapling"} tone="gold" disabled={saplings < 1} onClick={() => plant(treeId)} />;
+  }
+  return <Action label="Chop" tone="gold" onClick={() => chop(treeId)} />;
+}
+
 function TowerActions({
   slotId,
   placed,
@@ -131,7 +143,6 @@ export function ClickPopup() {
   const chickenHeld = useGame((s) => s.chickenHeld);
   const pieHeld = useGame((s) => s.pieHeld);
   const woodsGreeted = useGame((s) => s.woodsGreeted);
-  const chopTree = useGame((s) => s.chopTree);
   const sailTo = useGame((s) => s.sailTo);
   const castLine = useGame((s) => s.castLine);
   const skills = useGame((s) => s.skills);
@@ -268,7 +279,7 @@ export function ClickPopup() {
           ) : null}
 
           {popup.kind === "tree" && popup.treeId ? (
-            <Action label="Chop" tone="gold" onClick={() => chopTree(popup.treeId!)} />
+            <TreeActions treeId={popup.treeId} />
           ) : null}
 
           {popup.kind === "flag" ? (

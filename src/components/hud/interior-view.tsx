@@ -154,6 +154,20 @@ function DockhousePanel() {
   );
 }
 
+function LogTill() {
+  const logs = useGame((s) => s.logs);
+  const saplings = useGame((s) => s.saplings);
+  const sell = useGame((s) => s.sellLogs);
+  return (
+    <div className="flex items-center gap-2 text-xs font-semibold text-ink">
+      <span className="flex-1">Logs {logs} · saplings {saplings}</span>
+      <button type="button" disabled={logs < 1} onClick={sell} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink disabled:opacity-40">
+        Sell log 2
+      </button>
+    </div>
+  );
+}
+
 function ProduceStall() {
   const seeds = useGame((s) => s.seeds);
   const produce = useGame((s) => s.produce);
@@ -173,6 +187,7 @@ function ProduceStall() {
   return (
     <div className="mb-3 flex flex-col gap-2">
       <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">The counter. This is where coins happen.</p>
+      <LogTill />
       {CROPS.map((crop) => (
         <div key={crop.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
           <span className="size-3 rounded-full" style={{ background: crop.color }} />

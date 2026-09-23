@@ -100,6 +100,12 @@ export function groundY(x: number, y: number) {
   if (mines < 140) return 0.28;
   const ruins = Math.hypot(x - 2360, y - 260);
   if (ruins < 140) return 0.35;
+  const eastA = Math.hypot(x - 2480, y - 420);
+  if (eastA < 150) return 0.12 + (1 - eastA / 150) * 0.85;
+  const eastB = Math.hypot(x - 2320, y - 560);
+  if (eastB < 120) return 0.1 + (1 - eastB / 120) * 0.55;
+  const eastC = Math.hypot(x - 2200, y - 720);
+  if (eastC < 100) return 0.1 + (1 - eastC / 100) * 0.4;
   if (!onGrass(x, y)) return 0.02;
   return 0.08;
 }

@@ -1,5 +1,6 @@
 export type TreeKind = "oak" | "pine" | "thin";
-export type TreeStage = "grown" | "stump" | "sapling";
+export type TreeStage = "grown" | "stump" | "sapling" | "gone";
+export type TreeSize = "medium" | "large";
 
 export type TreeModel =
   | "tree_oak"
@@ -23,6 +24,8 @@ export type TreeSpot = {
   y: number;
   model: TreeModel;
   scale: number;
+  /** Large trees pay 5 logs. Everything else pays 3. */
+  size?: TreeSize;
 };
 
 export const TREE_SPOTS: TreeSpot[] = [
@@ -56,7 +59,41 @@ export const TREE_SPOTS: TreeSpot[] = [
   { id: "t27", kind: "pine", x: 1080, y: 1120, model: "tree_cone", scale: 1.2 },
   { id: "t28", kind: "thin", x: 1460, y: 640, model: "tree_tall", scale: 1.25 },
   { id: "t29", kind: "oak", x: 2100, y: 180, model: "tree_simple", scale: 1.2 },
+  { id: "t30", kind: "pine", x: 2460, y: 400, model: "tree_pineTallA", scale: 1.55, size: "large" },
+  { id: "t31", kind: "oak", x: 2360, y: 470, model: "tree_oak", scale: 1.4, size: "large" },
+  { id: "t32", kind: "pine", x: 2280, y: 540, model: "tree_pineTallA_detailed", scale: 1.45, size: "large" },
+  { id: "t33", kind: "oak", x: 2520, y: 520, model: "tree_fat", scale: 1.35, size: "large" },
+  { id: "t34", kind: "thin", x: 2200, y: 640, model: "tree_tall", scale: 1.2 },
+  { id: "t35", kind: "pine", x: 2340, y: 680, model: "tree_pineRoundA", scale: 1.3 },
+  { id: "t36", kind: "oak", x: 2140, y: 760, model: "tree_oak_dark", scale: 1.25 },
+  { id: "t37", kind: "pine", x: 2420, y: 760, model: "tree_cone", scale: 1.35, size: "large" },
+  { id: "t38", kind: "thin", x: 2580, y: 340, model: "tree_thin", scale: 1.15 },
+  { id: "t39", kind: "oak", x: 2480, y: 280, model: "tree_detailed", scale: 1.3 },
+  { id: "t40", kind: "pine", x: 1880, y: 520, model: "tree_pineTallA", scale: 1.4, size: "large" },
+  { id: "t41", kind: "oak", x: 1760, y: 620, model: "tree_oak", scale: 1.2 },
+  { id: "t42", kind: "pine", x: 1620, y: 480, model: "tree_pineSmallA", scale: 1.15 },
+  { id: "t43", kind: "oak", x: 980, y: 280, model: "tree_oak_dark", scale: 1.25 },
+  { id: "t44", kind: "pine", x: 640, y: 180, model: "tree_pineTallA_detailed", scale: 1.4, size: "large" },
+  { id: "t45", kind: "thin", x: 420, y: 140, model: "tree_small", scale: 1.05 },
+  { id: "t46", kind: "oak", x: 560, y: 980, model: "tree_fat", scale: 1.3 },
+  { id: "t47", kind: "pine", x: 880, y: 1100, model: "tree_cone", scale: 1.35, size: "large" },
+  { id: "t48", kind: "oak", x: 1240, y: 980, model: "tree_detailed", scale: 1.2 },
+  { id: "t49", kind: "thin", x: 1500, y: 1100, model: "tree_tall", scale: 1.2 },
+  { id: "t50", kind: "pine", x: 2000, y: 980, model: "tree_pineRoundA", scale: 1.25 },
+  { id: "t51", kind: "oak", x: 360, y: 900, model: "tree_oak", scale: 1.15 },
+  { id: "t52", kind: "pine", x: 300, y: 240, model: "tree_pineTallA", scale: 1.35, size: "large" },
 ];
+
+export function treeSize(spot: TreeSpot): TreeSize {
+  if (spot.size) return spot.size;
+  if (spot.scale >= 1.35) return "large";
+  if (spot.model.includes("Tall") || spot.model.includes("fat") || spot.model === "tree_tall") return "large";
+  return "medium";
+}
+
+export function logsFor(spot: TreeSpot) {
+  return treeSize(spot) === "large" ? 5 : 3;
+}
 
 export const TREE_GROW_MS = 48_000;
 export const TREE_SAPLING_MS = 18_000;

@@ -202,6 +202,8 @@ export type GameSave = {
   honey: number;
   bread: number;
   logs: number;
+  saplings: number;
+  deeds: string[];
   bones: number;
   fishBag: Record<string, number>;
   tank: Record<string, number>;

@@ -1,5 +1,5 @@
 import { bestHatchet, bestRod, CATALOG_BY_ID, gearStats } from "../catalog";
-import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "../data/trees";
+import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS, logsFor, treeSize } from "../data/trees";
 import { sfx } from "../juice";
 import { PLACE_ANCHORS, VILLAGE_SLOTS } from "../data/layout";
 import { BOAT_RANK, boatById } from "../data/boats";
@@ -9,9 +9,10 @@ import { levelFromXp, levelsOf } from "../xp";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
-function treeStage(choppedAt: number | undefined, now: number) {
-  if (!choppedAt) return "grown" as const;
-  const age = now - choppedAt;
+function treeStage(rec: { stage?: string; choppedAt?: number } | undefined, now: number) {
+  if (rec?.stage === "gone") return "gone" as const;
+  if (!rec?.choppedAt) return "grown" as const;
+  const age = now - rec.choppedAt;
   if (age < TREE_SAPLING_MS) return "stump" as const;
   if (age < TREE_GROW_MS) return "sapling" as const;
   return "grown" as const;
@@ -20,7 +21,7 @@ function treeStage(choppedAt: number | undefined, now: number) {
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "buyBoat" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "buyBoat" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -45,7 +46,7 @@ export function gatherSlice(
       const spot = TREE_SPOTS.find((t) => t.id === treeId);
       if (!spot) return;
       const rec = s.trees[treeId];
-      const stage = treeStage(rec?.choppedAt, Date.now());
+      const stage = treeStage(rec, Date.now());
       if (stage !== "grown") {
         set({ speech: stage === "stump" ? "A stump. Give it a minute to remember being a tree." : "A sapling. Not yet." });
         return;
@@ -60,27 +61,65 @@ export function gatherSlice(
       const wc = gearStats(hatchet).wc || 1;
       const xp = 18 + wc * 8;
       const gained = withXp(s.skills, { woodcutting: xp });
-      const nextLogs = s.logs + 1;
+      const logs = logsFor(spot);
+      const nextLogs = s.logs + logs;
       const quests = s.quests.map((q) =>
         q.id === "pappy-timber" && q.stage === "active" ? { ...q, stage: "ready" as const } : q,
       );
       set({
         logs: nextLogs,
-        trees: { ...s.trees, [treeId]: { stage: "stump", choppedAt: Date.now() } },
+        saplings: s.saplings + 2,
+        trees: { ...s.trees, [treeId]: { stage: "gone", choppedAt: Date.now() } },
         skills: gained.skills,
         popup: null,
         quests,
         speech:
           gained.ding ??
-          (quests.some((q) => q.id === "pappy-timber" && q.stage === "ready")
-            ? `A log for Ol Pappy. +${xp} Woodcutting. He's by the cottage.`
-            : `The ${spot.kind} yields. +1 log. +${xp} Woodcutting.`),
+          `The ${treeSize(spot)} ${spot.kind} comes down. +${logs} logs, 2 saplings, +${xp} Woodcutting. The spot is clear if you want it gone.`,
         bounceKey: s.bounceKey + 1,
       });
       sfx("place");
       scheduleWrite(get);
       const chore = get().tasks.find((t) => t.builtinKey === "chop-stakes" && !t.done);
       if (chore) get().toggleTask(chore.id);
+    },
+
+    plantSapling: (treeId) => {
+      const s = get();
+      const spot = TREE_SPOTS.find((t) => t.id === treeId);
+      if (!spot) return;
+      if (treeStage(s.trees[treeId], Date.now()) !== "gone") {
+        set({ speech: "Something is already growing there." });
+        return;
+      }
+      if (s.saplings < 1) {
+        set({ speech: "No sapling in the sack. Chop a tree. They drop two." });
+        return;
+      }
+      set({
+        saplings: s.saplings - 1,
+        trees: { ...s.trees, [treeId]: { stage: "sapling", choppedAt: Date.now() - TREE_SAPLING_MS } },
+        popup: null,
+        speech: "Sapling in the ground. It will remember being a tree.",
+      });
+      sfx("place");
+      scheduleWrite(get);
+    },
+
+    sellLogs: () => {
+      const s = get();
+      if (s.logs < 1) {
+        set({ speech: "No logs to sell." });
+        return;
+      }
+      set({
+        logs: s.logs - 1,
+        coins: s.coins + 2,
+        coinPopKey: s.coinPopKey + 1,
+        speech: "The counter takes a log. +2 coins.",
+      });
+      sfx("buy");
+      scheduleWrite(get);
     },
 
     sailTo: (dest, boatId) => {
