@@ -1,3 +1,5 @@
+import type { DayPhase } from "./data/daynight";
+import type { PlotSave } from "./data/crops";
 import type { QuestSave } from "./quests";
 import type { SkillId, Skills } from "./xp";
 import type { TreeStage } from "./data/trees";
@@ -41,7 +43,8 @@ export type InteriorId =
   | "general"
   | "haven-shop"
   | "townhall"
-  | "watch";
+  | "watch"
+  | "bank";
 
 export type DragonLook = "ember" | "moss" | "night" | "gold";
 export type DragonHorn = "short" | "long" | "crown";
@@ -103,7 +106,7 @@ export type LootFlash = {
   coins: number;
 };
 
-export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat" | "tower" | "flag" | "fish";
+export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat" | "tower" | "flag" | "fish" | "plot";
 
 export type GamePopup = {
   kind: PopupKind;
@@ -199,6 +202,9 @@ export type GameSave = {
   fishBag: Record<string, number>;
   tank: Record<string, number>;
   boatRank: number;
+  plots: Record<string, PlotSave>;
+  seeds: Record<string, number>;
+  produce: Record<string, number>;
   ownedGear: string[];
   equipment: Equipment;
   wildWins: number;
@@ -243,6 +249,7 @@ export type GameUi = {
   praying: boolean;
   lootFlash: LootFlash | null;
   fishing: FishingCast | null;
+  dayPhase: DayPhase;
 };
 
 export { BUILDING_MAX, METRICS, PLACES, PLAYER_START } from "./data/places";

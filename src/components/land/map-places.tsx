@@ -1,6 +1,7 @@
 import { useGame } from "@/lib/game/store";
 import type { GamePopup, InteriorId } from "@/lib/game/types";
 import { HAVEN_ORIGIN, NPCS, TOWN_SHOPS } from "@/lib/game/world";
+import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { randOf } from "@/lib/game/quotes";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 import { GnomeSprite } from "./gnome";
@@ -27,16 +28,16 @@ export function MapPlaces({
   return (
     <>
       <MapHotspot
-        x={374}
-        y={400}
+        x={PLACE_ANCHORS.cottage.x}
+        y={PLACE_ANCHORS.cottage.y}
         rx={62}
         ry={52}
         selected={save.popup?.hotspotId === "cottage"}
         label="The Cottage"
         onHover={hoverTip}
-        onActivate={() => goInside(374, 430, "cottage")}
+        onActivate={() => goInside(PLACE_ANCHORS.cottage.x, PLACE_ANCHORS.cottage.y, "cottage")}
       >
-        <Cottage x={330} y={340} upgrades={save.houseUpgrades} />
+        <Cottage x={PLACE_ANCHORS.cottage.x - 50} y={PLACE_ANCHORS.cottage.y - 60} upgrades={save.houseUpgrades} />
       </MapHotspot>
 
       {TOWN_SHOPS.map((shop) => (

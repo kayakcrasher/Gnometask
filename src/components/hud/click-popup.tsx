@@ -3,6 +3,8 @@ import { CATALOG_BY_ID } from "@/lib/game/catalog";
 import { nextTowerId } from "@/lib/game/data/catalog/towers";
 import { ENEMIES } from "@/lib/game/combat";
 import { BOATS } from "@/lib/game/data/boats";
+import { FISH } from "@/lib/game/data/fish";
+import { CROP_BY_ID, CROPS, pailBonusMs, plotStage, type CropId } from "@/lib/game/data/crops";
 import { BUILDING_MAX } from "@/lib/game/types";
 import { levelFromXp } from "@/lib/game/xp";
 import { useGame } from "@/lib/game/store";
@@ -11,6 +13,35 @@ import { QUEST_BY_ID } from "@/lib/game/quests";
 import { randOf } from "@/lib/game/quotes";
 import type { EnemyId } from "@/lib/game/combat";
 import { cn } from "@/lib/utils";
+
+function PlotActions({ id }: { id: string }) {
+  const plots = useGame((s) => s.plots);
+  const seeds = useGame((s) => s.seeds);
+  const owned = useGame((s) => s.ownedGear);
+  const plant = useGame((s) => s.plantPlot);
+  const water = useGame((s) => s.waterPlot);
+  const harvest = useGame((s) => s.harvestPlot);
+  const clear = useGame((s) => s.clearPlot);
+  const stage = plotStage(plots[id], Date.now(), pailBonusMs(owned) ?? 0);
+  const crop = plots[id] ? CROP_BY_ID[plots[id].crop] : null;
+  if (stage === "empty") {
+    return (
+      <>
+        {CROPS.map((c) => (
+          <Action
+            key={c.id}
+            label={(seeds[c.id] ?? 0) > 0 ? `Plant ${c.name}` : `${c.name} seed`}
+            disabled={(seeds[c.id] ?? 0) < 1}
+            onClick={() => plant(id, c.id as CropId)}
+          />
+        ))}
+      </>
+    );
+  }
+  if (stage === "dead") return <Action label="Clear the bed" tone="quiet" onClick={() => clear(id)} />;
+  if (stage === "ready") return <Action label={`Harvest ${crop?.name ?? "crop"}`} tone="gold" onClick={() => harvest(id)} />;
+  return <Action label="Water" tone="gold" onClick={() => water(id)} />;
+}
 
 function Action({
   label,
@@ -259,6 +290,8 @@ export function ClickPopup() {
               />
             </>
           ) : null}
+
+          {popup.kind === "plot" && popup.hotspotId ? <PlotActions id={popup.hotspotId} /> : null}
 
           {popup.kind === "fish" && popup.hotspotId === "shore" ? (
             <Action label="Cast" tone="gold" onClick={() => castLine("shore", 24, 560)} />

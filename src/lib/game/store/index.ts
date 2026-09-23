@@ -1,4 +1,6 @@
+import { clockSlice } from "./clock";
 import { combatSlice } from "./combat";
+import { farmSlice } from "./farm";
 import { economySlice } from "./economy";
 import { gatherSlice } from "./gather";
 import { UI_SEED } from "./persist";
@@ -24,6 +26,8 @@ export const useGame = create<GameState>((set, get) => ({
   ...questsSlice(set, get),
   ...combatSlice(set, get),
   ...gatherSlice(set, get),
+  ...farmSlice(set, get),
+  ...clockSlice(),
 }));
 
 if (typeof window !== "undefined") {

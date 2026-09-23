@@ -38,7 +38,7 @@ export function defaultSave(): GameSave {
     perfectBonusOn: null,
     honey: 1,
     bread: 2,
-    ownedGear: ["weapon-stick", "hatchet-wood", "hoe-wood", "rod-wood"],
+    ownedGear: ["weapon-stick", "hatchet-wood", "hoe-wood", "rod-wood", "pail-wood"],
     equipment: { weapon: "weapon-stick", shield: null, armor: null, tool: "hoe-wood" },
     wildWins: 0,
     hp: maxHitpoints(skills),
@@ -70,10 +70,30 @@ export function defaultSave(): GameSave {
     fishBag: {},
     tank: {},
     boatRank: 1,
+    plots: {},
+    seeds: { carrot: 2 },
+    produce: {},
     trees: {},
     landing: null,
     combatStyle: "attack",
   };
+}
+
+function asPlots(raw: unknown): Record<string, import("./data/crops").PlotSave> {
+  if (!raw || typeof raw !== "object") return {};
+  const out: Record<string, import("./data/crops").PlotSave> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!value || typeof value !== "object") continue;
+    const v = value as { crop?: unknown; plantedAt?: unknown; wateredAt?: unknown };
+    if (v.crop !== "carrot" && v.crop !== "turnip" && v.crop !== "cabbage" && v.crop !== "pumpkin") continue;
+    if (typeof v.plantedAt !== "number") continue;
+    out[key] = {
+      crop: v.crop,
+      plantedAt: v.plantedAt,
+      wateredAt: typeof v.wateredAt === "number" ? v.wateredAt : null,
+    };
+  }
+  return out;
 }
 
 function asFishBag(raw: unknown): Record<string, number> {
@@ -167,6 +187,7 @@ export function migrate(raw: unknown): GameSave {
   if (!ownedGear.includes("hatchet-wood")) ownedGear.push("hatchet-wood");
   if (!ownedGear.includes("hoe-wood")) ownedGear.push("hoe-wood");
   if (!ownedGear.includes("rod-wood")) ownedGear.push("rod-wood");
+  if (!ownedGear.includes("pail-wood")) ownedGear.push("pail-wood");
 
   const equipment = {
     weapon: s.equipment?.weapon ?? ownedGear.find((id) => id.startsWith("weapon-")) ?? "weapon-stick",
@@ -256,6 +277,9 @@ export function migrate(raw: unknown): GameSave {
     fishBag: asFishBag(s.fishBag),
     tank: asFishBag(s.tank),
     boatRank: typeof s.boatRank === "number" ? Math.max(1, Math.min(5, s.boatRank)) : 1,
+    plots: asPlots(s.plots),
+    seeds: s.seeds == null ? { carrot: 2 } : asFishBag(s.seeds),
+    produce: asFishBag(s.produce),
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",

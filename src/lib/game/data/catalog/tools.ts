@@ -25,6 +25,14 @@ const ROD: Record<GearTier, { name: string; blurb: string; fish: number; req?: n
   adamant: { name: "Adamant rod", blurb: "Green as the sea at dusk. Leviathans take it personally. Fishing 16.", fish: 4, req: 16 },
 };
 
+const PAIL: Record<GearTier, { name: string; blurb: string; req?: number }> = {
+  wood: { name: "Wooden water pail", blurb: "It leaks a little. The carrots do not mind." },
+  bronze: { name: "Bronze pail", blurb: "Holds a proper splash. Crops last longer. Farming 3.", req: 3 },
+  iron: { name: "Iron pail", blurb: "A farmer's pail. Farming 6.", req: 6 },
+  steel: { name: "Steel pail", blurb: "The beds stay wet through a long afternoon. Farming 10.", req: 10 },
+  adamant: { name: "Adamant pail", blurb: "Green metal, deep water. Almost unfair to weeds. Farming 16.", req: 16 },
+};
+
 export const TOOLS: CatalogItem[] = [
   ...TIERS.map((tier) => {
     const t = TIER_META[tier];
@@ -73,6 +81,22 @@ export const TOOLS: CatalogItem[] = [
       reqHall: t.hall,
       reqSkill: r.req ? ("fishing" as const) : undefined,
       reqLevel: r.req,
+    };
+  }),
+  ...TIERS.map((tier) => {
+    const t = TIER_META[tier];
+    const p = PAIL[tier];
+    return {
+      id: `pail-${tier}`,
+      name: p.name,
+      blurb: p.blurb,
+      price: tier === "wood" ? 8 : Math.max(14, t.price - 4),
+      kind: "tool" as const,
+      slot: "tool" as const,
+      farm: t.farm,
+      reqHall: t.hall,
+      reqSkill: p.req ? ("farming" as const) : undefined,
+      reqLevel: p.req,
     };
   }),
 ];

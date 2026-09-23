@@ -1,4 +1,5 @@
 import type { StoreApi } from "zustand";
+import type { CropId } from "../data/crops";
 import type { CombatState, EnemyId } from "../combat";
 import type {
   BuildingId,
@@ -38,6 +39,12 @@ export type GameState = GameSave &
     castLine: (where: "shore" | "sea", x: number, y: number, boatId?: string) => void;
     sellFish: (id: string) => void;
     stockFish: (id: string) => void;
+    plantPlot: (plotId: string, cropId: CropId) => void;
+    waterPlot: (plotId: string) => void;
+    harvestPlot: (plotId: string) => void;
+    clearPlot: (plotId: string) => void;
+    buySeed: (cropId: CropId) => void;
+    sellProduce: (cropId: CropId) => void;
     speak: (text: string, bounce?: boolean) => void;
     addTask: (text: string, location?: PlaceId) => void;
     toggleTask: (id: string) => void;

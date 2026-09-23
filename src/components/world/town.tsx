@@ -2,6 +2,7 @@ import { Html } from "@react-three/drei";
 import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
 import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
+import { EMPTY_LOTS, PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
@@ -197,6 +198,60 @@ function Hall3({
   );
 }
 
+function Bank3({
+  position,
+  onEnter,
+}: {
+  position: [number, number, number];
+  onEnter?: () => void;
+}) {
+  const coins = useGame((s) => s.coins);
+  const tier = coins >= 200 ? 4 : coins >= 100 ? 3 : coins >= 40 ? 2 : 1;
+  const w = 1.5 + tier * 0.28;
+  const h = 1.15 + tier * 0.28;
+  const stone = tier >= 2;
+  return (
+    <group
+      position={position}
+      onClick={(e) => {
+        e.stopPropagation();
+        onEnter?.();
+      }}
+    >
+      <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[w, h, 1.35]} />
+        <meshStandardMaterial color={stone ? "#d9d3c6" : "#f0e2c4"} />
+      </mesh>
+      {tier >= 3
+        ? [-1, 1].map((side) => (
+            <mesh key={side} position={[side * (w / 2 - 0.15), h * 0.45, 0.7]} castShadow>
+              <boxGeometry args={[0.14, h * 0.7, 0.14]} />
+              <meshStandardMaterial color="#c9c3b4" />
+            </mesh>
+          ))
+        : null}
+      <mesh position={[0, 0.36, 0.72]} castShadow>
+        <boxGeometry args={[0.4, 0.7, 0.06]} />
+        <meshStandardMaterial color="#5b4230" />
+      </mesh>
+      <mesh position={[0, h + 0.28, 0]} castShadow>
+        <boxGeometry args={[w + 0.2, 0.16, 1.55]} />
+        <meshStandardMaterial color={tier >= 4 ? "#d6a84c" : "#c4553a"} />
+      </mesh>
+      {tier >= 4 ? (
+        <mesh position={[0, h + 0.7, 0]} castShadow>
+          <boxGeometry args={[0.55, 0.7, 0.55]} />
+          <meshStandardMaterial color="#d9d3c6" />
+        </mesh>
+      ) : null}
+      <mesh position={[0, h + (tier >= 4 ? 1.15 : 0.5), 0]}>
+        <boxGeometry args={[0.28, 0.18, 0.04]} />
+        <meshStandardMaterial color="#e2b84a" metalness={0.4} />
+      </mesh>
+    </group>
+  );
+}
+
 export function Cottage3({
   upgrades,
   onEnter,
@@ -204,7 +259,8 @@ export function Cottage3({
   upgrades: string[];
   onEnter: () => void;
 }) {
-  const p = to3(374, 400, groundY(374, 400));
+  const spot = PLACE_ANCHORS.cottage;
+  const p = to3(spot.x, spot.y, groundY(spot.x, spot.y));
   return (
     <group
       position={p}
@@ -240,6 +296,9 @@ export function Town3({
         if (shop.id === "townhall") {
           return <Hall3 key={shop.id} level={hallLevel} position={p} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />;
         }
+        if (shop.id === "bank") {
+          return <Bank3 key={shop.id} position={p} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />;
+        }
         return (
           <TimberHouse
             key={shop.id}
@@ -251,14 +310,34 @@ export function Town3({
           />
         );
       })}
-      <Kenney name="fence_gate" position={to3(824, 590, 0)} scale={1.4} />
-      <Kenney name="plant_bushSmall" position={to3(780, 500, 0)} scale={1.3} />
-      <mesh position={to3(824, 530, 0.15)}>
-        <cylinderGeometry args={[0.55, 0.7, 0.25, 16]} />
+      {EMPTY_LOTS.map((lot) => (
+        <group key={lot.id} position={to3(lot.x, lot.y, groundY(lot.x, lot.y))}>
+          <mesh position={[0, 0.05, 0]} receiveShadow>
+            <boxGeometry args={[1.15, 0.08, 0.9]} />
+            <meshStandardMaterial color="#cfc8ba" />
+          </mesh>
+          {[
+            [-0.5, -0.38],
+            [0.5, -0.38],
+            [-0.5, 0.38],
+            [0.5, 0.38],
+          ].map(([x, z]) => (
+            <mesh key={`${x}-${z}`} position={[x!, 0.16, z!]} castShadow>
+              <boxGeometry args={[0.08, 0.22, 0.08]} />
+              <meshStandardMaterial color="#8a7a68" />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      <Kenney name="fence_gate" position={to3(360, 500, 0)} scale={1.2} />
+      <Kenney name="fence_simple" position={to3(600, 500, 0)} scale={1.2} />
+      <Kenney name="plant_bushSmall" position={to3(420, 500, 0)} scale={1.2} />
+      <mesh position={to3(470, 480, 0.15)}>
+        <cylinderGeometry args={[0.45, 0.58, 0.22, 16]} />
         <meshStandardMaterial color="#8a7a68" />
       </mesh>
-      <mesh position={to3(824, 530, 0.28)}>
-        <cylinderGeometry args={[0.38, 0.38, 0.08, 16]} />
+      <mesh position={to3(470, 480, 0.28)}>
+        <cylinderGeometry args={[0.32, 0.32, 0.08, 16]} />
         <meshStandardMaterial color="#6a8f8a" roughness={0.3} />
       </mesh>
       <TimberHouse

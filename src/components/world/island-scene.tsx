@@ -14,6 +14,9 @@ import { Terrain } from "./terrain";
 import { Cottage3, Town3, VillageHouses } from "./town";
 import { Harbor3 } from "./boats";
 import { CastLine, OceanLife } from "./ocean";
+import { Sky } from "./sky";
+import { YardPlots } from "./yard";
+import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
 import { Fights3, Landing3, LootFlash3, Npcs3, Towers3, Trees3 } from "./world-life";
@@ -117,7 +120,7 @@ function SceneBody({
   return (
     <>
       <CameraRig target={pos} camRef={camRef} />
-      <color attach="background" args={["#8eb8ae"]} />
+      <Sky />
       <hemisphereLight args={["#cfe4c8", "#6b5340", 0.85]} />
       <directionalLight
         position={[30, 40, 18]}
@@ -130,11 +133,24 @@ function SceneBody({
         shadow-camera-top={32}
         shadow-camera-bottom={-32}
       />
-      <fog attach="fog" args={["#8aa8a4", 36, 95]} />
       <Terrain onWalk={onWalk} />
       <OceanLife />
       <CastLine />
-      <Cottage3 upgrades={save.houseUpgrades} onEnter={() => goInside(374, 430, "cottage")} />
+      <Cottage3
+        upgrades={save.houseUpgrades}
+        onEnter={() => goInside(PLACE_ANCHORS.cottage.x, PLACE_ANCHORS.cottage.y, "cottage")}
+      />
+      <YardPlots
+        onPlot={(id, x, y, popup) =>
+          interact(x, y, {
+            kind: "plot",
+            hotspotId: id,
+            title: popup.title,
+            blurb: popup.blurb,
+            place: "garden",
+          })
+        }
+      />
       <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
       <VillageHouses
         count={villageCount}

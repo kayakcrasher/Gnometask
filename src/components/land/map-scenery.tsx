@@ -1,4 +1,5 @@
 import { mixLandColor, regionValue } from "@/lib/game/metrics";
+import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { useGame } from "@/lib/game/store";
 import { HAVEN_ORIGIN, TOWN_SQUARE } from "@/lib/game/world";
 import { VB } from "@/hooks/use-pan-zoom";
@@ -109,7 +110,7 @@ export function MapScenery({
         <TownFountain x={TOWN_SQUARE.x} y={TOWN_SQUARE.y} />
 
         <PalisadeRing x={920} y={520} level={save.fortLevel} />
-        <Scorch x={374} y={430} amount={cottageHurt} />
+        <Scorch x={PLACE_ANCHORS.cottage.x} y={PLACE_ANCHORS.cottage.y} amount={cottageHurt} />
         <Scorch x={920} y={500} amount={villageHurt} />
 
         <g>

@@ -5,6 +5,7 @@ import { TaskList } from "./task-list";
 import { BUILDING_MAX, type InteriorId, type ShopKind } from "@/lib/game/types";
 import { HALL_COST, hallUnlocks } from "@/lib/game/world";
 import { FISH } from "@/lib/game/data/fish";
+import { CROPS } from "@/lib/game/data/crops";
 import { cn } from "@/lib/utils";
 
 const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[] }> = {
@@ -29,13 +30,17 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   },
   general: {
     title: "Builder's yard",
-    blurb: "Cottage fittings, garden beds, village rowhouses, and walls for the island.",
+    blurb: "Seeds, cottage fittings, and the counter that buys your vegetables.",
     kinds: ["house", "garden", "village", "fort"],
   },
   "haven-shop": {
     title: "Haven stall",
     blurb: "Adamant, stew, and a guard cap. Unique to the slow village.",
     kinds: ["haven"],
+  },
+  bank: {
+    title: "The Bank",
+    blurb: "The building outside grows with your purse. Sell vegetables at the builder's yard.",
   },
   townhall: {
     title: "Town Hall",
@@ -109,6 +114,56 @@ function Aquarium() {
           ))}
         </ul>
       ) : null}
+    </div>
+  );
+}
+
+function ProduceStall() {
+  const seeds = useGame((s) => s.seeds);
+  const produce = useGame((s) => s.produce);
+  const buy = useGame((s) => s.buySeed);
+  const sell = useGame((s) => s.sellProduce);
+  const coins = useGame((s) => s.coins);
+  return (
+    <div className="mb-3 flex flex-col gap-2">
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Seeds and the counter</p>
+      {CROPS.map((crop) => (
+        <div key={crop.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
+          <span className="size-3 rounded-full" style={{ background: crop.color }} />
+          <span className="flex-1">
+            {crop.name}
+            <span className="text-bark/55"> · seed {seeds[crop.id] ?? 0} · sack {produce[crop.id] ?? 0}</span>
+          </span>
+          <button
+            type="button"
+            disabled={coins < crop.seed}
+            onClick={() => buy(crop.id)}
+            className="rounded-full bg-pine px-2 py-1 text-[11px] text-parchment disabled:opacity-40"
+          >
+            Seed {crop.seed}
+          </button>
+          <button
+            type="button"
+            disabled={(produce[crop.id] ?? 0) < 1}
+            onClick={() => sell(crop.id)}
+            className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink disabled:opacity-40"
+          >
+            Sell {crop.price}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BankPanel() {
+  const coins = useGame((s) => s.coins);
+  const tier = coins >= 200 ? "a tower and a gold roof" : coins >= 100 ? "columns" : coins >= 40 ? "stone" : "a modest timber front";
+  return (
+    <div className="rounded-[16px] bg-parchment-dark/50 px-3 py-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">The purse</p>
+      <p className="font-display text-3xl font-semibold text-ink">{coins}</p>
+      <p className="mt-1 text-sm font-semibold text-bark/70">Outside, the bank is {tier}. Earn more and it builds itself.</p>
     </div>
   );
 }
@@ -316,8 +371,11 @@ export function InteriorView() {
           </div>
         ) : interior === "townhall" ? (
           <HallPanel />
+        ) : interior === "bank" ? (
+          <BankPanel />
         ) : (
           <div className="min-h-0 flex-1 overflow-hidden">
+            {interior === "general" ? <ProduceStall /> : null}
             <ShopView kinds={meta.kinds} compact />
           </div>
         )}
