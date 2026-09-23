@@ -143,6 +143,24 @@ function Pond() {
   );
 }
 
+function TownRoad() {
+  const a = to3(200, 380, 0.1);
+  const b = to3(200, 780, 0.1);
+  const len = Math.abs(b[2] - a[2]);
+  return (
+    <group>
+      <mesh position={[(a[0] + b[0]) / 2, 0.1, (a[2] + b[2]) / 2]} receiveShadow>
+        <boxGeometry args={[1.15, 0.05, len]} />
+        <meshStandardMaterial color="#c9b79a" roughness={0.9} />
+      </mesh>
+      <mesh position={[(a[0] + b[0]) / 2, 0.12, (a[2] + b[2]) / 2]}>
+        <boxGeometry args={[0.08, 0.02, len * 0.92]} />
+        <meshStandardMaterial color="#efe4cf" />
+      </mesh>
+    </group>
+  );
+}
+
 function Path() {
   const spots: [number, number][] = [
     [140, 520],
@@ -169,6 +187,7 @@ export function Terrain({ onWalk }: { onWalk: (x: number, y: number) => void }) 
       <IslandMesh onWalk={onWalk} />
       <Pond />
       <Path />
+      <TownRoad />
       <Kenney name="cliff_large_rock" position={to3(1760, 300, 0.12)} scale={1.35} />
       <Kenney name="cliff_cave_rock" position={to3(1380, 1220, 0.1)} scale={1.5} rotation={[0, 0.6, 0]} />
       <Kenney name="cliff_large_rock" position={to3(2360, 220, 0.12)} scale={1.25} />

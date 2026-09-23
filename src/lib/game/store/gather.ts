@@ -178,16 +178,20 @@ export function gatherSlice(
         });
         return;
       }
-      const pay = 12 + s.townHallLevel * 6;
+      const shipped = s.herd.shipped;
+      const herd = shipped
+        ? { ...s.herd, calves: Math.max(0, s.herd.calves - shipped), shipped: 0 }
+        : s.herd;
       set({
         supplyTaken: true,
-        coins: s.coins + pay,
+        herd,
         bread: s.bread + 1,
         seeds: { ...s.seeds, carrot: (s.seeds.carrot ?? 0) + 1 },
-        coinPopKey: s.coinPopKey + 1,
-        speech: s.newcomer
-          ? `Crates from the mainland. +${pay} coins, bread, and seed. ${s.newcomer} wants to stay.`
-          : `Crates from the mainland. +${pay} coins, bread, and seed. The hollow is on a trade route.`,
+        speech: shipped
+          ? `Crates ashore. Bread and seed. The ship takes ${shipped} calf${shipped === 1 ? "" : "ves"} the shop already paid for.`
+          : s.newcomer
+            ? `Crates ashore. Bread and seed. ${s.newcomer} wants to stay. Sell what you gather at the shop.`
+            : "Crates ashore. Bread and seed. Coins come from the shop counter, not the gangplank.",
       });
       sfx("buy");
       scheduleWrite(get);
@@ -221,14 +225,13 @@ export function gatherSlice(
       const s = get();
       const key = `${s.daysPlayed}:${id}`;
       if (s.flotsam.includes(key)) return;
-      const pay = id.startsWith("shell") ? 2 : 4;
+      const good = id.startsWith("shell") ? "shell" : "cloth";
       set({
         flotsam: [...s.flotsam, key],
-        coins: s.coins + pay,
-        coinPopKey: s.coinPopKey + 1,
-        speech: id.startsWith("shell")
-          ? `A shell off the tide. +${pay} coins. The beach keeps a ledger too.`
-          : `Something from a larger wardrobe washed in. +${pay} coins.`,
+        goods: { ...s.goods, [good]: (s.goods[good] ?? 0) + 1 },
+        speech: good === "shell"
+          ? "A shell. It is not coins until the shop says so."
+          : "Cloth off the tide. The shop counter buys washed things.",
       });
       sfx("buy");
       scheduleWrite(get);

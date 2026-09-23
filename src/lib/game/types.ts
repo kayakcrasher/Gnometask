@@ -152,7 +152,7 @@ export type CatalogItem = {
   blurb: string;
   price: number;
   kind: ShopKind;
-  slotPrefix?: "g" | "gf" | "v" | "t";
+  slotPrefix?: "g" | "gf" | "v" | "t" | "f";
   slot?: EquipSlot;
   atk?: number;
   def?: number;
@@ -220,6 +220,19 @@ export type GameSave = {
   supplyTaken: boolean;
   newcomer: string | null;
   flotsam: string[];
+  goods: Record<string, number>;
+  herd: {
+    cows: number;
+    goats: number;
+    sheep: number;
+    calves: number;
+    coop: number;
+    milkDay: number;
+    eggDay: number;
+    woolDay: number;
+    shipped: number;
+  };
+  expedition: { stake: number; due: number } | null;
   muckRaiders: boolean[];
   ownedGear: string[];
   equipment: Equipment;
@@ -267,7 +280,7 @@ export type GameUi = {
   lootFlash: LootFlash | null;
   fishing: FishingCast | null;
   dayPhase: DayPhase;
-  abroad: "mucktooth" | null;
+  abroad: "mucktooth" | "reed" | "salt" | "holm" | null;
 };
 
 export { BUILDING_MAX, METRICS, PLACES, PLAYER_START } from "./data/places";

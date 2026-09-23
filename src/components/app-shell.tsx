@@ -5,6 +5,7 @@ import { Speech } from "@/components/hud/speech";
 import { Welcome } from "@/components/hud/welcome";
 import { ClickPopup } from "@/components/hud/click-popup";
 import { InteriorView } from "@/components/hud/interior-view";
+import { FarIsle } from "@/components/world/far-isle";
 import { GoblinIsle } from "@/components/world/goblin-isle";
 import { InventoryView } from "@/components/hud/inventory-view";
 import { MenuView } from "@/components/hud/menu-view";
@@ -41,6 +42,7 @@ export function AppShell() {
             <MenuView />
             <InteriorView />
             <GoblinIsle />
+            <FarIsle />
           </>
         ) : null}
       </div>

@@ -15,4 +15,6 @@ export const GARDEN: CatalogItem[] = [
   { id: "garden-lavender", name: "Lavender", blurb: "Silver leaves, purple spikes. The cottage will smell like Sunday.", price: 18, kind: "garden", slotPrefix: "g" },
   { id: "garden-daisy", name: "Oxeye daisy", blurb: "A gold button in a white ruff. Cheerful on purpose.", price: 10, kind: "garden", slotPrefix: "g" },
   { id: "garden-toadstool", name: "Fly agaric", blurb: "Red caps, white dots. Do not nibble. Do admire.", price: 22, kind: "garden", slotPrefix: "gf" },
+  { id: "fence-rail", name: "Fence rail", blurb: "A post and two rails. Buy it, plant it, lift it, move it.", price: 6, kind: "garden", slotPrefix: "f" },
+  { id: "garden-trough", name: "Water trough", blurb: "For cows who have opinions about thirst.", price: 14, kind: "garden", slotPrefix: "gf" },
 ];

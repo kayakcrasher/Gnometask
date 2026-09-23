@@ -16,6 +16,7 @@ import { Harbor3 } from "./boats";
 import { CastLine, OceanLife, ShoreLife } from "./ocean";
 import { Sky } from "./sky";
 import { YardPlots } from "./yard";
+import { YardLife } from "./yard-life";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
@@ -152,6 +153,7 @@ function SceneBody({
           })
         }
       />
+      <YardLife />
       <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
       <VillageHouses
         count={villageCount}

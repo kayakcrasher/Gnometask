@@ -23,6 +23,7 @@ export function economySlice(
   | "upgradeGuard"
   | "upgradeHall"
   | "upgradeTower"
+  | "liftFence"
 > {
   return {
     buy: (catalogId) => {
@@ -237,6 +238,20 @@ export function economySlice(
     },
 
     cancelPlace: () => set({ placingId: null }),
+
+    liftFence: (slotId) => {
+      const s = get();
+      const item = s.placed.find((p) => p.slotId === slotId);
+      if (!item || !slotId.startsWith("f")) return;
+      set({
+        placed: s.placed.filter((p) => p.slotId !== slotId),
+        inventory: [...s.inventory, item.catalogId],
+        placingId: item.catalogId,
+        speech: "Fence up. Walk it to another post along the road.",
+      });
+      sfx("open");
+      scheduleWrite(get);
+    },
 
     equipHat: (id) => {
       if (!get().ownedHats.includes(id)) return;

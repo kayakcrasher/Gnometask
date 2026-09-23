@@ -79,9 +79,21 @@ export const TOWER_SLOTS: { id: string; x: number; y: number }[] = [
 export const DRAGON_RIDGE = { x: 1760, y: 340 };
 export const ABSENCE_SPOT = { x: 96, y: 430 };
 
-export function slotsForPrefix(prefix: "g" | "gf" | "v" | "t") {
+export const FENCE_SLOTS: { id: string; x: number; y: number }[] = [
+  { id: "f0", x: 175, y: 400 },
+  { id: "f1", x: 175, y: 460 },
+  { id: "f2", x: 175, y: 520 },
+  { id: "f3", x: 175, y: 580 },
+  { id: "f4", x: 175, y: 640 },
+  { id: "f5", x: 175, y: 700 },
+  { id: "f6", x: 175, y: 760 },
+  { id: "f7", x: 230, y: 800 },
+];
+
+export function slotsForPrefix(prefix: "g" | "gf" | "v" | "t" | "f") {
   if (prefix === "g") return GARDEN_SLOTS;
   if (prefix === "gf") return GARDEN_FEATURE_SLOTS;
   if (prefix === "t") return TOWER_SLOTS;
+  if (prefix === "f") return FENCE_SLOTS;
   return VILLAGE_SLOTS;
 }

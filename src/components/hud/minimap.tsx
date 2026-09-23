@@ -3,6 +3,7 @@ import { ISLAND_POLY, BEACH_POLY } from "@/lib/game/world3";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { NPCS } from "@/lib/game/world";
 import { WORLD_PACK } from "@/lib/game/catalog";
+import { FAR_ISLES } from "@/lib/game/data/trade";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
@@ -26,6 +27,7 @@ export function Minimap({
   npcPoses: Record<string, NpcPose>;
   compassRef: { current: HTMLDivElement | null };
 }) {
+  const travel = useGame((s) => s.travelIsle);
   const cleared = useGame((s) => s.clearedPack);
   const dragon = useGame((s) => s.lifeDragon);
   const hall = useGame((s) => s.townHallLevel);
@@ -75,6 +77,21 @@ export function Minimap({
           <circle key={g.id} cx={g.x} cy={g.y} r={12} fill="#4c7a3a" />
         ))}
         {hall >= 3 && dragon.state !== "defeated" ? <circle cx={1760} cy={340} r={22} fill="#8a3a32" /> : null}
+        {FAR_ISLES.map((isle) => (
+          <circle
+            key={isle.id}
+            cx={isle.x}
+            cy={isle.y}
+            r={36}
+            fill="#d6a84c"
+            stroke="#24402f"
+            strokeWidth={6}
+            onClick={(e) => {
+              e.stopPropagation();
+              travel(isle.id);
+            }}
+          />
+        ))}
         <g transform={`translate(${pos.x} ${pos.y}) rotate(${(facingYaw * 180) / Math.PI})`}>
           <polygon points="0,-34 22,28 -22,28" fill="#24402f" stroke="#f2e8d5" strokeWidth="6" />
         </g>

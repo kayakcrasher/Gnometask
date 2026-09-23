@@ -5,6 +5,7 @@ import { BUILDING_MAX, type InteriorId, type ShopKind } from "@/lib/game/types";
 import { HALL_COST, hallUnlocks } from "@/lib/game/world";
 import { FISH } from "@/lib/game/data/fish";
 import { CROPS } from "@/lib/game/data/crops";
+import { ANIMALS, CALF_PRICE, COOP_COST, GOODS } from "@/lib/game/data/trade";
 import { BOATS } from "@/lib/game/data/boats";
 import { BOAT_LOANS, HONOUR_CODE, LAND_OFFERS } from "@/lib/game/data/honour";
 import { levelFromXp } from "@/lib/game/xp";
@@ -32,7 +33,7 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   },
   general: {
     title: "Builder's yard",
-    blurb: "Seeds, cottage fittings, and the counter that buys your vegetables.",
+    blurb: "Seeds, fences, livestock, and the only counter that turns goods into coins.",
     kinds: ["house", "garden", "village", "fort"],
   },
   "haven-shop": {
@@ -42,7 +43,7 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   },
   bank: {
     title: "The Bank",
-    blurb: "The building outside grows with your purse. Sell vegetables at the builder's yard.",
+    blurb: "A room with a counter, a vault, and a desk that funds expeditions. Interest is 25%, if they come home.",
   },
   dockhouse: {
     title: "Dockhouse",
@@ -63,7 +64,6 @@ function Aquarium() {
   const tank = useGame((s) => s.tank);
   const bag = useGame((s) => s.fishBag);
   const stock = useGame((s) => s.stockFish);
-  const sell = useGame((s) => s.sellFish);
   const kept = FISH.flatMap((f) => Array.from({ length: Math.min(tank[f.id] ?? 0, 4) }, (_, i) => ({ ...f, key: `${f.id}-${i}` })));
   const total = FISH.reduce((n, f) => n + (tank[f.id] ?? 0), 0);
   const height = 96 + Math.min(160, total * 7);
@@ -113,9 +113,7 @@ function Aquarium() {
               <button type="button" onClick={() => stock(f.id)} className="rounded-full bg-pine px-2 py-1 text-[11px] text-parchment">
                 Keep
               </button>
-              <button type="button" onClick={() => sell(f.id)} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink">
-                {f.price}
-              </button>
+              <span className="text-[11px] text-bark/50">Shop buys {f.price}</span>
             </li>
           ))}
         </ul>
@@ -159,12 +157,22 @@ function DockhousePanel() {
 function ProduceStall() {
   const seeds = useGame((s) => s.seeds);
   const produce = useGame((s) => s.produce);
+  const goods = useGame((s) => s.goods);
+  const fishBag = useGame((s) => s.fishBag);
+  const herd = useGame((s) => s.herd);
+  const coins = useGame((s) => s.coins);
   const buy = useGame((s) => s.buySeed);
   const sell = useGame((s) => s.sellProduce);
-  const coins = useGame((s) => s.coins);
+  const sellFish = useGame((s) => s.sellFish);
+  const sellGood = useGame((s) => s.sellGood);
+  const buyAnimal = useGame((s) => s.buyAnimal);
+  const upgradeCoop = useGame((s) => s.upgradeCoop);
+  const tend = useGame((s) => s.tendHerd);
+  const sellCalf = useGame((s) => s.sellCalf);
+  const coopNext = COOP_COST[herd.coop + 1];
   return (
     <div className="mb-3 flex flex-col gap-2">
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Seeds and the counter</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">The counter. This is where coins happen.</p>
       {CROPS.map((crop) => (
         <div key={crop.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
           <span className="size-3 rounded-full" style={{ background: crop.color }} />
@@ -172,24 +180,51 @@ function ProduceStall() {
             {crop.name}
             <span className="text-bark/55"> · seed {seeds[crop.id] ?? 0} · sack {produce[crop.id] ?? 0}</span>
           </span>
-          <button
-            type="button"
-            disabled={coins < crop.seed}
-            onClick={() => buy(crop.id)}
-            className="rounded-full bg-pine px-2 py-1 text-[11px] text-parchment disabled:opacity-40"
-          >
+          <button type="button" disabled={coins < crop.seed} onClick={() => buy(crop.id)} className="rounded-full bg-pine px-2 py-1 text-[11px] text-parchment disabled:opacity-40">
             Seed {crop.seed}
           </button>
-          <button
-            type="button"
-            disabled={(produce[crop.id] ?? 0) < 1}
-            onClick={() => sell(crop.id)}
-            className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink disabled:opacity-40"
-          >
+          <button type="button" disabled={(produce[crop.id] ?? 0) < 1} onClick={() => sell(crop.id)} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink disabled:opacity-40">
             Sell {crop.price}
           </button>
         </div>
       ))}
+      {FISH.filter((f) => (fishBag[f.id] ?? 0) > 0).map((f) => (
+        <div key={f.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
+          <span className="flex-1">{f.name} × {fishBag[f.id]}</span>
+          <button type="button" onClick={() => sellFish(f.id)} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink">
+            Sell {f.price}
+          </button>
+        </div>
+      ))}
+      {GOODS.filter((g) => (goods[g.id] ?? 0) > 0).map((g) => (
+        <div key={g.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
+          <span className="flex-1">{g.name} × {goods[g.id]}</span>
+          <button type="button" onClick={() => sellGood(g.id)} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink">
+            Sell {g.price}
+          </button>
+        </div>
+      ))}
+      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Yard</p>
+      {ANIMALS.map((a) => (
+        <button key={a.id} type="button" disabled={coins < a.price || herd[a.id] >= a.cap} onClick={() => buyAnimal(a.id)} className="rounded-[12px] bg-parchment-dark px-2 py-1.5 text-left text-xs font-semibold text-ink disabled:opacity-40">
+          {a.name} · {herd[a.id]}/{a.cap} · {a.price} coins
+        </button>
+      ))}
+      <button type="button" onClick={upgradeCoop} className="rounded-[12px] bg-parchment-dark px-2 py-1.5 text-left text-xs font-semibold text-ink">
+        {herd.coop === 0 ? `Buy a chicken coop · ${COOP_COST[1]} coins` : coopNext ? `Upgrade coop to ${herd.coop + 1} · ${coopNext} coins` : "Coop is finished"}
+      </button>
+      <div className="flex flex-wrap gap-1.5">
+        <button type="button" onClick={() => tend("milk")} className="rounded-full bg-pine px-2 py-1 text-[11px] font-semibold text-parchment">Milk</button>
+        <button type="button" onClick={() => tend("eggs")} className="rounded-full bg-pine px-2 py-1 text-[11px] font-semibold text-parchment">Collect eggs</button>
+        <button type="button" onClick={() => tend("wool")} className="rounded-full bg-pine px-2 py-1 text-[11px] font-semibold text-parchment">Shear</button>
+        <button type="button" onClick={sellCalf} className="rounded-full bg-gold px-2 py-1 text-[11px] font-semibold text-ink">
+          Sell calf {CALF_PRICE}
+        </button>
+      </div>
+      <p className="text-[11px] font-semibold text-bark/60">
+        Cows {herd.cows} · goats {herd.goats} · sheep {herd.sheep} · calves {herd.calves}
+        {herd.shipped ? ` · ${herd.shipped} waiting on the ship` : ""}
+      </p>
     </div>
   );
 }
@@ -203,6 +238,10 @@ function BankPanel() {
   const claim = useGame((s) => s.claimTile);
   const borrow = useGame((s) => s.takeLoan);
   const repay = useGame((s) => s.repayLoan);
+  const expedition = useGame((s) => s.expedition);
+  const days = useGame((s) => s.daysPlayed);
+  const fund = useGame((s) => s.fundExpedition);
+  const collect = useGame((s) => s.collectExpedition);
   const tier = coins >= 200 ? "a tower and a gold roof" : coins >= 100 ? "columns" : coins >= 40 ? "stone" : "a modest timber front";
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
@@ -212,6 +251,25 @@ function BankPanel() {
         <p className="mt-1 text-sm font-semibold text-bark/70">Outside, the bank is {tier}.</p>
         <p className="mt-2 text-sm font-semibold text-ink">Respect {respect}</p>
         <p className="mt-1 text-xs font-semibold text-bark/70">{HONOUR_CODE}</p>
+      </div>
+      <div className="rounded-[16px] border border-bark/10 bg-[#efe4cf] px-3 py-3">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Expedition desk</p>
+        <p className="mt-1 text-xs font-semibold text-bark/70">
+          Stake coins. Most come home at 25%. One in thirty pays 50%. One in five hundred pays 100%. One in a thousand pays 200%. About one in twenty is lost.
+        </p>
+        {expedition ? (
+          <button type="button" onClick={collect} className="mt-2 h-10 w-full rounded-[12px] bg-pine text-sm font-semibold text-parchment">
+            {days >= expedition.due ? `Collect the ${expedition.stake} stake` : `Out until day ${expedition.due}`}
+          </button>
+        ) : (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {[10, 25, 50].map((n) => (
+              <button key={n} type="button" disabled={coins < n} onClick={() => fund(n)} className="rounded-full bg-gold px-3 py-1 text-[11px] font-semibold text-ink disabled:opacity-40">
+                Stake {n}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div>
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Land</p>

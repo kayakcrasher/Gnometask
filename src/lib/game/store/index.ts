@@ -10,6 +10,7 @@ import { sessionSlice } from "./session";
 import { tasksSlice } from "./tasks";
 import type { GameState } from "./types";
 import { worldSlice } from "./world";
+import { yardSlice } from "./yard";
 import { create } from "zustand";
 import { GREETS } from "../quotes";
 import { defaultSave, writeSave } from "../save";
@@ -29,6 +30,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...gatherSlice(set, get),
   ...farmSlice(set, get),
   ...honourSlice(set, get),
+  ...yardSlice(set, get),
   ...clockSlice(),
 }));
 

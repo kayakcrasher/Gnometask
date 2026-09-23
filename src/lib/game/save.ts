@@ -85,6 +85,9 @@ export function defaultSave(): GameSave {
     supplyTaken: false,
     newcomer: "Tansy",
     flotsam: [],
+    goods: {},
+    herd: { cows: 0, goats: 0, sheep: 0, calves: 0, coop: 0, milkDay: 0, eggDay: 0, woolDay: 0, shipped: 0 },
+    expedition: null,
     muckRaiders: [true, true, true],
     trees: {},
     landing: null,
@@ -316,11 +319,39 @@ export function migrate(raw: unknown): GameSave {
     supplyTaken: Boolean(s.supplyTaken),
     newcomer: typeof s.newcomer === "string" ? s.newcomer : null,
     flotsam: asStringArray(s.flotsam, []),
+    goods: asFishBag(s.goods),
+    herd: asHerd(s.herd),
+    expedition: asExpedition(s.expedition),
     muckRaiders: asRaiders(s.muckRaiders),
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",
   });
+}
+
+function asHerd(raw: unknown): GameSave["herd"] {
+  const base = { cows: 0, goats: 0, sheep: 0, calves: 0, coop: 0, milkDay: 0, eggDay: 0, woolDay: 0, shipped: 0 };
+  if (!raw || typeof raw !== "object") return base;
+  const r = raw as Record<string, unknown>;
+  const n = (k: keyof GameSave["herd"]) => (typeof r[k] === "number" ? Math.max(0, Math.floor(r[k] as number)) : 0);
+  return {
+    cows: Math.min(4, n("cows")),
+    goats: Math.min(4, n("goats")),
+    sheep: Math.min(4, n("sheep")),
+    calves: Math.min(8, n("calves")),
+    coop: Math.min(3, n("coop")),
+    milkDay: n("milkDay"),
+    eggDay: n("eggDay"),
+    woolDay: n("woolDay"),
+    shipped: n("shipped"),
+  };
+}
+
+function asExpedition(raw: unknown): GameSave["expedition"] {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as { stake?: unknown; due?: unknown };
+  if (typeof r.stake !== "number" || typeof r.due !== "number" || r.stake <= 0) return null;
+  return { stake: Math.floor(r.stake), due: Math.floor(r.due) };
 }
 
 function asSettlers(raw: unknown): GameSave["settlers"] {
