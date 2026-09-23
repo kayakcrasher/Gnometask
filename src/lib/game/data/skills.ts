@@ -8,6 +8,7 @@ export const SKILL_IDS = [
   "prayer",
   "barter",
   "sailing",
+  "fishing",
   "crafting",
 ] as const;
 
@@ -29,6 +30,7 @@ export const SKILL_LABEL: Record<SkillId, string> = {
   prayer: "Prayer",
   barter: "Barter",
   sailing: "Sailing",
+  fishing: "Fishing",
   crafting: "Crafting",
 };
 
@@ -42,5 +44,6 @@ export const SKILL_BLURB: Record<SkillId, string> = {
   prayer: "A quiet word. Half the bruise.",
   barter: "Coins, gossip, and a fair price.",
   sailing: "Tide, rope, and the next shore.",
+  fishing: "Line, patience, and what the tide keeps.",
   crafting: "Hats, fences, and things that stay put.",
 };

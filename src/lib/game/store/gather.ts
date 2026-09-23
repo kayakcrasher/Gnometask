@@ -1,8 +1,9 @@
-import { bestHatchet, gearStats } from "../catalog";
+import { bestHatchet, bestRod, CATALOG_BY_ID, gearStats } from "../catalog";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "../data/trees";
 import { sfx } from "../juice";
 import { PLACE_ANCHORS } from "../data/layout";
-import { boatById } from "../data/boats";
+import { BOAT_RANK, boatById } from "../data/boats";
+import { FISH_BY_ID, rollFish } from "../data/fish";
 import { levelFromXp, levelsOf } from "../xp";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
@@ -18,7 +19,7 @@ function treeStage(choppedAt: number | undefined, now: number) {
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "sailTo"> {
+): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "castLine" | "sellFish" | "stockFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -104,6 +105,7 @@ export function gatherSlice(
         gnomeY: target.y,
         selectedPlace: dest === "haven" ? "haven" : "dock",
         skills: gained.skills,
+        boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
         popup: null,
         interior: null,
         speech:
@@ -117,6 +119,103 @@ export function gatherSlice(
       scheduleWrite(get);
       const chore = get().tasks.find((t) => t.builtinKey === "coil-watch" && !t.done);
       if (chore) get().toggleTask(chore.id);
+    },
+
+    castLine: (where, x, y, boatId) => {
+      const s = get();
+      if (s.combat || s.fishing) return;
+      const rodId = bestRod(s.ownedGear);
+      if (!rodId) {
+        set({ speech: "You need a rod. The armory sells a stick rod for six coins.", popup: null });
+        return;
+      }
+      const rod = CATALOG_BY_ID[rodId]?.fish ?? 0;
+      const lv = levelFromXp(s.skills.fishing);
+      const rank = boatId && BOAT_RANK[boatId as keyof typeof BOAT_RANK] ? BOAT_RANK[boatId as keyof typeof BOAT_RANK] : s.boatRank;
+      if (where === "sea" && rank < 2) {
+        set({
+          speech: "The rowboat stays in the shallows. Sail a skiff or bigger, then cast in the open water.",
+          popup: null,
+        });
+        return;
+      }
+      const fish = rollFish(where, lv, rank, rod);
+      if (!fish) {
+        set({
+          speech:
+            where === "sea"
+              ? `Nothing out here will take a Fishing ${lv} line from a rank ${rank} hull.`
+              : "The shallows are empty for your Fishing level.",
+          popup: null,
+        });
+        return;
+      }
+      const id = Date.now();
+      set({
+        fishing: { id, started: id, where, fishId: fish.id, color: fish.color, shadow: fish.shadow, x, y },
+        popup: null,
+        speech: where === "sea" ? "The rod bends over the deep water." : "The line kisses the shallows.",
+        gnomeX: where === "shore" ? 96 : s.gnomeX,
+        gnomeY: where === "shore" ? 548 : s.gnomeY,
+      });
+      sfx("place");
+      if (typeof window === "undefined") return;
+      window.setTimeout(() => {
+        const now = get();
+        if (!now.fishing || now.fishing.id !== id) return;
+        const caught = FISH_BY_ID[now.fishing.fishId];
+        if (!caught) {
+          set({ fishing: null });
+          return;
+        }
+        const gained = withXp(now.skills, { fishing: caught.xp });
+        set({
+          fishing: null,
+          fishBag: { ...now.fishBag, [caught.id]: (now.fishBag[caught.id] ?? 0) + 1 },
+          skills: gained.skills,
+          speech:
+            gained.ding ??
+            `A ${caught.name.toLowerCase()}! +${caught.xp} Fishing. Sell it, or keep it in the town hall tank.`,
+          bounceKey: now.bounceKey + 1,
+        });
+        sfx("buy");
+        scheduleWrite(get);
+      }, 2600);
+    },
+
+    sellFish: (id) => {
+      const s = get();
+      const have = s.fishBag[id] ?? 0;
+      const fish = FISH_BY_ID[id];
+      if (!fish || have < 1) return;
+      const next = { ...s.fishBag };
+      if (have === 1) delete next[id];
+      else next[id] = have - 1;
+      set({
+        fishBag: next,
+        coins: s.coins + fish.price,
+        coinPopKey: s.coinPopKey + 1,
+        speech: `Sold a ${fish.name.toLowerCase()} for ${fish.price} coins.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
+    stockFish: (id) => {
+      const s = get();
+      const have = s.fishBag[id] ?? 0;
+      const fish = FISH_BY_ID[id];
+      if (!fish || have < 1) return;
+      const next = { ...s.fishBag };
+      if (have === 1) delete next[id];
+      else next[id] = have - 1;
+      set({
+        fishBag: next,
+        tank: { ...s.tank, [id]: (s.tank[id] ?? 0) + 1 },
+        speech: `The ${fish.name.toLowerCase()} joins the hall tank.`,
+      });
+      sfx("open");
+      scheduleWrite(get);
     },
   };
 }

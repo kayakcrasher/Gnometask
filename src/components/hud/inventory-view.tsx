@@ -12,6 +12,7 @@ import {
   xpToNext,
 } from "@/lib/game/xp";
 import { QUEST_BY_ID } from "@/lib/game/quests";
+import { FISH } from "@/lib/game/data/fish";
 
 const SLOTS: { id: EquipSlot; label: string }[] = [
   { id: "weapon", label: "Hand" },
@@ -39,6 +40,8 @@ export function InventoryView() {
   const chickenHeld = useGame((s) => s.chickenHeld);
   const logs = useGame((s) => s.logs);
   const bones = useGame((s) => s.bones);
+  const fishBag = useGame((s) => s.fishBag);
+  const sellFish = useGame((s) => s.sellFish);
   const combat = useGame((s) => s.combat);
 
   if (combat || panel !== "inventory") return null;
@@ -185,6 +188,28 @@ export function InventoryView() {
         <p className="mt-3 text-sm font-semibold text-bark/70">
           Food · honey {honey} · loaves {bread} · logs {logs} · bones {bones}. Fort {fortLevel}/5. Guard {guardLevel}/5.
         </p>
+        {FISH.some((f) => (fishBag[f.id] ?? 0) > 0) ? (
+          <>
+            <p className="mt-3 text-xs font-bold uppercase tracking-wide text-bark/50">Fish</p>
+            <ul className="mt-1 flex flex-col gap-1.5">
+              {FISH.filter((f) => (fishBag[f.id] ?? 0) > 0).map((f) => (
+                <li key={f.id} className="flex items-center gap-2 rounded-[12px] bg-parchment-dark/50 px-3 py-2">
+                  <span className="size-3 rounded-full" style={{ background: f.color }} />
+                  <p className="flex-1 font-display text-sm font-semibold text-ink">
+                    {f.name} × {fishBag[f.id]}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => sellFish(f.id)}
+                    className="rounded-full bg-gold px-2.5 py-1 text-[11px] font-bold text-ink"
+                  >
+                    Sell {f.price}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
       </div>
     </div>
   );

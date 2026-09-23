@@ -1,4 +1,4 @@
-export { CATALOG, CATALOG_BY_ID, MILESTONES, gearStats, bestHatchet } from "./data/catalog";
+export { CATALOG, CATALOG_BY_ID, MILESTONES, gearStats, bestHatchet, bestRod } from "./data/catalog";
 export { BUILTIN_CHORES, coinsForTask, makeBuiltinTasks } from "./data/chores";
 export {
   ABSENCE_SPOT,

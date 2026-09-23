@@ -19,6 +19,14 @@ export const BOATS: BoatDef[] = [
   { id: "sloop", name: "Little sloop", need: 5, xp: 90, blurb: "Cute from the beach. Deadly past the bar.", x: 18, y: 390 },
 ];
 
+export const BOAT_RANK: Record<BoatId, number> = {
+  row: 1,
+  sail: 2,
+  fisher: 3,
+  barge: 4,
+  sloop: 5,
+};
+
 export function boatById(id: string) {
   return BOATS.find((b) => b.id === id) ?? null;
 }

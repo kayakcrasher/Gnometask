@@ -53,13 +53,17 @@ function TimberHouse({
         <boxGeometry args={[w * 0.94, 0.06, 0.04]} />
         <meshStandardMaterial color="#6b5340" />
       </mesh>
-      <mesh position={[0, h + 0.22, 0]} rotation={[0.5, 0, 0]} castShadow>
-        <boxGeometry args={[w + 0.28, 0.08, d * 0.78]} />
-        <meshStandardMaterial color={rc} roughness={0.65} />
+      <mesh position={[-w * 0.2, h + 0.2, 0]} rotation={[0, 0, 0.58]} castShadow>
+        <boxGeometry args={[w * 0.72, 0.08, d + 0.36]} />
+        <meshStandardMaterial color={rc} roughness={0.62} />
       </mesh>
-      <mesh position={[0, h + 0.22, 0]} rotation={[-0.5, 0, 0]} castShadow>
-        <boxGeometry args={[w + 0.28, 0.08, d * 0.78]} />
-        <meshStandardMaterial color={rc} roughness={0.65} />
+      <mesh position={[w * 0.2, h + 0.2, 0]} rotation={[0, 0, -0.58]} castShadow>
+        <boxGeometry args={[w * 0.72, 0.08, d + 0.36]} />
+        <meshStandardMaterial color={rc} roughness={0.62} />
+      </mesh>
+      <mesh position={[0, h + 0.4, 0]} castShadow>
+        <boxGeometry args={[0.08, 0.06, d + 0.4]} />
+        <meshStandardMaterial color="#8a3a32" />
       </mesh>
       <mesh position={[w * 0.28, h + 0.48, -d * 0.12]} castShadow>
         <boxGeometry args={[0.16, 0.42, 0.16]} />
@@ -106,6 +110,93 @@ function TimberHouse({
   );
 }
 
+function Hall3({
+  level,
+  position,
+  onEnter,
+}: {
+  level: number;
+  position: [number, number, number];
+  onEnter?: () => void;
+}) {
+  const stone = level >= 3;
+  const castle = level >= 5;
+  const w = 1.7 + level * 0.22;
+  const d = 1.35 + level * 0.08;
+  const wall = castle ? 2.15 : 1.15 + level * 0.12;
+  const body = stone ? "#c9c3b4" : "#f0e2c4";
+  const roof = castle ? "#8d4e3c" : "#c4553a";
+  return (
+    <group
+      position={position}
+      onClick={(e) => {
+        e.stopPropagation();
+        onEnter?.();
+      }}
+    >
+      <mesh position={[0, wall / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[w, wall, d]} />
+        <meshStandardMaterial color={body} roughness={0.82} />
+      </mesh>
+      {stone
+        ? [-1, 0, 1].map((i) => (
+            <mesh key={i} position={[(i * w) / 3.1, wall * 0.45, d / 2 + 0.02]}>
+              <boxGeometry args={[0.08, wall * 0.7, 0.04]} />
+              <meshStandardMaterial color="#8a8378" />
+            </mesh>
+          ))
+        : null}
+      <mesh position={[0, 0.32, d / 2 + 0.04]} castShadow>
+        <boxGeometry args={[0.36, 0.62, 0.06]} />
+        <meshStandardMaterial color="#5b4230" />
+      </mesh>
+      {castle ? (
+        <>
+          {[-1, 1].map((side) => (
+            <group key={side} position={[side * (w / 2 + 0.15), 0, 0]}>
+              <mesh position={[0, 1.35, 0]} castShadow>
+                <boxGeometry args={[0.7, 2.7, 0.7]} />
+                <meshStandardMaterial color="#b7b1a4" />
+              </mesh>
+              {[-1, 1].map((z) => (
+                <mesh key={z} position={[0, 2.75, z * 0.28]}>
+                  <boxGeometry args={[0.74, 0.16, 0.16]} />
+                  <meshStandardMaterial color="#9a9488" />
+                </mesh>
+              ))}
+            </group>
+          ))}
+          <mesh position={[0, wall + 0.12, 0]}>
+            <boxGeometry args={[w + 0.08, 0.16, d + 0.08]} />
+            <meshStandardMaterial color="#9a9488" />
+          </mesh>
+        </>
+      ) : (
+        <>
+          <mesh position={[-w * 0.18, wall + 0.16, 0]} rotation={[0, 0, 0.55]} castShadow>
+            <boxGeometry args={[w * 0.7, 0.08, d + 0.3]} />
+            <meshStandardMaterial color={roof} />
+          </mesh>
+          <mesh position={[w * 0.18, wall + 0.16, 0]} rotation={[0, 0, -0.55]} castShadow>
+            <boxGeometry args={[w * 0.7, 0.08, d + 0.3]} />
+            <meshStandardMaterial color={roof} />
+          </mesh>
+          {level >= 4 ? (
+            <mesh position={[w * 0.28, wall + 0.7, 0]} castShadow>
+              <cylinderGeometry args={[0.22, 0.26, 1.1, 8]} />
+              <meshStandardMaterial color="#c9c3b4" />
+            </mesh>
+          ) : null}
+        </>
+      )}
+      <mesh position={[0, 0.08, d / 2 + 0.28]} receiveShadow>
+        <boxGeometry args={[0.7, 0.12, 0.4]} />
+        <meshStandardMaterial color="#b7b1a4" />
+      </mesh>
+    </group>
+  );
+}
+
 export function Cottage3({
   upgrades,
   onEnter,
@@ -146,6 +237,9 @@ export function Town3({
     <group>
       {TOWN_SHOPS.map((shop) => {
         const p = to3(shop.x, shop.y, groundY(shop.x, shop.y));
+        if (shop.id === "townhall") {
+          return <Hall3 key={shop.id} level={hallLevel} position={p} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />;
+        }
         return (
           <TimberHouse
             key={shop.id}

@@ -38,4 +38,9 @@ export function bestHatchet(owned: string[]) {
   return order.find((id) => owned.includes(id)) ?? null;
 }
 
+export function bestRod(owned: string[]) {
+  const order = ["rod-adamant", "rod-steel", "rod-iron", "rod-bronze", "rod-wood"];
+  return order.find((id) => owned.includes(id)) ?? null;
+}
+
 export { ARMOUR, FOOD, FORTS, GARDEN, GEAR, HATS, HOUSE, TOOLS, TOWERS, VILLAGE, WEAPONS };

@@ -223,6 +223,39 @@ function Gull({ radius, speed, lift }: { radius: number; speed: number; lift: nu
   );
 }
 
+function Pier() {
+  return (
+    <group position={to3(118, 512, 0)} rotation={[0, 0.15, 0]}>
+      <mesh position={[-1.15, 0.18, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2.6, 0.08, 0.72]} />
+        <meshStandardMaterial color="#c4894a" roughness={0.8} />
+      </mesh>
+      {[-2.2, -1.2, -0.2, 0.8].map((x) => (
+        <mesh key={x} position={[x, -0.05, 0.28]} castShadow>
+          <boxGeometry args={[0.08, 0.42, 0.08]} />
+          <meshStandardMaterial color="#6b4423" />
+        </mesh>
+      ))}
+      <mesh position={[-2.15, 0.34, 0.28]}>
+        <boxGeometry args={[0.06, 0.5, 0.06]} />
+        <meshStandardMaterial color="#5b4230" />
+      </mesh>
+      <mesh position={[-2.15, 0.58, 0.28]}>
+        <sphereGeometry args={[0.06, 8, 8]} />
+        <meshStandardMaterial color="#e7c56a" emissive="#e7c56a" emissiveIntensity={0.4} />
+      </mesh>
+      <mesh position={[-0.4, 0.28, 0.05]} castShadow>
+        <boxGeometry args={[0.28, 0.2, 0.28]} />
+        <meshStandardMaterial color="#3d6ea5" />
+      </mesh>
+      <mesh position={[0.35, 0.26, -0.08]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.12, 0.025, 6, 12]} />
+        <meshStandardMaterial color="#8a7a68" />
+      </mesh>
+    </group>
+  );
+}
+
 export function Harbor3({
   onBoat,
   onCaptain,
@@ -260,6 +293,7 @@ export function Harbor3({
       >
         <PirateRig />
       </group>
+      <Pier />
       <group position={yard}>
         <Gull radius={1.6} speed={0.35} lift={1.8} />
         <Gull radius={2.2} speed={0.22} lift={2.3} />

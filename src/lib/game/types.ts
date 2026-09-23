@@ -103,7 +103,7 @@ export type LootFlash = {
   coins: number;
 };
 
-export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat" | "tower" | "flag";
+export type PopupKind = "npc" | "building" | "enemy" | "place" | "dragon" | "raid" | "quest" | "tree" | "boat" | "tower" | "flag" | "fish";
 
 export type GamePopup = {
   kind: PopupKind;
@@ -152,6 +152,7 @@ export type CatalogItem = {
   heal?: number;
   wc?: number;
   farm?: number;
+  fish?: number;
   fortLevel?: number;
   towerRank?: number;
   reqSkill?: SkillId;
@@ -162,6 +163,17 @@ export type CatalogItem = {
 export type TreeSave = {
   stage: TreeStage;
   choppedAt: number;
+};
+
+export type FishingCast = {
+  id: number;
+  started: number;
+  where: "shore" | "sea";
+  fishId: string;
+  color: string;
+  shadow: string;
+  x: number;
+  y: number;
 };
 
 export type GameSave = {
@@ -184,6 +196,9 @@ export type GameSave = {
   bread: number;
   logs: number;
   bones: number;
+  fishBag: Record<string, number>;
+  tank: Record<string, number>;
+  boatRank: number;
   ownedGear: string[];
   equipment: Equipment;
   wildWins: number;
@@ -227,6 +242,7 @@ export type GameUi = {
   followWalk: boolean;
   praying: boolean;
   lootFlash: LootFlash | null;
+  fishing: FishingCast | null;
 };
 
 export { BUILDING_MAX, METRICS, PLACES, PLAYER_START } from "./data/places";

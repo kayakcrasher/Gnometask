@@ -4,6 +4,7 @@ import { ShopView } from "./shop-view";
 import { TaskList } from "./task-list";
 import { BUILDING_MAX, type InteriorId, type ShopKind } from "@/lib/game/types";
 import { HALL_COST, hallUnlocks } from "@/lib/game/world";
+import { FISH } from "@/lib/game/data/fish";
 import { cn } from "@/lib/utils";
 
 const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[] }> = {
@@ -18,7 +19,7 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   },
   armory: {
     title: "The Armory",
-    blurb: "Swords, hatchets, hoes, shields, mail. Town Hall rank unlocks better metal.",
+    blurb: "Swords, rods, hatchets, hoes, shields, mail. Town Hall rank unlocks better metal.",
     kinds: ["weapon", "tool", "shield", "armor"],
   },
   bakery: {
@@ -38,7 +39,7 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   },
   townhall: {
     title: "Town Hall",
-    blurb: "The square's spine. Upgrade the hall to unlock weapons and change who raids the dock.",
+    blurb: "Upgrade the hall toward a stone keep. The tank in the corner grows with every fish you keep.",
   },
   watch: {
     title: "Greg's watch",
@@ -46,6 +47,71 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
     kinds: ["tower"],
   },
 };
+
+function Aquarium() {
+  const tank = useGame((s) => s.tank);
+  const bag = useGame((s) => s.fishBag);
+  const stock = useGame((s) => s.stockFish);
+  const sell = useGame((s) => s.sellFish);
+  const kept = FISH.flatMap((f) => Array.from({ length: Math.min(tank[f.id] ?? 0, 4) }, (_, i) => ({ ...f, key: `${f.id}-${i}` })));
+  const total = FISH.reduce((n, f) => n + (tank[f.id] ?? 0), 0);
+  const height = 96 + Math.min(160, total * 7);
+  const holding = FISH.filter((f) => (bag[f.id] ?? 0) > 0);
+  return (
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Aquarium · {total}</p>
+      <div className="relative mt-1 overflow-hidden rounded-[16px] bg-[#163e48]" style={{ height }}>
+        <style>{`
+          @keyframes hw-swim {
+            0% { transform: translateX(-30%) scaleX(1); }
+            49% { transform: translateX(240%) scaleX(1); }
+            50% { transform: translateX(240%) scaleX(-1); }
+            100% { transform: translateX(-30%) scaleX(-1); }
+          }
+        `}</style>
+        {kept.length === 0 ? (
+          <p className="absolute inset-0 flex items-center justify-center px-4 text-center text-xs font-semibold text-[#d5e6ea]">
+            Empty water. Catch a fish and keep it here.
+          </p>
+        ) : (
+          kept.map((f, i) => (
+            <div
+              key={f.key}
+              className="absolute flex items-center"
+              style={{
+                top: 12 + ((i * 37) % Math.max(40, height - 28)),
+                animation: `hw-swim ${6 + (i % 4)}s linear ${i * 0.4}s infinite`,
+              }}
+            >
+              <span className="block h-3 w-7 rounded-full" style={{ background: f.color }} />
+              <span
+                className="block h-0 w-0 border-y-[6px] border-r-[8px] border-y-transparent"
+                style={{ borderRightColor: f.color }}
+              />
+            </div>
+          ))
+        )}
+      </div>
+      {holding.length ? (
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {holding.map((f) => (
+            <li key={f.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
+              <span className="flex-1">
+                {f.name} × {bag[f.id]}
+              </span>
+              <button type="button" onClick={() => stock(f.id)} className="rounded-full bg-pine px-2 py-1 text-[11px] text-parchment">
+                Keep
+              </button>
+              <button type="button" onClick={() => sell(f.id)} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink">
+                {f.price}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 
 function HallPanel() {
   const level = useGame((s) => s.townHallLevel);
@@ -59,10 +125,11 @@ function HallPanel() {
     { n: 2, label: "Iron unlocked. Goblins still come in packs." },
     { n: 3, label: "Steel unlocked. Dark elves start sniffing." },
     { n: 4, label: "Adamant in the armory. Mixed raids." },
-    { n: 5, label: "The hall is finished. The tide is honest." },
+    { n: 5, label: "A stone keep. The tide is honest." },
   ];
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+      <Aquarium />
       <div className="rounded-[16px] bg-parchment-dark/50 px-3 py-3">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Rank</p>
         <p className="font-display text-2xl font-semibold text-ink">Town Hall {level}</p>

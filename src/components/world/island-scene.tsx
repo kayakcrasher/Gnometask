@@ -13,6 +13,7 @@ import * as THREE from "three";
 import { Terrain } from "./terrain";
 import { Cottage3, Town3, VillageHouses } from "./town";
 import { Harbor3 } from "./boats";
+import { CastLine, OceanLife } from "./ocean";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
 import { Fights3, Landing3, LootFlash3, Npcs3, Towers3, Trees3 } from "./world-life";
@@ -131,6 +132,8 @@ function SceneBody({
       />
       <fog attach="fog" args={["#8aa8a4", 36, 95]} />
       <Terrain onWalk={onWalk} />
+      <OceanLife />
+      <CastLine />
       <Cottage3 upgrades={save.houseUpgrades} onEnter={() => goInside(374, 430, "cottage")} />
       <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
       <VillageHouses
@@ -166,6 +169,46 @@ function SceneBody({
           })
         }
       />
+      <group
+        position={to3(78, 560, 0.05)}
+        onClick={(e) => {
+          e.stopPropagation();
+          interact(78, 560, {
+            kind: "fish",
+            hotspotId: "shore",
+            title: "The shallows",
+            blurb: "Sprats, perch, and the odd crab. A stick rod is enough. Bigger fish live past the boats.",
+            place: "dock",
+          });
+        }}
+      >
+        <mesh position={[0, 0.02, 0]}>
+          <boxGeometry args={[0.9, 0.04, 0.35]} />
+          <meshStandardMaterial color="#c4894a" />
+        </mesh>
+        <mesh position={[0.28, 0.2, 0]} rotation={[0.4, 0, -0.5]}>
+          <boxGeometry args={[0.03, 0.4, 0.03]} />
+          <meshStandardMaterial color="#6b4423" />
+        </mesh>
+      </group>
+      <group
+        position={to3(-40, 400, -0.05)}
+        onClick={(e) => {
+          e.stopPropagation();
+          interact(-40, 400, {
+            kind: "fish",
+            hotspotId: "sea",
+            title: "Open water",
+            blurb: "Cod and worse. You need a skiff or bigger, and the Fishing to match.",
+            place: "dock",
+          });
+        }}
+      >
+        <mesh>
+          <sphereGeometry args={[0.16, 10, 8]} />
+          <meshStandardMaterial color="#e7c56a" />
+        </mesh>
+      </group>
       <Trees3
         onTree={(id, x, y) => {
           const spot = TREE_SPOTS.find((t) => t.id === id);

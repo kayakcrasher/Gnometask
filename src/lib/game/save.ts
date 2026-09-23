@@ -38,7 +38,7 @@ export function defaultSave(): GameSave {
     perfectBonusOn: null,
     honey: 1,
     bread: 2,
-    ownedGear: ["weapon-stick", "hatchet-wood", "hoe-wood"],
+    ownedGear: ["weapon-stick", "hatchet-wood", "hoe-wood", "rod-wood"],
     equipment: { weapon: "weapon-stick", shield: null, armor: null, tool: "hoe-wood" },
     wildWins: 0,
     hp: maxHitpoints(skills),
@@ -67,10 +67,22 @@ export function defaultSave(): GameSave {
     woodsGreeted: false,
     logs: 0,
     bones: 0,
+    fishBag: {},
+    tank: {},
+    boatRank: 1,
     trees: {},
     landing: null,
     combatStyle: "attack",
   };
+}
+
+function asFishBag(raw: unknown): Record<string, number> {
+  if (!raw || typeof raw !== "object") return {};
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof value === "number" && value > 0) out[key] = Math.floor(value);
+  }
+  return out;
 }
 
 function asStringArray(v: unknown, fallback: string[]) {
@@ -92,6 +104,7 @@ function asSkills(raw: unknown): Skills {
     prayer: typeof s.prayer === "number" ? s.prayer : base.prayer,
     barter: typeof s.barter === "number" ? s.barter : base.barter,
     sailing: typeof s.sailing === "number" ? s.sailing : base.sailing,
+    fishing: typeof s.fishing === "number" ? s.fishing : base.fishing,
   };
 }
 
@@ -153,6 +166,7 @@ export function migrate(raw: unknown): GameSave {
   if (!ownedGear.includes("weapon-stick")) ownedGear.unshift("weapon-stick");
   if (!ownedGear.includes("hatchet-wood")) ownedGear.push("hatchet-wood");
   if (!ownedGear.includes("hoe-wood")) ownedGear.push("hoe-wood");
+  if (!ownedGear.includes("rod-wood")) ownedGear.push("rod-wood");
 
   const equipment = {
     weapon: s.equipment?.weapon ?? ownedGear.find((id) => id.startsWith("weapon-")) ?? "weapon-stick",
@@ -239,6 +253,9 @@ export function migrate(raw: unknown): GameSave {
     woodsGreeted: Boolean(s.woodsGreeted),
     logs: typeof s.logs === "number" ? s.logs : 0,
     bones: typeof s.bones === "number" ? s.bones : 0,
+    fishBag: asFishBag(s.fishBag),
+    tank: asFishBag(s.tank),
+    boatRank: typeof s.boatRank === "number" ? Math.max(1, Math.min(5, s.boatRank)) : 1,
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",

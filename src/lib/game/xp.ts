@@ -35,6 +35,7 @@ export function defaultSkills(): Skills {
     prayer: 0,
     barter: 0,
     sailing: 0,
+    fishing: 0,
     crafting: 0,
   };
 }

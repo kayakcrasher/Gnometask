@@ -101,6 +101,7 @@ export function ClickPopup() {
   const woodsGreeted = useGame((s) => s.woodsGreeted);
   const chopTree = useGame((s) => s.chopTree);
   const sailTo = useGame((s) => s.sailTo);
+  const castLine = useGame((s) => s.castLine);
   const skills = useGame((s) => s.skills);
   const placed = useGame((s) => s.placed);
   const coins = useGame((s) => s.coins);
@@ -251,7 +252,19 @@ export function ClickPopup() {
                 );
               })}
               <Action label="Back to dock" tone="quiet" onClick={() => sailTo("dock", "row")} />
+              <Action
+                label="Fish from this hull"
+                tone="gold"
+                onClick={() => castLine("sea", popup.x ?? 20, popup.y ?? 480, popup.hotspotId)}
+              />
             </>
+          ) : null}
+
+          {popup.kind === "fish" && popup.hotspotId === "shore" ? (
+            <Action label="Cast" tone="gold" onClick={() => castLine("shore", 24, 560)} />
+          ) : null}
+          {popup.kind === "fish" && popup.hotspotId === "sea" ? (
+            <Action label="Cast into the deep" tone="gold" onClick={() => castLine("sea", -40, 400)} />
           ) : null}
 
           {popup.hotspotId === "chicken" ? (

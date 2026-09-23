@@ -77,6 +77,9 @@ export function snap(s: GameSave): GameSave {
     townHallLevel: s.townHallLevel,
     logs: s.logs,
     bones: s.bones,
+    fishBag: s.fishBag,
+    tank: s.tank,
+    boatRank: s.boatRank,
     trees: s.trees,
     landing: s.landing,
     combatStyle: s.combatStyle,
@@ -174,6 +177,7 @@ export const UI_SEED: Pick<
   | "followWalk"
   | "praying"
   | "lootFlash"
+  | "fishing"
 > = {
   hydrated: false,
   selectedPlace: null,
@@ -191,4 +195,5 @@ export const UI_SEED: Pick<
   followWalk: true,
   praying: false,
   lootFlash: null,
+  fishing: null,
 };
