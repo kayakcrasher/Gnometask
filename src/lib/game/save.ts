@@ -6,6 +6,7 @@ import { BUILDING_MAX, PLAYER_START, type BuildingId, type GameSave, type Task }
 import type { Skills } from "./xp";
 import type { QuestSave } from "./quests";
 import { nextNewcomer, supplyDue } from "./data/supply";
+import { growFolk, type Settler } from "./data/folk";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
@@ -358,13 +359,34 @@ function asExpedition(raw: unknown): GameSave["expedition"] {
   return { stake: Math.floor(r.stake), due: Math.floor(r.due) };
 }
 
-function asSettlers(raw: unknown): GameSave["settlers"] {
+function asSettlers(raw: unknown): Settler[] {
   if (!Array.isArray(raw)) return [];
+  const shifts = new Set(["dawn", "day", "dusk"]);
   return raw.flatMap((row) => {
     if (!row || typeof row !== "object") return [];
-    const r = row as { name?: string; hat?: string; slotId?: string };
+    const r = row as {
+      name?: string;
+      hat?: string;
+      slotId?: string;
+      arrived?: number;
+      purse?: number;
+      weapon?: string | null;
+      stall?: string | null;
+      shift?: string | null;
+    };
     if (!r.name || !r.slotId) return [];
-    return [{ name: String(r.name), hat: r.hat || "hat-straw", slotId: String(r.slotId) }];
+    return [
+      {
+        name: String(r.name),
+        hat: r.hat || "hat-straw",
+        slotId: String(r.slotId),
+        arrived: typeof r.arrived === "number" ? Math.floor(r.arrived) : 0,
+        purse: typeof r.purse === "number" ? Math.max(0, Math.floor(r.purse)) : 12,
+        weapon: r.weapon ? String(r.weapon) : null,
+        stall: r.stall ? String(r.stall) : null,
+        shift: r.shift && shifts.has(r.shift) ? (r.shift as Settler["shift"]) : null,
+      },
+    ];
   });
 }
 
@@ -395,7 +417,8 @@ function withMissingBuiltins(save: GameSave, today: string): GameSave {
 export function applyDailyRollover(save: GameSave): GameSave {
   const today = localDate();
   if (save.lastVisitDate === today) {
-    return withMissingBuiltins(save, today);
+    const grown = growFolk(withMissingBuiltins(save, today), false);
+    return { ...withMissingBuiltins(save, today), settlers: grown.settlers, placed: grown.placed };
   }
   const missed = Math.max(0, daysBetween(save.lastVisitDate, today));
   const streakBroken = save.lastCompletedDate !== yesterdayDate() && save.lastCompletedDate !== today;
@@ -408,7 +431,7 @@ export function applyDailyRollover(save: GameSave): GameSave {
     village: Math.max(0, save.buildingHp.village - scorch - (raiding ? 1 : 0)),
     haven: save.buildingHp.haven,
   };
-  return freshenSupply(
+  const rolled = freshenSupply(
     withMissingBuiltins(
     {
       ...save,
@@ -433,6 +456,8 @@ export function applyDailyRollover(save: GameSave): GameSave {
     today,
   ),
   );
+  const grown = growFolk(rolled, true);
+  return { ...rolled, settlers: grown.settlers, placed: grown.placed };
 }
 
 export function loadSave(): GameSave {

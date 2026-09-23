@@ -3,6 +3,7 @@ import type { PlotSave } from "./data/crops";
 import type { QuestSave } from "./quests";
 import type { SkillId, Skills } from "./xp";
 import type { TreeStage } from "./data/trees";
+import type { Settler } from "./data/folk";
 
 export type PlaceId =
   | "cottage"
@@ -217,7 +218,7 @@ export type GameSave = {
   loan: Loan | null;
   claimed: string[];
   hulls: string[];
-  settlers: { name: string; hat: string; slotId: string }[];
+  settlers: Settler[];
   supplyDay: number;
   supplyTaken: boolean;
   newcomer: string | null;

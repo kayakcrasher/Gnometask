@@ -1,6 +1,7 @@
 import { clamp, uid } from "@/lib/utils";
 import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
-import { DEFENDERS, NPC_STATS, rolledChart } from "../data/honour";
+import { rolledChart } from "../data/honour";
+import { hollowLed, pickStriker, tideShift, watchNames } from "../data/folk";
 import { ENEMIES, makeCombat, patrolEnemy, raidKindForHall } from "../combat";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
@@ -325,7 +326,9 @@ export function worldSlice(
         changed = true;
       }
 
-      if (!raids.some((r) => r.swarm) && raids.length === 0 && Math.random() < 0.08) {
+      const led = hollowLed(s.townHallLevel, s.settlers);
+      const swarmChance = led ? 0.02 : 0.12;
+      if (!raids.some((r) => r.swarm) && raids.length === 0 && Math.random() < swarmChance) {
         raids = [0, 1, 2, 3].map((i) => ({
           id: uid("swarm"),
           kind: "goblin" as const,
@@ -334,22 +337,23 @@ export function worldSlice(
           hp: 10,
           swarm: true,
         }));
-        speech = "A swarm at the dock. Greg, Brine, and Ol Pappy take the shore.";
+        const posted = watchNames(s.daysPlayed, s.settlers).join(", ") || "the shore";
+        speech = led
+          ? `A thin raid. The ${tideShift(s.daysPlayed)} watch is posted: ${posted}.`
+          : `Goblins again. ${posted} take the ${tideShift(s.daysPlayed)} watch. Until the hollow has a strong leader, they will keep coming.`;
         changed = true;
       } else if (raids.some((r) => r.swarm)) {
-        const who = DEFENDERS[Math.floor(Math.random() * DEFENDERS.length)]!;
-        const stat = NPC_STATS[who]!;
+        const who = pickStriker(s.daysPlayed, s.settlers);
         const idx = raids.findIndex((r) => r.swarm && r.hp > 0);
         if (idx >= 0) {
-          const hit = Math.max(1, Math.round(stat.atk / 3));
+          const hit = Math.max(1, Math.round(who.atk / 3));
           const hp = raids[idx]!.hp - hit;
-          const name = who === "pappy" ? "Ol Pappy" : who === "greg" ? "Watcher Greg" : who[0]!.toUpperCase() + who.slice(1);
           if (hp <= 0) {
             const chart = rolledChart("goblin", get().chart);
             raids = raids.filter((_, i) => i !== idx);
             speech = chart
-              ? `${name} drops a goblin. A hide map falls out of its belt.`
-              : `${name} drops a goblin. The town's honour holds. +1 respect.`;
+              ? `${who.name} drops a goblin. A hide map falls out of its belt.`
+              : `${who.name} drops a goblin. The town's honour holds. +1 respect.`;
             set({
               respect: get().respect + 1,
               chart: get().chart || chart,
@@ -357,15 +361,16 @@ export function worldSlice(
             });
           } else {
             raids = raids.map((r, i) => (i === idx ? { ...r, hp } : r));
-            speech = `${name} strikes from the shore. The goblin has ${hp} left.`;
+            speech = `${who.name} has an eye on the shore. The goblin has ${hp} left.`;
           }
           changed = true;
         }
-      } else if (raids.length < 2 && Math.random() < 0.38) {
+      } else if (raids.length < 2 && Math.random() < (led ? 0.12 : 0.42)) {
         const kind = raidKindForHall(s.townHallLevel);
-        if (kind === "goblin" && s.guardLevel >= 3 && Math.random() < 0.7) {
-          speech = "The Guardsgnome sees off a goblin raft. Haven's spear, town's peace.";
+        if (kind === "goblin" && s.guardLevel >= 3 && led && Math.random() < 0.7) {
+          speech = "The watch and the Guardsgnome turn a raft around. The hall is strong enough that some boats don't land.";
           changed = true;
+        } else if (kind === "darkelf" && s.guardLevel >= 5 && Math.random() < 0.55) {
         } else if (kind === "darkelf" && s.guardLevel >= 5 && Math.random() < 0.55) {
           speech = "The Guardsgnome stares a dark elf back onto the tide. Impressive.";
           changed = true;
@@ -378,7 +383,11 @@ export function worldSlice(
             hp: ENEMIES[kind].hp,
           };
           raids = [...raids, raid];
-          speech = kind === "goblin" ? "Goblins at the dock!" : "Dark elves on the night tide!";
+          speech = kind === "goblin"
+            ? led
+              ? "A goblin boat. The watch is already looking."
+              : "Goblins at the dock. They will keep coming until the hollow has a strong leader."
+            : "Dark elves on the night tide!";
           changed = true;
         }
       }

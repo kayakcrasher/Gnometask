@@ -3,6 +3,7 @@ import { Kenney } from "./kenney";
 import { BoatMesh } from "./boats";
 import { FighterMotion, GnomeRig } from "./gnome-rig";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "@/lib/game/data/trees";
+import { tideShift, WATCH_POSTS } from "@/lib/game/data/folk";
 import { ROCKS } from "@/lib/game/data/scenery";
 import { Ember } from "./ember";
 import { NPCS } from "@/lib/game/world";
@@ -125,12 +126,16 @@ export function Npcs3({
   onNpc: (id: string, x: number, y: number) => void;
 }) {
   const showLabels = useLabels();
+  const days = useGame((s) => s.daysPlayed);
+  const shift = tideShift(days);
   return (
     <group>
       {NPCS.map((n) => {
         const x = poses[n.id]?.x ?? n.x;
         const y = poses[n.id]?.y ?? n.y;
         const p = to3(x, y, groundY(x, y));
+        const post = WATCH_POSTS.find((w) => w.id === n.id);
+        const onWatch = post?.shift === shift;
         const coat =
           n.id === "pappy"
             ? "#8a6238"
@@ -161,6 +166,7 @@ export function Npcs3({
             <Html zIndexRange={[8, 0]} position={[0, n.id === "pappy" ? 1.7 : 1.5, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
                 {n.shortName ?? n.name}
+                {onWatch ? " · watch" : ""}
               </p>
             </Html>
             ) : null}

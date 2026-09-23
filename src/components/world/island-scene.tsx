@@ -26,6 +26,7 @@ import { groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 import { NPCS } from "@/lib/game/world";
 import { TREE_SPOTS } from "@/lib/game/data/trees";
+import { heartLine } from "@/lib/game/data/folk";
 import { dist } from "@/components/land/map-data";
 import { Minimap } from "@/components/hud/minimap";
 import type { GamePopup, InteriorId } from "@/lib/game/types";
@@ -254,7 +255,7 @@ function SceneBody({
             hotspotId: id,
             npcId: id,
             title: npc.name,
-            blurb: npc.lines[0] ?? "",
+            blurb: heartLine(id, save.daysPlayed, save.settlers, save.townHallLevel) ?? npc.lines[0] ?? "",
             place: npc.place,
             interior: npc.tradeInterior,
           });

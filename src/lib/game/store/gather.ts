@@ -251,10 +251,21 @@ export function gatherSlice(
       }
       set({
         newcomer: null,
-        settlers: [...s.settlers, { name: who.name, hat: who.hat, slotId: slot.id }],
-        placed: [...s.placed, { id: `ship-${who.name}`, catalogId: "village-cottage", slotId: slot.id }],
+        settlers: [
+          ...s.settlers,
+          {
+            name: who.name,
+            hat: who.hat,
+            slotId: slot.id,
+            arrived: s.daysPlayed,
+            purse: 18,
+            weapon: null,
+            stall: null,
+            shift: null,
+          },
+        ],
         bounceKey: s.bounceKey + 1,
-        speech: `${who.name} takes a rowhouse up the lane. One more gnome. The island gets longer.`,
+        speech: `${who.name} buys the plot with their own coins. The house waits a day. Then they trade. Then, if the hollow still needs it, they take a watch.`,
       });
       sfx("place");
       scheduleWrite(get);

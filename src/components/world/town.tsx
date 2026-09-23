@@ -4,6 +4,7 @@ import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
 import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
 import { EMPTY_LOTS, PLACE_ANCHORS, VILLAGE_SLOTS } from "@/lib/game/data/layout";
+import { folkLine, settlerRank } from "@/lib/game/data/folk";
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
@@ -408,17 +409,46 @@ export function VillageHouses({ count, onClick }: { count: number; onClick: (x: 
 
 function Settlers() {
   const settlers = useGame((s) => s.settlers);
+  const days = useGame((s) => s.daysPlayed);
+  const speak = useGame((s) => s.speak);
   return (
     <group>
       {settlers.map((n) => {
         const slot = VILLAGE_SLOTS.find((v) => v.id === n.slotId);
         if (!slot) return null;
+        const rank = settlerRank(n, days);
+        const label =
+          rank === "plot" ? `${n.name} · plot` : rank === "watch" ? `${n.name} · ${n.shift} watch` : rank === "trade" ? `${n.name} · ${n.stall}` : n.name;
         return (
-          <group key={n.name} position={to3(slot.x + 22, slot.y + 28, groundY(slot.x, slot.y))}>
+          <group
+            key={n.name}
+            position={to3(slot.x + 22, slot.y + 28, groundY(slot.x, slot.y))}
+            onClick={(e) => {
+              e.stopPropagation();
+              speak(folkLine(n, days));
+            }}
+          >
+            {rank === "plot" ? (
+              <mesh position={[0, 0.35, 0]} castShadow>
+                <boxGeometry args={[0.08, 0.7, 0.08]} />
+                <meshStandardMaterial color="#6b4423" />
+              </mesh>
+            ) : (
+              <group position={[-0.7, 0, 0]}>
+                <mesh position={[0, 0.35, 0]} castShadow>
+                  <boxGeometry args={[0.7, 0.55, 0.6]} />
+                  <meshStandardMaterial color="#c4a574" />
+                </mesh>
+                <mesh position={[0, 0.72, 0]} rotation={[0, 0, 0.2]} castShadow>
+                  <coneGeometry args={[0.5, 0.32, 4]} />
+                  <meshStandardMaterial color="#8a4a3a" />
+                </mesh>
+              </group>
+            )}
             <GnomeRig hat={n.hat} scale={0.82} beard={false} coat="#6a3d58" />
             <Html position={[0, 1.45, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
-                {n.name}
+                {label}
               </p>
             </Html>
           </group>
