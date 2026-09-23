@@ -5,6 +5,7 @@ import { to3, groundY } from "@/lib/game/world3";
 import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
 import { EMPTY_LOTS, PLACE_ANCHORS, VILLAGE_SLOTS } from "@/lib/game/data/layout";
 import { folkLine, settlerRank } from "@/lib/game/data/folk";
+import { isWeekend } from "@/lib/game/data/market";
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
@@ -250,6 +251,41 @@ function Bank3({
         <boxGeometry args={[0.28, 0.18, 0.04]} />
         <meshStandardMaterial color="#e2b84a" metalness={0.4} />
       </mesh>
+      <mesh position={[0, 0.08, 1.15]} receiveShadow>
+        <boxGeometry args={[1.1, 0.16, 0.7]} />
+        <meshStandardMaterial color="#c9c3b4" />
+      </mesh>
+      <mesh position={[0, h * 0.92, 0.02]} rotation={[0, 0, 0]}>
+        <boxGeometry args={[w * 0.7, 0.08, 1.4]} />
+        <meshStandardMaterial color="#efe4cf" />
+      </mesh>
+      {[-1, 1].map((side) => (
+        <mesh key={`lamp-${side}`} position={[side * (w / 2 - 0.2), h * 0.72, 0.72]}>
+          <sphereGeometry args={[0.08, 10, 8]} />
+          <meshStandardMaterial color="#f2d7a2" emissive="#e2b84a" emissiveIntensity={0.35} />
+        </mesh>
+      ))}
+      <WeekendQuill />
+    </group>
+  );
+}
+
+function WeekendQuill() {
+  const days = useGame((s) => s.daysPlayed);
+  const speak = useGame((s) => s.speak);
+  if (!isWeekend(days)) return null;
+  return (
+    <group
+      position={[0, 0, 1.7]}
+      onClick={(e) => {
+        e.stopPropagation();
+        speak("Quill Bram. The ferry purser. It's the weekend, so the steps are as far as I go. The ledger opens when the week does.");
+      }}
+    >
+      <GnomeRig hat="hat-night" scale={0.9} coat="#2f3d34" beard />
+      <Html position={[0, 1.6, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+        <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 text-[11px] font-semibold text-parchment">Quill · weekend</p>
+      </Html>
     </group>
   );
 }

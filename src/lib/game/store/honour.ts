@@ -1,5 +1,6 @@
 import { BOAT_LOANS, LAND_OFFERS, rolledChart } from "../data/honour";
 import { parcelAt } from "../data/parcels";
+import { STOCKS, sharePrice } from "../data/market";
 import { BOAT_RANK, type BoatId } from "../data/boats";
 import { makeCombat } from "../combat";
 import { sfx } from "../juice";
@@ -10,7 +11,7 @@ import type { GameState, StoreGet, StoreSet } from "./types";
 export function honourSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "sailChart" | "leaveIsle" | "startIsleFight" | "claimTile" | "buyParcel" | "takeLoan" | "repayLoan"> {
+): Pick<GameState, "sailChart" | "leaveIsle" | "startIsleFight" | "claimTile" | "buyParcel" | "sellParcel" | "buyShare" | "sellShare" | "takeLoan" | "repayLoan"> {
   return {
     sailChart: () => {
       const s = get();
@@ -119,6 +120,66 @@ export function honourSlice(
         coins: s.coins - tile.price,
         coinPopKey: s.coinPopKey + 1,
         speech: `Unclaimed hollow. ${tile.price} coins. The deed is in your name. A gnome's own ground is never on this list.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
+    sellParcel: (id) => {
+      const s = get();
+      const tile = parcelAt(id);
+      if (!tile || !s.deeds.includes(id)) {
+        set({ speech: "That deed is not in your name." });
+        return;
+      }
+      const pay = Math.max(1, Math.floor(tile.price * 0.7));
+      set({
+        deeds: s.deeds.filter((d) => d !== id),
+        coins: s.coins + pay,
+        coinPopKey: s.coinPopKey + 1,
+        speech: `Quill takes the deed back for the hollow. ${pay} coins, and the ground is no longer yours.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
+    buyShare: (id) => {
+      const s = get();
+      const stock = STOCKS.find((row) => row.id === id);
+      if (!stock) return;
+      const price = sharePrice(id, s.daysPlayed);
+      if (s.coins < price) {
+        sfx("error");
+        set({ speech: `${stock.name} is ${price} coins a share.` });
+        return;
+      }
+      set({
+        coins: s.coins - price,
+        coinPopKey: s.coinPopKey + 1,
+        shares: { ...s.shares, [id]: (s.shares[id] ?? 0) + 1 },
+        speech: `One share of ${stock.name}. ${price} coins. The board takes the rest.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
+    sellShare: (id) => {
+      const s = get();
+      const held = s.shares[id] ?? 0;
+      const stock = STOCKS.find((row) => row.id === id);
+      if (!stock || held < 1) {
+        set({ speech: "You don't hold that share." });
+        return;
+      }
+      const price = sharePrice(id, s.daysPlayed);
+      const next = { ...s.shares };
+      if (held === 1) delete next[id];
+      else next[id] = held - 1;
+      set({
+        shares: next,
+        coins: s.coins + price,
+        coinPopKey: s.coinPopKey + 1,
+        speech: `Sold one ${stock.name}. ${price} coins back in the purse.`,
       });
       sfx("buy");
       scheduleWrite(get);

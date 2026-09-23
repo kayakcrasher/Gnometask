@@ -205,6 +205,8 @@ export type GameSave = {
   logs: number;
   saplings: number;
   deeds: string[];
+  shares: Record<string, number>;
+  waveDay: number;
   bones: number;
   fishBag: Record<string, number>;
   tank: Record<string, number>;

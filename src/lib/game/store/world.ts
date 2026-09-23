@@ -1,8 +1,8 @@
 import { clamp, uid } from "@/lib/utils";
 import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
 import { rolledChart } from "../data/honour";
-import { hollowLed, pickStriker, tideShift, watchNames } from "../data/folk";
-import { ENEMIES, makeCombat, patrolEnemy, raidKindForHall } from "../combat";
+import { pickStriker, tideShift, watchNames } from "../data/folk";
+import { ENEMIES, makeCombat, patrolEnemy } from "../combat";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
 import type { PlaceId } from "../types";
@@ -326,21 +326,24 @@ export function worldSlice(
         changed = true;
       }
 
-      const led = hollowLed(s.townHallLevel, s.settlers);
-      const swarmChance = led ? 0.02 : 0.12;
-      if (!raids.some((r) => r.swarm) && raids.length === 0 && Math.random() < swarmChance) {
-        raids = [0, 1, 2, 3].map((i) => ({
-          id: uid("swarm"),
+      let waveDay = s.waveDay;
+      if (waveDay !== s.daysPlayed) {
+        const n = Math.max(1, s.daysPlayed);
+        const fresh = Array.from({ length: n }, (_, i) => ({
+          id: uid("wave"),
           kind: "goblin" as const,
-          x: 48 + i * 26,
-          y: 490 + (i % 2) * 34,
-          hp: 10,
+          x: 30 + (i % 6) * 34,
+          y: 790 + Math.floor(i / 6) * 30,
+          hp: 8,
           swarm: true,
         }));
+        raids = [...raids.filter((r) => !r.swarm), ...fresh];
+        waveDay = s.daysPlayed;
         const posted = watchNames(s.daysPlayed, s.settlers).join(", ") || "the shore";
-        speech = led
-          ? `A thin raid. The ${tideShift(s.daysPlayed)} watch is posted: ${posted}.`
-          : `Goblins again. ${posted} take the ${tideShift(s.daysPlayed)} watch. Until the hollow has a strong leader, they will keep coming.`;
+        speech =
+          n === 1
+            ? `One goblin on the sand. Tomorrow there will be two. ${posted} are watching.`
+            : `A wave of ${n}. One more than yesterday. ${posted} take the ${tideShift(s.daysPlayed)} watch.`;
         changed = true;
       } else if (raids.some((r) => r.swarm)) {
         const who = pickStriker(s.daysPlayed, s.settlers);
@@ -365,31 +368,17 @@ export function worldSlice(
           }
           changed = true;
         }
-      } else if (raids.length < 2 && Math.random() < (led ? 0.12 : 0.42)) {
-        const kind = raidKindForHall(s.townHallLevel);
-        if (kind === "goblin" && s.guardLevel >= 3 && led && Math.random() < 0.7) {
-          speech = "The watch and the Guardsgnome turn a raft around. The hall is strong enough that some boats don't land.";
-          changed = true;
-        } else if (kind === "darkelf" && s.guardLevel >= 5 && Math.random() < 0.55) {
-        } else if (kind === "darkelf" && s.guardLevel >= 5 && Math.random() < 0.55) {
-          speech = "The Guardsgnome stares a dark elf back onto the tide. Impressive.";
-          changed = true;
-        } else {
-          const raid = {
-            id: uid("raid"),
-            kind,
-            x: 70 + Math.random() * 80,
-            y: 470 + Math.random() * 70,
-            hp: ENEMIES[kind].hp,
-          };
-          raids = [...raids, raid];
-          speech = kind === "goblin"
-            ? led
-              ? "A goblin boat. The watch is already looking."
-              : "Goblins at the dock. They will keep coming until the hollow has a strong leader."
-            : "Dark elves on the night tide!";
-          changed = true;
-        }
+      } else if (s.townHallLevel >= 3 && raids.length < 2 && Math.random() < 0.08) {
+        const raid = {
+          id: uid("raid"),
+          kind: "darkelf" as const,
+          x: 70 + Math.random() * 80,
+          y: 470 + Math.random() * 70,
+          hp: ENEMIES.darkelf.hp,
+        };
+        raids = [...raids, raid];
+        speech = "Dark elves on the night tide. The goblin count still rises with the day.";
+        changed = true;
       }
 
       let chicken = s.chicken;
@@ -406,7 +395,7 @@ export function worldSlice(
       if (hp !== s.hp) changed = true;
 
       if (!changed) return;
-      set({ buildingHp, raids, speech, chicken, hp });
+      set({ buildingHp, raids, speech, chicken, hp, waveDay });
       scheduleWrite(get);
     },
   };

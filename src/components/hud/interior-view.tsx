@@ -7,7 +7,6 @@ import { FISH } from "@/lib/game/data/fish";
 import { CROPS } from "@/lib/game/data/crops";
 import { ANIMALS, CALF_PRICE, COOP_COST, GOODS } from "@/lib/game/data/trade";
 import { BOATS } from "@/lib/game/data/boats";
-import { BOAT_LOANS, HONOUR_CODE, LAND_OFFERS } from "@/lib/game/data/honour";
 import { levelFromXp } from "@/lib/game/xp";
 import { cn } from "@/lib/utils";
 
@@ -244,92 +243,6 @@ function ProduceStall() {
   );
 }
 
-function BankPanel() {
-  const coins = useGame((s) => s.coins);
-  const respect = useGame((s) => s.respect);
-  const loan = useGame((s) => s.loan);
-  const claimed = useGame((s) => s.claimed);
-  const hulls = useGame((s) => s.hulls);
-  const claim = useGame((s) => s.claimTile);
-  const borrow = useGame((s) => s.takeLoan);
-  const repay = useGame((s) => s.repayLoan);
-  const expedition = useGame((s) => s.expedition);
-  const days = useGame((s) => s.daysPlayed);
-  const fund = useGame((s) => s.fundExpedition);
-  const collect = useGame((s) => s.collectExpedition);
-  const tier = coins >= 200 ? "a tower and a gold roof" : coins >= 100 ? "columns" : coins >= 40 ? "stone" : "a modest timber front";
-  return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
-      <div className="rounded-[16px] bg-parchment-dark/50 px-3 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">The purse</p>
-        <p className="font-display text-3xl font-semibold text-ink">{coins}</p>
-        <p className="mt-1 text-sm font-semibold text-bark/70">Outside, the bank is {tier}.</p>
-        <p className="mt-2 text-sm font-semibold text-ink">Respect {respect}</p>
-        <p className="mt-1 text-xs font-semibold text-bark/70">{HONOUR_CODE}</p>
-      </div>
-      <div className="rounded-[16px] border border-bark/10 bg-[#efe4cf] px-3 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Expedition desk</p>
-        <p className="mt-1 text-xs font-semibold text-bark/70">
-          Stake coins. Most come home at 25%. One in thirty pays 50%. One in five hundred pays 100%. One in a thousand pays 200%. About one in twenty is lost.
-        </p>
-        {expedition ? (
-          <button type="button" onClick={collect} className="mt-2 h-10 w-full rounded-[12px] bg-pine text-sm font-semibold text-parchment">
-            {days >= expedition.due ? `Collect the ${expedition.stake} stake` : `Out until day ${expedition.due}`}
-          </button>
-        ) : (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {[10, 25, 50].map((n) => (
-              <button key={n} type="button" disabled={coins < n} onClick={() => fund(n)} className="rounded-full bg-gold px-3 py-1 text-[11px] font-semibold text-ink disabled:opacity-40">
-                Stake {n}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Land</p>
-        <ul className="mt-1 flex flex-col gap-1.5">
-          {LAND_OFFERS.map((tile) => (
-            <li key={tile.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
-              <span className="flex-1">{tile.name}</span>
-              {claimed.includes(tile.id) ? (
-                <span className="text-bark/50">Yours</span>
-              ) : (
-                <button type="button" onClick={() => claim(tile.id)} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink">
-                  {tile.respect} respect · {tile.coins}
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Boat loans</p>
-        {loan ? (
-          <button type="button" onClick={repay} className="mt-1 h-10 w-full rounded-[12px] bg-pine text-sm font-semibold text-parchment">
-            Repay {loan.owed} on the {loan.boat}
-          </button>
-        ) : (
-          <ul className="mt-1 flex flex-col gap-1.5">
-            {BOAT_LOANS.map((offer) => (
-              <li key={offer.boat}>
-                <button
-                  type="button"
-                  disabled={hulls.includes(offer.boat)}
-                  onClick={() => borrow(offer.boat)}
-                  className="h-9 w-full rounded-[12px] bg-parchment-dark text-xs font-semibold text-ink disabled:opacity-40"
-                >
-                  {hulls.includes(offer.boat) ? `${offer.name} is yours` : `${offer.name} · ${offer.respect} respect · owe ${offer.owed}`}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function HallPanel() {
   const level = useGame((s) => s.townHallLevel);
   const coins = useGame((s) => s.coins);
@@ -486,7 +399,7 @@ export function InteriorView() {
   const sipTea = useGame((s) => s.sipTea);
   const repair = useGame((s) => s.repairBuilding);
   const cottageHp = useGame((s) => s.buildingHp.cottage);
-  if (!interior) return null;
+  if (!interior || interior === "bank") return null;
   const meta = COPY[interior];
   const cottageHurt = cottageHp < BUILDING_MAX.cottage;
 
@@ -532,8 +445,6 @@ export function InteriorView() {
           <HallPanel />
         ) : interior === "dockhouse" ? (
           <DockhousePanel />
-        ) : interior === "bank" ? (
-          <BankPanel />
         ) : (
           <div className="min-h-0 flex-1 overflow-hidden">
             {interior === "general" ? <ProduceStall /> : null}

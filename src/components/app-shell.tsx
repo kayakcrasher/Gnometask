@@ -5,6 +5,7 @@ import { Speech } from "@/components/hud/speech";
 import { Welcome } from "@/components/hud/welcome";
 import { ClickPopup } from "@/components/hud/click-popup";
 import { InteriorView } from "@/components/hud/interior-view";
+import { BankRoom } from "@/components/world/bank-room";
 import { FarIsle } from "@/components/world/far-isle";
 import { GoblinIsle } from "@/components/world/goblin-isle";
 import { InventoryView } from "@/components/hud/inventory-view";
@@ -17,6 +18,7 @@ export function AppShell() {
   const hydrate = useGame((s) => s.hydrate);
   const named = useGame((s) => s.named);
   const atHome = useGame((s) => s.atHome);
+  const interior = useGame((s) => s.interior);
   const tickWorld = useGame((s) => s.tickWorld);
 
   useLayoutEffect(() => {
@@ -41,6 +43,7 @@ export function AppShell() {
             <InventoryView />
             <MenuView />
             <InteriorView />
+            {interior === "bank" ? <BankRoom /> : null}
             <GoblinIsle />
             <FarIsle />
           </>

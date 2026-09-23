@@ -14,6 +14,7 @@ function poly(pts: [number, number][]) {
 export function DeedMap({ onClose }: { onClose: () => void }) {
   const deeds = useGame((s) => s.deeds);
   const buy = useGame((s) => s.buyParcel);
+  const sell = useGame((s) => s.sellParcel);
   const coins = useGame((s) => s.coins);
   const [picked, setPicked] = useState<string | null>(null);
   const tile = PARCELS.find((p) => p.id === picked) ?? null;
@@ -69,7 +70,15 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
           ) : (
             <p className="text-xs font-semibold text-bark/70">{tile.price} coins. You hold {coins}.</p>
           )}
-          {owned || tile.owner ? null : (
+          {owned ? (
+            <button
+              type="button"
+              onClick={() => sell(tile.id)}
+              className="mt-2 h-10 w-full rounded-[12px] bg-pine text-sm font-semibold text-parchment"
+            >
+              Sell the deed · {Math.max(1, Math.floor(tile.price * 0.7))}
+            </button>
+          ) : tile.owner ? null : (
             <button
               type="button"
               disabled={coins < tile.price}
