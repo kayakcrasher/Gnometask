@@ -109,7 +109,7 @@ export function Npcs3({
               onNpc(n.id, x, y);
             }}
           >
-            <GnomeRig hat={n.hat} scale={n.id === "pappy" ? 1 : n.id === "greg" ? 0.92 : 0.85} coat={coat} beard={n.id === "pappy"} />
+            <GnomeRig hat={n.hat} scale={n.id === "pappy" ? 1.05 : n.id === "greg" ? 0.95 : 0.88} coat={coat} beard />
             {showLabels ? (
             <Html zIndexRange={[8, 0]} position={[0, n.id === "pappy" ? 1.7 : 1.5, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
@@ -176,10 +176,20 @@ function EnemyMesh({ kind }: { kind: EnemyId }) {
     );
   }
   if (kind === "goblin" || kind === "runt") {
-    return <GnomeRig hat="hat-moss" scale={kind === "runt" ? 0.55 : 0.7} coat="#3d6a28" skinColor="#6f8f40" />;
+    return (
+      <GnomeRig
+        hat="hat-moss"
+        scale={kind === "runt" ? 0.62 : 0.78}
+        coat="#4f8a32"
+        pants="#2a4a22"
+        skinColor="#7ea34a"
+        beard={false}
+        ears
+      />
+    );
   }
   if (kind === "darkelf") {
-    return <GnomeRig hat="hat-night" scale={0.8} coat="#1d2a22" />;
+    return <GnomeRig hat="hat-night" scale={0.86} coat="#243028" pants="#1c1816" skinColor="#cbb8a4" />;
   }
   return (
     <mesh position={[0, 0.28, 0]} castShadow>

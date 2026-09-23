@@ -139,46 +139,66 @@ export function BoatMesh({ kind }: { kind: BoatId | "goblin" }) {
 
 export function PirateRig() {
   return (
-    <group scale={0.85}>
-      <mesh position={[0, 0.42, 0]} castShadow>
-        <capsuleGeometry args={[0.26, 0.28, 6, 10]} />
-        <meshStandardMaterial color="#a8433b" roughness={0.65} />
-      </mesh>
-      <mesh position={[0, 0.28, 0.12]} castShadow>
-        <sphereGeometry args={[0.16, 10, 8]} />
-        <meshStandardMaterial color="#f2e8d5" />
-      </mesh>
-      <mesh position={[0, 0.22, 0.14]}>
-        <boxGeometry args={[0.22, 0.05, 0.02]} />
+    <group scale={0.9}>
+      <mesh position={[-0.1, 0.2, 0]} castShadow>
+        <boxGeometry args={[0.12, 0.28, 0.12]} />
         <meshStandardMaterial color="#a8433b" />
       </mesh>
-      <mesh position={[0, 0.72, 0]} castShadow>
-        <sphereGeometry args={[0.2, 12, 10]} />
-        <meshStandardMaterial color="#e8b98c" />
+      <mesh position={[0.1, 0.2, 0]} castShadow>
+        <boxGeometry args={[0.12, 0.28, 0.12]} />
+        <meshStandardMaterial color="#f2e8d5" />
       </mesh>
-      <mesh position={[0, 0.62, 0.1]} castShadow>
-        <sphereGeometry args={[0.1, 8, 8]} />
+      <mesh position={[-0.1, 0.06, 0.02]} castShadow>
+        <boxGeometry args={[0.15, 0.1, 0.18]} />
+        <meshStandardMaterial color="#1c1a17" />
+      </mesh>
+      <mesh position={[0.1, 0.06, 0.02]} castShadow>
+        <boxGeometry args={[0.15, 0.1, 0.18]} />
+        <meshStandardMaterial color="#1c1a17" />
+      </mesh>
+      <mesh position={[0, 0.52, 0]} castShadow>
+        <boxGeometry args={[0.46, 0.36, 0.28]} />
+        <meshStandardMaterial color="#a8433b" roughness={0.65} />
+      </mesh>
+      <mesh position={[0, 0.56, 0.15]}>
+        <boxGeometry args={[0.16, 0.18, 0.02]} />
+        <meshStandardMaterial color="#f7f4ee" />
+      </mesh>
+      <mesh position={[0, 0.38, 0]}>
+        <boxGeometry args={[0.48, 0.06, 0.3]} />
+        <meshStandardMaterial color="#1c1a17" />
+      </mesh>
+      <mesh position={[0, 0.38, 0.16]}>
+        <boxGeometry args={[0.1, 0.05, 0.02]} />
+        <meshStandardMaterial color="#e2b84a" metalness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.9, 0]} castShadow>
+        <sphereGeometry args={[0.18, 12, 10]} />
+        <meshStandardMaterial color="#e7b48a" />
+      </mesh>
+      <mesh position={[0, 0.7, 0.08]} rotation={[0.15, 0, 0]} castShadow>
+        <coneGeometry args={[0.12, 0.28, 7]} />
         <meshStandardMaterial color="#8a3a32" />
       </mesh>
-      <mesh position={[-0.06, 0.76, 0.16]}>
-        <sphereGeometry args={[0.03, 8, 8]} />
-        <meshStandardMaterial color="#2a241c" />
+      <mesh position={[-0.06, 0.95, 0.14]}>
+        <sphereGeometry args={[0.028, 8, 8]} />
+        <meshStandardMaterial color="#f7f4ee" />
       </mesh>
-      <mesh position={[0.07, 0.76, 0.15]}>
-        <boxGeometry args={[0.07, 0.04, 0.02]} />
+      <mesh position={[0.07, 0.95, 0.13]}>
+        <boxGeometry args={[0.07, 0.035, 0.02]} />
         <meshStandardMaterial color="#1c1a17" />
       </mesh>
-      <mesh position={[0, 0.98, 0]} castShadow>
-        <cylinderGeometry args={[0.16, 0.2, 0.08, 10]} />
+      <mesh position={[0, 1.08, 0]} castShadow>
+        <cylinderGeometry args={[0.2, 0.22, 0.05, 10]} />
         <meshStandardMaterial color="#1c1a17" />
       </mesh>
-      <mesh position={[0, 1.08, 0]} rotation={[0.15, 0, 0.1]} castShadow>
-        <boxGeometry args={[0.34, 0.06, 0.34]} />
+      <mesh position={[0, 1.16, 0]} rotation={[0.1, 0, 0.08]} castShadow>
+        <boxGeometry args={[0.36, 0.05, 0.36]} />
         <meshStandardMaterial color="#d6a84c" />
       </mesh>
-      <mesh position={[0.32, 0.38, 0.08]} rotation={[0.2, 0, -0.8]} castShadow>
-        <boxGeometry args={[0.04, 0.36, 0.04]} />
-        <meshStandardMaterial color="#cfd6dc" metalness={0.45} roughness={0.35} />
+      <mesh position={[0.32, 0.46, 0.06]} rotation={[0.2, 0, -0.9]} castShadow>
+        <boxGeometry args={[0.035, 0.42, 0.02]} />
+        <meshStandardMaterial color="#d5dde4" metalness={0.5} roughness={0.3} />
       </mesh>
     </group>
   );
