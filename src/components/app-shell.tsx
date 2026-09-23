@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 export function AppShell() {
   const hydrate = useGame((s) => s.hydrate);
   const named = useGame((s) => s.named);
+  const atHome = useGame((s) => s.atHome);
   const tickWorld = useGame((s) => s.tickWorld);
 
   useLayoutEffect(() => {
@@ -23,16 +24,16 @@ export function AppShell() {
   }, [hydrate]);
 
   useEffect(() => {
-    if (!named) return;
+    if (!named || atHome) return;
     const id = window.setInterval(() => tickWorld(), 9000);
     return () => window.clearInterval(id);
-  }, [named, tickWorld]);
+  }, [named, atHome, tickWorld]);
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-pine" onPointerDown={unlockAudio}>
-      <div className={cn("absolute inset-0", !named && "pointer-events-none")}>
+      <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>
         <LandMap />
-        {named ? (
+        {named && !atHome ? (
           <>
             <TopBar />
             <Speech />

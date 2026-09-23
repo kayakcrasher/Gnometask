@@ -172,6 +172,7 @@ export function foodCount(s: GameSave) {
 export const UI_SEED: Pick<
   GameState,
   | "hydrated"
+  | "atHome"
   | "selectedPlace"
   | "hoverPlace"
   | "metric"
@@ -192,6 +193,7 @@ export const UI_SEED: Pick<
   | "abroad"
 > = {
   hydrated: false,
+  atHome: true,
   selectedPlace: null,
   hoverPlace: null,
   metric: "care",

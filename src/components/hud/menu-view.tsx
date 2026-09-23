@@ -21,6 +21,7 @@ export function MenuView() {
   const setPanel = useGame((s) => s.setPanel);
   const dragon = useGame((s) => s.lifeDragon);
   const setDragonLook = useGame((s) => s.setDragonLook);
+  const goHome = useGame((s) => s.goHome);
   const newLifeDragon = useGame((s) => s.newLifeDragon);
   const metric = useGame((s) => s.metric);
   const setMetric = useGame((s) => s.setMetric);
@@ -38,7 +39,7 @@ export function MenuView() {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center gap-2">
-          <h2 className="flex-1 font-display text-xl font-semibold text-ink">The thing you face</h2>
+          <h2 className="flex-1 font-display text-xl font-semibold text-ink">Ember</h2>
           <button
             type="button"
             aria-label="Close"
@@ -49,15 +50,10 @@ export function MenuView() {
           </button>
         </div>
         <p className="text-sm font-semibold text-bark/70">
-          {dragon.name} · {dragon.state} · {dragon.hp} heart. Forts {fortLevel}/5. Guard {guardLevel}/5.
+          Ember · {dragon.state} · {dragon.hp} heart. Forts {fortLevel}/5. Guard {guardLevel}/5.
           {absencePending ? " A fat blue dragon is waiting at the dock." : ""}
         </p>
-        <input
-          value={dragon.name}
-          onChange={(e) => setDragonLook({ name: e.target.value })}
-          maxLength={18}
-          className="mt-3 h-11 w-full rounded-[14px] bg-parchment-dark/70 px-3 font-semibold text-ink outline-none ring-gold focus:ring-2"
-        />
+        <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-bark/50">Colour</p>
         <div className="mt-2 flex gap-1">
           {LOOKS.map((l) => (
             <button
@@ -113,6 +109,13 @@ export function MenuView() {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={goHome}
+          className="mt-4 h-11 w-full rounded-[14px] bg-parchment-dark font-display text-sm font-semibold text-ink"
+        >
+          Main menu
+        </button>
         <p className="mt-4 text-sm font-semibold leading-snug text-bark/70">
           Click the land or the round map to walk. Drag to turn the camera. Scroll zooms. Walk into a shop to go inside. Chop a tree with a hatchet. The garden rat is a polite first fight.
         </p>

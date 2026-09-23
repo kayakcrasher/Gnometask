@@ -1,5 +1,5 @@
 import { GREETS, PLACE_LINES, randOf } from "../quotes";
-import { applyDailyRollover, loadSave, writeSave } from "../save";
+import { applyDailyRollover, defaultSave, loadSave, writeSave } from "../save";
 import type { DragonHorn, DragonLook, GamePopup, InteriorId, MetricId, PanelId, PlaceId } from "../types";
 import { leaveBound, markLeaveBound, scheduleWrite, seedQuests, snap } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
@@ -9,6 +9,9 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
   | "hydrate"
   | "persist"
   | "setName"
+  | "continueGame"
+  | "beginGame"
+  | "goHome"
   | "setDragonLook"
   | "newLifeDragon"
   | "selectPlace"
@@ -29,12 +32,13 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       const current = get();
       const named = current.named || loaded.named || Boolean(loaded.gnomeName);
       const gnomeName = current.named ? current.gnomeName : loaded.gnomeName;
-      const lifeDragon = current.named && current.lifeDragon.name !== "Ember" ? current.lifeDragon : loaded.lifeDragon;
+      const lifeDragon = { ...(current.named ? current.lifeDragon : loaded.lifeDragon), name: "Ember" };
       const seeded = named ? seedQuests(loaded) : { quests: loaded.quests, chicken: loaded.chicken, landing: loaded.landing };
       set({
         ...loaded,
         gnomeName,
         named,
+        atHome: true,
         lifeDragon,
         quests: seeded.quests,
         chicken: seeded.chicken,
@@ -99,9 +103,56 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       writeSave(snap(get()));
     },
 
+    continueGame: () => {
+      const s = get();
+      if (!s.named || !s.gnomeName) return;
+      set({
+        atHome: false,
+        lifeDragon: { ...s.lifeDragon, name: "Ember" },
+        speech: `Welcome back, ${s.gnomeName}. Ember is on the ridge. Click the land.`,
+      });
+    },
+
+    beginGame: (name) => {
+      const trimmed = name.trim().slice(0, 24) || "Pip";
+      const fresh = defaultSave();
+      const seeded = seedQuests({ quests: [], chicken: null, landing: null });
+      set({
+        ...fresh,
+        gnomeName: trimmed,
+        named: true,
+        atHome: false,
+        hydrated: true,
+        quests: seeded.quests,
+        chicken: seeded.chicken,
+        landing: seeded.landing,
+        lifeDragon: { ...fresh.lifeDragon, name: "Ember" },
+        combat: null,
+        popup: {
+          kind: "npc",
+          hotspotId: "pappy",
+          title: "Ol Pappy St. Francis",
+          blurb: "Ho there, young root! Come talk. The hollow needs a keeper.",
+          place: "cottage",
+          npcId: "pappy",
+        },
+        interior: null,
+        panel: "place",
+        abroad: null,
+        raids: [],
+        speech: `Welcome, ${trimmed}. Ember watches the ridge. Ol Pappy is waving by the cottage.`,
+      });
+      writeSave(snap(get()));
+    },
+
+    goHome: () => {
+      get().persist();
+      set({ atHome: true, popup: null, interior: null, panel: "place", abroad: null });
+    },
+
     setDragonLook: (patch: Partial<{ name: string; look: DragonLook; horn: DragonHorn }>) => {
       const s = get();
-      const name = patch.name !== undefined ? patch.name.slice(0, 18) : s.lifeDragon.name;
+      const name = "Ember";
       const next = { ...s.lifeDragon, ...patch, name };
       const lookChanged = patch.look !== undefined || patch.horn !== undefined;
       set({
@@ -114,8 +165,8 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     newLifeDragon: () => {
       const s = get();
       set({
-        lifeDragon: { ...s.lifeDragon, state: "lurking", hp: 150 },
-        speech: `${s.lifeDragon.name} is a new problem now. The ridge is awake.`,
+        lifeDragon: { ...s.lifeDragon, name: "Ember", state: "lurking", hp: 150 },
+        speech: "Ember is a new problem now. The ridge is awake.",
       });
       scheduleWrite(get);
     },

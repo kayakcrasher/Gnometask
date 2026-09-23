@@ -243,6 +243,7 @@ export type GameSave = {
 
 export type GameUi = {
   hydrated: boolean;
+  atHome: boolean;
   selectedPlace: PlaceId | null;
   hoverPlace: PlaceId | null;
   metric: MetricId;
