@@ -27,7 +27,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       <p className="mb-2 text-xs font-semibold text-parchment/80">
-        Every parcel is for sale. Gold is yours. Cream is a gnome's ground. Pale is the hollow's.
+        Gold is yours. Cream is a gnome's, and that deed does not sell. Pale hollow ground is the only land you can buy.
       </p>
       <svg viewBox={`0 0 ${VW} ${VH}`} className="min-h-0 flex-1 rounded-[18px] bg-[#1e4d5a]">
         <polygon points={poly(BEACH_POLY)} fill="#e7d7a2" />
@@ -62,8 +62,14 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
           <p className="font-display text-base font-semibold text-ink">
             {owned ? "Your ground" : tile.ownerName ? `${tile.ownerName}'s ground` : "Hollow parcel"}
           </p>
-          <p className="text-xs font-semibold text-bark/70">{tile.price} coins. You hold {coins}.</p>
-          {owned ? null : (
+          {tile.owner && !owned ? (
+            <p className="mt-1 text-xs font-semibold text-bark/70">
+              Private property. Sacred. {tile.ownerName} does not sell the floor they stand on.
+            </p>
+          ) : (
+            <p className="text-xs font-semibold text-bark/70">{tile.price} coins. You hold {coins}.</p>
+          )}
+          {owned || tile.owner ? null : (
             <button
               type="button"
               disabled={coins < tile.price}

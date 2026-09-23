@@ -8,7 +8,7 @@ export type Parcel = {
   w: number;
   h: number;
   price: number;
-  /** Gnome who holds the deed until you buy it. Null means the hollow is selling it cold. */
+  /** Gnome who holds this ground. Private property. Not for sale. */
   owner: string | null;
   ownerName: string | null;
 };

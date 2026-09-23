@@ -102,18 +102,23 @@ export function honourSlice(
         set({ speech: "You already hold that ground." });
         return;
       }
+      if (tile.owner) {
+        sfx("error");
+        set({
+          speech: `${tile.ownerName ?? "That gnome"} holds this. Private property is sacred. The old law does not sell a neighbour's floor.`,
+        });
+        return;
+      }
       if (s.coins < tile.price) {
         sfx("error");
-        set({ speech: `${tile.ownerName ? tile.ownerName + "'s ground" : "That parcel"} is ${tile.price} coins.` });
+        set({ speech: `That parcel is ${tile.price} coins.` });
         return;
       }
       set({
         deeds: [...s.deeds, id],
         coins: s.coins - tile.price,
         coinPopKey: s.coinPopKey + 1,
-        speech: tile.ownerName
-          ? `${tile.ownerName} sells the deed. They stay. The ground is yours. ${tile.price} coins.`
-          : `A piece of the hollow. ${tile.price} coins. The deed is in your name.`,
+        speech: `Unclaimed hollow. ${tile.price} coins. The deed is in your name. A gnome's own ground is never on this list.`,
       });
       sfx("buy");
       scheduleWrite(get);

@@ -16,7 +16,7 @@ export const NPC_STATS: Record<string, NpcStat> = {
 };
 
 export const HONOUR_CODE =
-  "Stand when the dock is crowded. Pay what you owe. Do not strike a town that has put its knives down.";
+  "Stand when the dock is crowded. Pay what you owe. A gnome's ground is sacred. Do not buy what another gnome holds.";
 
 export const DEFENDERS = ["greg", "pappy", "stoic", "brine"] as const;
 
