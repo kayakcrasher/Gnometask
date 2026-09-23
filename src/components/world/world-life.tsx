@@ -3,6 +3,8 @@ import { Kenney } from "./kenney";
 import { BoatMesh } from "./boats";
 import { FighterMotion, GnomeRig } from "./gnome-rig";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "@/lib/game/data/trees";
+import { ROCKS } from "@/lib/game/data/scenery";
+import { Ember } from "./ember";
 import { NPCS } from "@/lib/game/world";
 import { WORLD_PACK, ABSENCE_SPOT, DRAGON_RIDGE, TOWER_SLOTS, CATALOG_BY_ID } from "@/lib/game/catalog";
 import { to3, groundY } from "@/lib/game/world3";
@@ -66,6 +68,16 @@ export function Trees3({
           />
         );
       })}
+    </group>
+  );
+}
+
+export function Rocks3() {
+  return (
+    <group>
+      {ROCKS.map((r) => (
+        <Kenney key={r.id} name={r.model} position={to3(r.x, r.y, groundY(r.x, r.y))} scale={r.scale} />
+      ))}
     </group>
   );
 }
@@ -235,6 +247,7 @@ export function Fights3({
   const cleared = useGame((s) => s.clearedPack);
   const combat = useGame((s) => s.combat);
   const dragon = useGame((s) => s.lifeDragon);
+  const hall = useGame((s) => s.townHallLevel);
   const absence = useGame((s) => s.absencePending);
   const gx = useGame((s) => s.gnomeX);
   const gy = useGame((s) => s.gnomeY);
@@ -282,15 +295,24 @@ export function Fights3({
           </group>
         );
       })}
-      {dragon.state !== "defeated" ? (
+      {hall >= 3 && dragon.state !== "defeated" ? (
         <group
-          position={to3(DRAGON_RIDGE.x, DRAGON_RIDGE.y, 1.1)}
+          position={to3(
+            dragon.state === "raiding" ? 980 : DRAGON_RIDGE.x,
+            dragon.state === "raiding" ? 420 : DRAGON_RIDGE.y,
+            dragon.state === "raiding" ? 2.4 : 0.15,
+          )}
           onClick={(e) => {
             e.stopPropagation();
             onDragon();
           }}
         >
-          <EnemyMesh kind="dragon" />
+          <Ember
+            look={dragon.look}
+            horn={dragon.horn}
+            friend={dragon.state === "soothed"}
+            flying={dragon.state === "raiding"}
+          />
         </group>
       ) : null}
       {absence ? (

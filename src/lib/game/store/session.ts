@@ -109,7 +109,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       set({
         atHome: false,
         lifeDragon: { ...s.lifeDragon, name: "Ember" },
-        speech: `Welcome back, ${s.gnomeName}. Ember is on the ridge. Click the land.`,
+        speech: `Welcome back, ${s.gnomeName}. The hall must reach level 3 before Ember shows.`,
       });
     },
 
@@ -140,7 +140,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         panel: "place",
         abroad: null,
         raids: [],
-        speech: `Welcome, ${trimmed}. Ember watches the ridge. Ol Pappy is waving by the cottage.`,
+        speech: `Welcome, ${trimmed}. Ol Pappy is waving by the cottage. Ember stays hidden until the hall is level 3.`,
       });
       writeSave(snap(get()));
     },

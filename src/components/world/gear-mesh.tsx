@@ -7,21 +7,21 @@ function metal(id: string | null | undefined): GearTier {
 export function SwordMesh({ id, striking }: { id: string | null; striking?: boolean }) {
   const t = TIER_META[metal(id)];
   return (
-    <group rotation={[0, 0, striking ? -0.9 : -0.25]} position={[0.22, 0.55, 0.12]}>
-      <mesh position={[0, 0.12, 0]} castShadow>
-        <boxGeometry args={[0.05, 0.28, 0.05]} />
+    <group rotation={[striking ? -0.85 : 0, 0, 0]}>
+      <mesh position={[0, 0.07, 0]} castShadow>
+        <boxGeometry args={[0.045, 0.14, 0.045]} />
         <meshStandardMaterial color="#5b4230" roughness={0.8} />
       </mesh>
-      <mesh position={[0, 0.28, 0]} castShadow>
-        <boxGeometry args={[0.16, 0.04, 0.06]} />
+      <mesh position={[0, 0.16, 0]} castShadow>
+        <boxGeometry args={[0.16, 0.035, 0.05]} />
         <meshStandardMaterial color={t.dark} metalness={0.65} roughness={0.35} />
       </mesh>
-      <mesh position={[0, 0.55, 0]} castShadow>
-        <boxGeometry args={[0.07, 0.52, 0.02]} />
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <boxGeometry args={[0.05, 0.48, 0.018]} />
         <meshStandardMaterial color={t.metal} metalness={0.75} roughness={0.28} />
       </mesh>
-      <mesh position={[0, 0.8, 0]} castShadow>
-        <boxGeometry args={[0.04, 0.08, 0.018]} />
+      <mesh position={[0, 0.68, 0]} castShadow>
+        <boxGeometry args={[0.028, 0.08, 0.014]} />
         <meshStandardMaterial color={t.edge} metalness={0.8} roughness={0.2} />
       </mesh>
     </group>
@@ -31,13 +31,13 @@ export function SwordMesh({ id, striking }: { id: string | null; striking?: bool
 export function HatchetMesh({ id, striking }: { id: string | null; striking?: boolean }) {
   const t = TIER_META[metal(id)];
   return (
-    <group rotation={[0, 0, striking ? -1.1 : -0.4]} position={[0.2, 0.5, 0.1]}>
-      <mesh position={[0, 0.28, 0]} castShadow>
-        <boxGeometry args={[0.045, 0.55, 0.045]} />
+    <group rotation={[striking ? -0.7 : 0, 0, 0]}>
+      <mesh position={[0, 0.22, 0]} castShadow>
+        <boxGeometry args={[0.04, 0.46, 0.04]} />
         <meshStandardMaterial color="#5b4230" roughness={0.85} />
       </mesh>
-      <mesh position={[0.08, 0.52, 0]} rotation={[0, 0, 0.2]} castShadow>
-        <boxGeometry args={[0.22, 0.12, 0.04]} />
+      <mesh position={[0.07, 0.42, 0]} rotation={[0, 0, 0.15]} castShadow>
+        <boxGeometry args={[0.2, 0.1, 0.035]} />
         <meshStandardMaterial color={t.metal} metalness={0.7} roughness={0.3} />
       </mesh>
     </group>
@@ -47,7 +47,7 @@ export function HatchetMesh({ id, striking }: { id: string | null; striking?: bo
 export function ShieldMesh({ id }: { id: string | null }) {
   const t = TIER_META[metal(id)];
   return (
-    <group position={[-0.28, 0.55, 0.08]} rotation={[0.2, 0.4, 0.1]}>
+    <group position={[0, 0, 0.08]} rotation={[0.15, 0.2, 0]}>
       <mesh castShadow>
         <cylinderGeometry args={[0.18, 0.2, 0.04, 8]} />
         <meshStandardMaterial color={t.metal} metalness={0.55} roughness={0.4} />

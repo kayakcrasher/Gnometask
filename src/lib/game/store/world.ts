@@ -108,6 +108,10 @@ export function worldSlice(
         armAutoAttack(get, 900);
         return;
       }
+      if (s.townHallLevel < 3) {
+        set({ speech: "The ridge is empty. Ember will not show until the town hall is level 3." });
+        return;
+      }
       if (s.lifeDragon.state === "defeated") {
         set({ speech: `${s.lifeDragon.name} is done with you. For now. Call a new one from the menu.` });
         return;
@@ -300,7 +304,7 @@ export function worldSlice(
       let raids = s.raids;
       let changed = false;
 
-      if (s.lifeDragon.state === "raiding") {
+      if (s.lifeDragon.state === "raiding" && s.townHallLevel >= 3) {
         const scorch = Math.max(1, 4 - s.fortLevel);
         buildingHp = {
           cottage: Math.max(0, buildingHp.cottage - scorch),

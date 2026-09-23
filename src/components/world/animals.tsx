@@ -137,6 +137,95 @@ export function Cat({ x, y }: { x: number; y: number }) {
   );
 }
 
+export function Fox({ x, y }: { x: number; y: number }) {
+  const origin = to3(x, y, groundY(x, y));
+  const ref = useRef<THREE.Group>(null);
+  const fn = useRef(wander(ref, origin, 1.8, 0.45));
+  useFrame((_, d) => fn.current(d));
+  return (
+    <group ref={ref} position={origin}>
+      <mesh position={[0, 0.16, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <capsuleGeometry args={[0.07, 0.22, 4, 6]} />
+        <meshStandardMaterial color="#c4553a" />
+      </mesh>
+      <mesh position={[0.16, 0.2, 0]} castShadow>
+        <sphereGeometry args={[0.07, 8, 8]} />
+        <meshStandardMaterial color="#c4553a" />
+      </mesh>
+      <mesh position={[-0.18, 0.2, 0]} rotation={[0, 0, 0.8]}>
+        <capsuleGeometry args={[0.02, 0.14, 3, 5]} />
+        <meshStandardMaterial color="#e7c39a" />
+      </mesh>
+    </group>
+  );
+}
+
+export function Deer({ x, y }: { x: number; y: number }) {
+  const origin = to3(x, y, groundY(x, y));
+  const ref = useRef<THREE.Group>(null);
+  const fn = useRef(wander(ref, origin, 2.4, 0.22));
+  useFrame((_, d) => fn.current(d));
+  return (
+    <group ref={ref} position={origin}>
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <capsuleGeometry args={[0.12, 0.28, 4, 6]} />
+        <meshStandardMaterial color="#8a6238" />
+      </mesh>
+      <mesh position={[0.18, 0.62, 0]} castShadow>
+        <sphereGeometry args={[0.08, 8, 8]} />
+        <meshStandardMaterial color="#8a6238" />
+      </mesh>
+      <mesh position={[0.14, 0.78, 0]} rotation={[0, 0, 0.4]}>
+        <coneGeometry args={[0.03, 0.16, 4]} />
+        <meshStandardMaterial color="#d8c49a" />
+      </mesh>
+      <mesh position={[0.22, 0.78, 0]} rotation={[0, 0, -0.4]}>
+        <coneGeometry args={[0.03, 0.16, 4]} />
+        <meshStandardMaterial color="#d8c49a" />
+      </mesh>
+    </group>
+  );
+}
+
+export function Frog({ x, y }: { x: number; y: number }) {
+  const origin = to3(x, y, groundY(x, y) + 0.02);
+  const ref = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    if (ref.current) ref.current.position.y = origin[1] + Math.abs(Math.sin(clock.elapsedTime * 3)) * 0.06;
+  });
+  return (
+    <group ref={ref} position={origin}>
+      <mesh castShadow>
+        <sphereGeometry args={[0.07, 8, 6]} />
+        <meshStandardMaterial color="#4c6b47" />
+      </mesh>
+      <mesh position={[0.04, 0.04, 0.04]}>
+        <sphereGeometry args={[0.02, 6, 6]} />
+        <meshStandardMaterial color="#f7f4ee" />
+      </mesh>
+    </group>
+  );
+}
+
+export function Hedgehog({ x, y }: { x: number; y: number }) {
+  const origin = to3(x, y, groundY(x, y));
+  const ref = useRef<THREE.Group>(null);
+  const fn = useRef(wander(ref, origin, 0.8, 0.3));
+  useFrame((_, d) => fn.current(d));
+  return (
+    <group ref={ref} position={origin}>
+      <mesh position={[0, 0.1, 0]} castShadow>
+        <sphereGeometry args={[0.1, 8, 6]} />
+        <meshStandardMaterial color="#6b5340" />
+      </mesh>
+      <mesh position={[0.08, 0.1, 0]}>
+        <sphereGeometry args={[0.05, 6, 6]} />
+        <meshStandardMaterial color="#c4a574" />
+      </mesh>
+    </group>
+  );
+}
+
 export function IslandAnimals({ chicken, onChicken }: { chicken: { x: number; y: number } | null; onChicken: () => void }) {
   return (
     <group>
@@ -149,6 +238,13 @@ export function IslandAnimals({ chicken, onChicken }: { chicken: { x: number; y:
       <Sheep x={1280} y={680} />
       <Cat x={820} y={520} />
       <Cat x={940} y={500} />
+      <Fox x={220} y={300} />
+      <Deer x={1620} y={460} />
+      <Deer x={1740} y={560} />
+      <Frog x={500} y={160} />
+      <Frog x={560} y={180} />
+      <Hedgehog x={1040} y={700} />
+      <Rabbit x={700} y={920} />
     </group>
   );
 }

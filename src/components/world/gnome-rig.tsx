@@ -183,18 +183,45 @@ export function GnomeRig({
             <meshStandardMaterial color="#e2b84a" metalness={0.35} roughness={0.4} />
           </mesh>
 
-          {[-1, 1].map((side) => (
-            <group key={side} position={[side * 0.28, 0.52, 0]}>
-              <mesh castShadow>
-                <boxGeometry args={[0.1, 0.28, 0.1]} />
+          {[-1].map((side) => (
+            <group key={side} position={[side * 0.26, 0.7, 0.02]} rotation={[0.2, 0, 0.2]}>
+              <mesh position={[0, -0.14, 0]} castShadow>
+                <boxGeometry args={[0.1, 0.26, 0.1]} />
                 <meshStandardMaterial color={coat} roughness={0.7} />
               </mesh>
-              <mesh position={[0, -0.18, 0.02]} castShadow>
+              <mesh position={[0, -0.3, 0.02]} castShadow>
                 <boxGeometry args={[0.08, 0.08, 0.08]} />
                 <meshStandardMaterial color={skinColor} roughness={0.6} />
               </mesh>
+              {shield ? (
+                <group position={[0, -0.28, 0.02]}>
+                  <ShieldMesh id={shield} />
+                </group>
+              ) : null}
             </group>
           ))}
+          <group
+            position={[0.24, 0.72, 0.06]}
+            rotation={
+              weapon
+                ? [striking ? -0.35 : 0.95, striking ? 0.15 : -0.1, striking ? -0.15 : -0.45]
+                : [0.15, 0, -0.2]
+            }
+          >
+            <mesh position={[0, -0.13, 0]} castShadow>
+              <boxGeometry args={[0.1, 0.24, 0.1]} />
+              <meshStandardMaterial color={coat} roughness={0.7} />
+            </mesh>
+            <mesh position={[0, -0.28, 0.02]} castShadow>
+              <boxGeometry args={[0.09, 0.08, 0.1]} />
+              <meshStandardMaterial color={skinColor} roughness={0.6} />
+            </mesh>
+            {weapon ? (
+              <group position={[0.01, -0.3, 0.05]} rotation={[-1.15, 0.35, 0.1]}>
+                <WeaponInHand weaponId={weapon} striking={striking} />
+              </group>
+            ) : null}
+          </group>
 
           <mesh position={[0, 0.92, 0]} castShadow>
             <sphereGeometry args={[0.2, 14, 12]} />
@@ -245,8 +272,6 @@ export function GnomeRig({
             </>
           ) : null}
           <HatModel id={hat} />
-          <WeaponInHand weaponId={weapon ?? null} striking={striking} />
-          {shield ? <ShieldMesh id={shield} /> : null}
         </group>
       </FighterMotion>
     </group>

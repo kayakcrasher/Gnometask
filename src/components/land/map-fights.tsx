@@ -155,7 +155,7 @@ export function MapFights({
         );
       })}
 
-      {save.lifeDragon.state !== "defeated" && save.combat?.enemyId !== "dragon" ? (
+      {save.townHallLevel >= 3 && save.lifeDragon.state !== "defeated" && save.combat?.enemyId !== "dragon" ? (
         <MapHotspot
           x={raiding ? 980 : DRAGON_RIDGE.x}
           y={raiding ? 420 : DRAGON_RIDGE.y}

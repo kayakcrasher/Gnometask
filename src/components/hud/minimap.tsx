@@ -28,6 +28,7 @@ export function Minimap({
 }) {
   const cleared = useGame((s) => s.clearedPack);
   const dragon = useGame((s) => s.lifeDragon);
+  const hall = useGame((s) => s.townHallLevel);
   const landing = useGame((s) => s.landing);
   const onClick = (e: ReactMouseEvent<SVGSVGElement>) => {
     const svg = e.currentTarget;
@@ -73,7 +74,7 @@ export function Minimap({
         {landing?.goblins.filter((g) => g.alive).map((g) => (
           <circle key={g.id} cx={g.x} cy={g.y} r={12} fill="#4c7a3a" />
         ))}
-        {dragon.state !== "defeated" ? <circle cx={1760} cy={340} r={22} fill="#8a3a32" /> : null}
+        {hall >= 3 && dragon.state !== "defeated" ? <circle cx={1760} cy={340} r={22} fill="#8a3a32" /> : null}
         <g transform={`translate(${pos.x} ${pos.y}) rotate(${(facingYaw * 180) / Math.PI})`}>
           <polygon points="0,-34 22,28 -22,28" fill="#24402f" stroke="#f2e8d5" strokeWidth="6" />
         </g>

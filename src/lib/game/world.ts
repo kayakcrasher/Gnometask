@@ -34,7 +34,7 @@ export const HALL_COST = [0, 0, 80, 160, 280, 420];
 
 export function hallUnlocks(level: number) {
   if (level >= 4) return "Adamant in the armory. Goblins bring friends.";
-  if (level >= 3) return "Steel unlocked. Dark elves start sniffing the tide.";
+  if (level >= 3) return "Steel unlocked. Ember takes the ridge. Dark elves sniff the tide.";
   if (level >= 2) return "Iron unlocked. The green ones still come in packs.";
   return "Bronze and a stick. Green goblins at the dock.";
 }

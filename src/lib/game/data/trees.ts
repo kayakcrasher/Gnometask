@@ -44,6 +44,18 @@ export const TREE_SPOTS: TreeSpot[] = [
   { id: "t15", kind: "pine", x: 2680, y: 180, model: "tree_pineTallA_detailed", scale: 1.45 },
   { id: "t16", kind: "oak", x: 168, y: 248, model: "tree_oak", scale: 1.4 },
   { id: "t17", kind: "thin", x: 200, y: 330, model: "tree_small", scale: 1.1 },
+  { id: "t18", kind: "pine", x: 280, y: 150, model: "tree_pineTallA", scale: 1.35 },
+  { id: "t19", kind: "oak", x: 340, y: 210, model: "tree_oak", scale: 1.2 },
+  { id: "t20", kind: "pine", x: 860, y: 560, model: "tree_pineRoundA", scale: 1.15 },
+  { id: "t21", kind: "oak", x: 1140, y: 580, model: "tree_oak_dark", scale: 1.2 },
+  { id: "t22", kind: "thin", x: 760, y: 640, model: "tree_thin", scale: 1.1 },
+  { id: "t23", kind: "pine", x: 500, y: 260, model: "tree_pineSmallA", scale: 1.25 },
+  { id: "t24", kind: "oak", x: 1680, y: 240, model: "tree_fat", scale: 1.2 },
+  { id: "t25", kind: "pine", x: 1840, y: 360, model: "tree_pineTallA_detailed", scale: 1.4 },
+  { id: "t26", kind: "oak", x: 720, y: 1000, model: "tree_detailed", scale: 1.15 },
+  { id: "t27", kind: "pine", x: 1080, y: 1120, model: "tree_cone", scale: 1.2 },
+  { id: "t28", kind: "thin", x: 1460, y: 640, model: "tree_tall", scale: 1.25 },
+  { id: "t29", kind: "oak", x: 2100, y: 180, model: "tree_simple", scale: 1.2 },
 ];
 
 export const TREE_GROW_MS = 48_000;
