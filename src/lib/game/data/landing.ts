@@ -3,7 +3,7 @@ import type { GoblinLanding } from "../types";
 export const MUCKTOOTH = "Mucktooth Clan";
 export const FLAG_MAX = 10;
 
-export const LANDING_BOAT = { x: -30, y: 840 };
+export const LANDING_BOAT = { x: -36, y: 760 };
 
 export function makeLanding(): GoblinLanding {
   return {
@@ -14,11 +14,11 @@ export function makeLanding(): GoblinLanding {
     flagHp: FLAG_MAX,
     flagDown: false,
     goblins: [
-      { id: "land-0", x: 30, y: 800, alive: true },
-      { id: "land-1", x: 10, y: 840, alive: true },
-      { id: "land-2", x: 55, y: 860, alive: true },
-      { id: "land-3", x: 20, y: 900, alive: true },
-      { id: "land-4", x: 70, y: 830, alive: true },
+      { id: "land-0", x: 70, y: 780, alive: true },
+      { id: "land-1", x: 90, y: 800, alive: true },
+      { id: "land-2", x: 80, y: 840, alive: true },
+      { id: "land-3", x: 100, y: 880, alive: true },
+      { id: "land-4", x: 85, y: 760, alive: true },
     ],
   };
 }

@@ -55,9 +55,9 @@ export function expandPoly(poly: [number, number][], pad: number): [number, numb
 }
 
 function beachPad(x: number, y: number) {
-  if (y > 980) return 260;
-  if (x < 250) return 190;
-  return 70;
+  if (y > 980) return 220;
+  if (x < 400) return 36;
+  return 55;
 }
 
 /** Wider on the west harbor and the south shore, so the dock can sit in the sand beside the sea. */

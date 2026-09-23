@@ -1,5 +1,5 @@
-export const SUPPLY_PIER = { x: 40, y: 700 };
-export const SUPPLY_BERTH = { x: -55, y: 700 };
+export const SUPPLY_PIER = { x: 72, y: 680 };
+export const SUPPLY_BERTH = { x: -48, y: 680 };
 
 export const NEWCOMERS: { name: string; hat: string }[] = [
   { name: "Tansy", hat: "hat-flower" },

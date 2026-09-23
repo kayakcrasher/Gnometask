@@ -70,4 +70,4 @@ export const BUILDING_MAX: Record<BuildingId, number> = {
   haven: 40,
 };
 
-export const PLAYER_START = { x: 170, y: 540 };
+export const PLAYER_START = { x: 140, y: 545 };

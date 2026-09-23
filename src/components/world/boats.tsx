@@ -229,15 +229,15 @@ function Gull({ radius, speed, lift }: { radius: number; speed: number; lift: nu
 }
 
 function Pier() {
-  const posts = [-3.2, -2.2, -1.2, -0.2, 0.8, 1.6];
+  const posts = [-5.4, -4.2, -3.0, -1.8, -0.6, 0.4];
   return (
-    <group position={to3(55, 510, 0)}>
-      <mesh position={[-1.7, 0.18, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3.8, 0.1, 0.9]} />
+    <group position={to3(78, 520, 0)}>
+      <mesh position={[-2.8, 0.18, 0]} castShadow receiveShadow>
+        <boxGeometry args={[6.4, 0.1, 0.9]} />
         <meshStandardMaterial color="#c4894a" roughness={0.8} />
       </mesh>
-      <mesh position={[-1.4, 0.28, 0.42]}>
-        <boxGeometry args={[4.2, 0.06, 0.06]} />
+      <mesh position={[-2.6, 0.28, 0.42]}>
+        <boxGeometry args={[6.6, 0.06, 0.06]} />
         <meshStandardMaterial color="#6b4423" />
       </mesh>
       {posts.map((x) => (
@@ -246,11 +246,11 @@ function Pier() {
           <meshStandardMaterial color="#5b3a24" />
         </mesh>
       ))}
-      <mesh position={[-3.15, 0.55, 0.32]}>
+      <mesh position={[-5.6, 0.55, 0.32]}>
         <boxGeometry args={[0.06, 0.55, 0.06]} />
         <meshStandardMaterial color="#5b4230" />
       </mesh>
-      <mesh position={[-3.15, 0.86, 0.32]}>
+      <mesh position={[-5.6, 0.86, 0.32]}>
         <sphereGeometry args={[0.07, 8, 8]} />
         <meshStandardMaterial color="#e7c56a" emissive="#e7c56a" emissiveIntensity={0.35} />
       </mesh>
@@ -267,7 +267,7 @@ function Pier() {
 }
 
 function Dockhouse({ onEnter }: { onEnter: () => void }) {
-  const p = to3(125, 500, groundY(125, 500));
+  const p = to3(108, 515, groundY(108, 515));
   return (
     <group
       position={p}
@@ -364,11 +364,11 @@ function SupplyHull() {
 }
 
 function SupplyPier() {
-  const posts = [-1.6, -0.6, 0.4, 1.4, 2.2];
+  const posts = [-3.8, -2.4, -1.0, 0.4];
   return (
     <group position={to3(SUPPLY_PIER.x, SUPPLY_PIER.y, 0)}>
-      <mesh position={[0, 0.2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3.4, 0.12, 1.15]} />
+      <mesh position={[-1.6, 0.2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[5.2, 0.12, 1.15]} />
         <meshStandardMaterial color="#b87840" roughness={0.75} />
       </mesh>
       <mesh position={[0, 0.32, 0.52]}>
@@ -417,7 +417,7 @@ function SupplyShip() {
     if (!due || !ref.current) return;
     t.current = Math.min(1, t.current + dt / 8);
     const eased = 1 - Math.pow(1 - t.current, 3);
-    const x = -180 + eased * (SUPPLY_BERTH.x - -180);
+    const x = -220 + eased * (SUPPLY_BERTH.x - -220);
     const p = to3(x, SUPPLY_BERTH.y, 0);
     ref.current.position.set(p[0], SEA_LEVEL + 0.08 + Math.sin(eased * 8) * 0.03, p[2]);
     ref.current.rotation.y = 0;

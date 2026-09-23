@@ -187,7 +187,7 @@ function SceneBody({
             place: "dock",
           })
         }
-        onHouse={() => goInside(125, 530, "dockhouse")}
+        onHouse={() => goInside(108, 545, "dockhouse")}
       />
       <group
         position={to3(78, 560, 0.05)}
