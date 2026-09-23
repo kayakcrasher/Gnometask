@@ -215,6 +215,10 @@ export type GameSave = {
   loan: Loan | null;
   claimed: string[];
   hulls: string[];
+  settlers: { name: string; hat: string; slotId: string }[];
+  supplyDay: number;
+  supplyTaken: boolean;
+  newcomer: string | null;
   muckRaiders: boolean[];
   ownedGear: string[];
   equipment: Equipment;

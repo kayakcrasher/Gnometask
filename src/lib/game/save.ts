@@ -5,6 +5,7 @@ import { makeBuiltinTasks } from "./catalog";
 import { BUILDING_MAX, PLAYER_START, type BuildingId, type GameSave, type Task } from "./types";
 import type { Skills } from "./xp";
 import type { QuestSave } from "./quests";
+import { nextNewcomer, supplyDue } from "./data/supply";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
@@ -79,6 +80,10 @@ export function defaultSave(): GameSave {
     loan: null,
     claimed: [],
     hulls: [],
+    settlers: [],
+    supplyDay: 1,
+    supplyTaken: false,
+    newcomer: "Tansy",
     muckRaiders: [true, true, true],
     trees: {},
     landing: null,
@@ -257,7 +262,7 @@ export function migrate(raw: unknown): GameSave {
   const stripped = rawTasks.filter((t) => !t.builtin || !t.builtinKey || !IRL_KEYS.has(t.builtinKey));
   const tasks = (s.version ?? 0) < 9 ? stripped : rawTasks;
 
-  return {
+  return freshenSupply({
     ...base,
     ...s,
     version: SAVE_VERSION,
@@ -305,10 +310,39 @@ export function migrate(raw: unknown): GameSave {
     loan: asLoan(s.loan),
     claimed: asStringArray(s.claimed, []),
     hulls: asStringArray(s.hulls, []),
+    settlers: asSettlers(s.settlers),
+    supplyDay: typeof s.supplyDay === "number" ? s.supplyDay : 0,
+    supplyTaken: Boolean(s.supplyTaken),
+    newcomer: typeof s.newcomer === "string" ? s.newcomer : null,
     muckRaiders: asRaiders(s.muckRaiders),
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",
+  });
+}
+
+function asSettlers(raw: unknown): GameSave["settlers"] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((row) => {
+    if (!row || typeof row !== "object") return [];
+    const r = row as { name?: string; hat?: string; slotId?: string };
+    if (!r.name || !r.slotId) return [];
+    return [{ name: String(r.name), hat: r.hat || "hat-straw", slotId: String(r.slotId) }];
+  });
+}
+
+export function freshenSupply(save: GameSave): GameSave {
+  if (!supplyDue(save.daysPlayed)) return { ...save, newcomer: null };
+  if (save.supplyDay === save.daysPlayed) return save;
+  const who = nextNewcomer(
+    save.daysPlayed,
+    save.settlers.map((n) => n.name),
+  );
+  return {
+    ...save,
+    supplyDay: save.daysPlayed,
+    supplyTaken: false,
+    newcomer: who?.name ?? null,
   };
 }
 
@@ -337,7 +371,8 @@ export function applyDailyRollover(save: GameSave): GameSave {
     village: Math.max(0, save.buildingHp.village - scorch - (raiding ? 1 : 0)),
     haven: save.buildingHp.haven,
   };
-  return withMissingBuiltins(
+  return freshenSupply(
+    withMissingBuiltins(
     {
       ...save,
       lastVisitDate: today,
@@ -359,6 +394,7 @@ export function applyDailyRollover(save: GameSave): GameSave {
       hp: maxHitpoints(save.skills),
     },
     today,
+  ),
   );
 }
 

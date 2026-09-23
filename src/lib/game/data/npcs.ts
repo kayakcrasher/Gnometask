@@ -43,7 +43,7 @@ export const NPCS: {
     lines: [
       "Ho there. You made my dock in one piece. That's the whole interview.",
       "The cottage is up the path. The dockhouse is Wim's. Boats live downstairs.",
-      "Every other day a supply ship rolls past. Don't fish off her wake.",
+      "Every other day the supply ship ties up on the south pier. Crates, coins, and sometimes a new neighbour.",
       "Goblins by sea, pirates by cheek. We'll hold the hollow if you hold the gate.",
       "Chop a log, raise a wall, then come tell me. I don't leave this pier for gossip.",
       "Ha! You've got a walk that means business. The tide noticed.",
@@ -127,7 +127,7 @@ export const NPCS: {
     lines: [
       "Tide's in. So are the opinions.",
       "Wim counts hulls. I count rope. We don't share ledgers.",
-      "If the supply ship whistles, the pies are late.",
+      "If the supply ship whistles, the south pier is open. Pies ride in the crates.",
     ],
   },
   {
@@ -143,7 +143,7 @@ export const NPCS: {
     lines: [
       "Dockhouse. Two floors. Boats down, bunk up. I live in both.",
       "The rowboat is yours. Anything with a sail, you buy it here.",
-      "Supply ship every other day. She doesn't stop. She just rolls.",
+      "Supply ship stops on the south pier. Crates first. If a gnome walks off, the island just got bigger.",
       "Mind the pier. The pilings are older than my knees.",
     ],
   },

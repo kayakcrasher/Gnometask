@@ -1,8 +1,9 @@
 import { bestHatchet, bestRod, CATALOG_BY_ID, gearStats } from "../catalog";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "../data/trees";
 import { sfx } from "../juice";
-import { PLACE_ANCHORS } from "../data/layout";
+import { PLACE_ANCHORS, VILLAGE_SLOTS } from "../data/layout";
 import { BOAT_RANK, boatById } from "../data/boats";
+import { NEWCOMERS, supplyDue } from "../data/supply";
 import { FISH_BY_ID, rollFish } from "../data/fish";
 import { levelFromXp, levelsOf } from "../xp";
 import { scheduleWrite, withXp } from "./persist";
@@ -19,7 +20,7 @@ function treeStage(choppedAt: number | undefined, now: number) {
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "buyBoat" | "castLine" | "sellFish" | "stockFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "buyBoat" | "takeSupply" | "welcomeNewcomer" | "castLine" | "sellFish" | "stockFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -160,6 +161,59 @@ export function gatherSlice(
         speech: `Wim slides the ${boat.name.toLowerCase()} onto your account. She's at the pier.`,
       });
       sfx("buy");
+      scheduleWrite(get);
+    },
+
+    takeSupply: () => {
+      const s = get();
+      if (!supplyDue(s.daysPlayed) || s.supplyDay !== s.daysPlayed) {
+        set({ speech: "The south pier is empty. The supply ship ties up every other day." });
+        return;
+      }
+      if (s.supplyTaken) {
+        set({
+          speech: s.newcomer
+            ? `${s.newcomer} is still on the gangplank. The crates are already ashore.`
+            : "The crates are ashore. The mainland ledger is updated.",
+        });
+        return;
+      }
+      const pay = 12 + s.townHallLevel * 6;
+      set({
+        supplyTaken: true,
+        coins: s.coins + pay,
+        bread: s.bread + 1,
+        seeds: { ...s.seeds, carrot: (s.seeds.carrot ?? 0) + 1 },
+        coinPopKey: s.coinPopKey + 1,
+        speech: s.newcomer
+          ? `Crates from the mainland. +${pay} coins, bread, and seed. ${s.newcomer} wants to stay.`
+          : `Crates from the mainland. +${pay} coins, bread, and seed. The hollow is on a trade route.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
+    welcomeNewcomer: () => {
+      const s = get();
+      const who = NEWCOMERS.find((n) => n.name === s.newcomer);
+      if (!who) {
+        set({ speech: "No one came ashore this tide." });
+        return;
+      }
+      const taken = new Set([...s.placed.map((p) => p.slotId), ...s.settlers.map((n) => n.slotId)]);
+      const slot = VILLAGE_SLOTS.find((v) => !taken.has(v.id));
+      if (!slot) {
+        set({ speech: `${who.name} likes the island, but every lane is full. They'll try the next ship.` });
+        return;
+      }
+      set({
+        newcomer: null,
+        settlers: [...s.settlers, { name: who.name, hat: who.hat, slotId: slot.id }],
+        placed: [...s.placed, { id: `ship-${who.name}`, catalogId: "village-cottage", slotId: slot.id }],
+        bounceKey: s.bounceKey + 1,
+        speech: `${who.name} takes a rowhouse up the lane. One more gnome. The island gets longer.`,
+      });
+      sfx("place");
       scheduleWrite(get);
     },
 

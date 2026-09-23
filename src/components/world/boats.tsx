@@ -3,8 +3,10 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { BOATS, type BoatId } from "@/lib/game/data/boats";
+import { NEWCOMERS, SUPPLY_BERTH, SUPPLY_PIER, supplyDue } from "@/lib/game/data/supply";
 import { useGame } from "@/lib/game/store";
 import { groundY, to3 } from "@/lib/game/world3";
+import { GnomeRig } from "./gnome-rig";
 
 const WOOD = "#c4894a";
 const WOOD_DARK = "#8a5a32";
@@ -353,28 +355,124 @@ function SupplyHull() {
   );
 }
 
+function SupplyPier() {
+  const posts = [-1.6, -0.6, 0.4, 1.4, 2.2];
+  return (
+    <group position={to3(SUPPLY_PIER.x, SUPPLY_PIER.y, 0)}>
+      <mesh position={[0, 0.2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3.4, 0.12, 1.15]} />
+        <meshStandardMaterial color="#b87840" roughness={0.75} />
+      </mesh>
+      <mesh position={[0, 0.32, 0.52]}>
+        <boxGeometry args={[3.2, 0.08, 0.08]} />
+        <meshStandardMaterial color="#5b3a24" />
+      </mesh>
+      {posts.map((x) => (
+        <mesh key={x} position={[x, -0.05, 0.4]} castShadow>
+          <boxGeometry args={[0.12, 0.55, 0.12]} />
+          <meshStandardMaterial color="#4a3020" />
+        </mesh>
+      ))}
+      {[-1.2, 1.1].map((x) => (
+        <mesh key={`b${x}`} position={[x, 0.38, 0.48]} castShadow>
+          <cylinderGeometry args={[0.08, 0.08, 0.22, 8]} />
+          <meshStandardMaterial color="#2a241c" />
+        </mesh>
+      ))}
+      <mesh position={[0.9, 0.42, -0.1]} castShadow>
+        <boxGeometry args={[0.4, 0.32, 0.4]} />
+        <meshStandardMaterial color="#c4553a" />
+      </mesh>
+      <mesh position={[1.15, 0.58, -0.1]} castShadow>
+        <boxGeometry args={[0.32, 0.24, 0.32]} />
+        <meshStandardMaterial color="#d6a84c" />
+      </mesh>
+      <Html position={[0, 0.9, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+        <p className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">Supply</p>
+      </Html>
+    </group>
+  );
+}
+
 function SupplyShip() {
   const days = useGame((s) => s.daysPlayed);
-  const due = days % 2 === 1;
+  const supplyDay = useGame((s) => s.supplyDay);
+  const newcomer = useGame((s) => s.newcomer);
+  const take = useGame((s) => s.takeSupply);
+  const welcome = useGame((s) => s.welcomeNewcomer);
+  const due = supplyDue(days) && supplyDay === days;
   const ref = useRef<THREE.Group>(null);
   const t = useRef(0);
   const spoke = useRef(false);
+  const who = NEWCOMERS.find((n) => n.name === newcomer);
   useFrame((_, dt) => {
     if (!due || !ref.current) return;
-    t.current = Math.min(1, t.current + dt / 46);
-    const y = 160 + t.current * 860;
-    const p = to3(28, y, -0.08);
-    ref.current.position.set(p[0], p[1] + Math.sin(t.current * 12) * 0.04, p[2]);
-    ref.current.rotation.y = 0.15;
-    if (!spoke.current && t.current > 0.2 && t.current < 0.85) {
+    t.current = Math.min(1, t.current + dt / 8);
+    const eased = 1 - Math.pow(1 - t.current, 3);
+    const y = 980 - eased * (980 - SUPPLY_BERTH.y);
+    const x = 40 + eased * (SUPPLY_BERTH.x - 40);
+    const p = to3(x, y, -0.06);
+    ref.current.position.set(p[0], -0.02 + Math.sin(eased * 10) * 0.03, p[2]);
+    ref.current.rotation.y = Math.PI / 2;
+    if (!spoke.current && t.current > 0.92) {
       spoke.current = true;
-      useGame.getState().speak("Supply ship on the tide. She rolls past every other day, and she does not stop.");
+      const name = useGame.getState().newcomer;
+      useGame.getState().speak(
+        name
+          ? `Supply ship tied up. Crates on the south pier, and ${name} is coming ashore.`
+          : "Supply ship tied up on the south pier. The mainland sent crates.",
+      );
     }
   });
   if (!due) return null;
   return (
-    <group ref={ref}>
-      <SupplyHull />
+    <group>
+      <group ref={ref}>
+        <group
+          onClick={(e) => {
+            e.stopPropagation();
+            take();
+          }}
+        >
+          <SupplyHull />
+        </group>
+      </group>
+      <mesh
+        position={to3((SUPPLY_PIER.x + SUPPLY_BERTH.x) / 2, (SUPPLY_PIER.y + SUPPLY_BERTH.y) / 2, 0.35)}
+        rotation={[0.4, 0, 0]}
+        castShadow
+      >
+        <boxGeometry args={[0.7, 0.06, 0.28]} />
+        <meshStandardMaterial color="#c4894a" />
+      </mesh>
+      <group
+        position={to3(SUPPLY_PIER.x + 20, SUPPLY_PIER.y + 8, 0.28)}
+        onClick={(e) => {
+          e.stopPropagation();
+          take();
+        }}
+      >
+        <mesh castShadow>
+          <boxGeometry args={[0.34, 0.28, 0.34]} />
+          <meshStandardMaterial color="#8a6238" />
+        </mesh>
+      </group>
+      {who ? (
+        <group
+          position={to3(SUPPLY_PIER.x - 10, SUPPLY_PIER.y + 18, groundY(SUPPLY_PIER.x, SUPPLY_PIER.y))}
+          onClick={(e) => {
+            e.stopPropagation();
+            welcome();
+          }}
+        >
+          <GnomeRig hat={who.hat} scale={0.9} beard={false} />
+          <Html position={[0, 1.6, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+            <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
+              {who.name}
+            </p>
+          </Html>
+        </group>
+      ) : null}
     </group>
   );
 }
@@ -419,6 +517,7 @@ export function Harbor3({
         <PirateRig />
       </group>
       <Pier />
+      <SupplyPier />
       <Dockhouse onEnter={onHouse} />
       <SupplyShip />
       <group position={yard}>

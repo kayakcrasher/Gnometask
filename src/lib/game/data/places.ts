@@ -34,7 +34,7 @@ export const PLACES: { id: PlaceId; name: string; blurb: string }[] = [
   {
     id: "dock",
     name: "The Dock",
-    blurb: "A two-story dockhouse, a long pier, and Wim's ledger. The supply ship rolls past every other day.",
+    blurb: "Two piers. Wim sells boats at the dockhouse. The supply ship ties up south and keeps the island on the mainland ledger.",
   },
   {
     id: "mines",

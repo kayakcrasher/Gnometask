@@ -3,7 +3,7 @@ import { GnomeRig } from "./gnome-rig";
 import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
 import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
-import { EMPTY_LOTS, PLACE_ANCHORS } from "@/lib/game/data/layout";
+import { EMPTY_LOTS, PLACE_ANCHORS, VILLAGE_SLOTS } from "@/lib/game/data/layout";
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
@@ -400,6 +400,29 @@ export function VillageHouses({ count, onClick }: { count: number; onClick: (x: 
           onEnter={() => onClick(x!, y!)}
         />
       ))}
+      <Settlers />
+    </group>
+  );
+}
+
+function Settlers() {
+  const settlers = useGame((s) => s.settlers);
+  return (
+    <group>
+      {settlers.map((n) => {
+        const slot = VILLAGE_SLOTS.find((v) => v.id === n.slotId);
+        if (!slot) return null;
+        return (
+          <group key={n.name} position={to3(slot.x + 22, slot.y + 28, groundY(slot.x, slot.y))}>
+            <GnomeRig hat={n.hat} scale={0.82} beard={false} coat="#6a3d58" />
+            <Html position={[0, 1.45, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+              <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
+                {n.name}
+              </p>
+            </Html>
+          </group>
+        );
+      })}
     </group>
   );
 }
