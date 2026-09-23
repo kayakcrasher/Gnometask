@@ -11,12 +11,12 @@ export const TOWN_SHOPS: {
   sign: string;
   building?: BuildingId;
 }[] = [
-  { id: "hatshop", x: 260, y: 440, label: "Hat shop", interior: "hatshop", roof: "gold", sign: "Hats", building: "village" },
-  { id: "armory", x: 360, y: 420, label: "Armory", interior: "armory", roof: "stone", sign: "Steel", building: "village" },
-  { id: "townhall", x: 470, y: 390, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village" },
-  { id: "bakery", x: 580, y: 420, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village" },
-  { id: "general", x: 680, y: 440, label: "Builder's yard", interior: "general", roof: "moss", sign: "Yard", building: "village" },
-  { id: "bank", x: 470, y: 530, label: "The Bank", interior: "bank", roof: "gold", tall: true, sign: "Bank", building: "village" },
+  { id: "hatshop", x: 250, y: 400, label: "Hat shop", interior: "hatshop", roof: "gold", sign: "Hats", building: "village" },
+  { id: "armory", x: 270, y: 490, label: "Armory", interior: "armory", roof: "stone", sign: "Steel", building: "village" },
+  { id: "townhall", x: 320, y: 560, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village" },
+  { id: "bakery", x: 270, y: 640, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village" },
+  { id: "general", x: 250, y: 730, label: "Builder's yard", interior: "general", roof: "moss", sign: "Yard", building: "village" },
+  { id: "bank", x: 400, y: 560, label: "The Bank", interior: "bank", roof: "gold", tall: true, sign: "Bank", building: "village" },
 ];
 
 export const NPCS: {
@@ -35,8 +35,8 @@ export const NPCS: {
     id: "pappy",
     name: "Ol Pappy St. Francis",
     shortName: "Ol Pappy",
-    x: 236,
-    y: 548,
+    x: 150,
+    y: 530,
     hat: "hat-straw",
     place: "dock",
     stay: true,
@@ -52,8 +52,8 @@ export const NPCS: {
   {
     id: "stoic",
     name: "The Stoic Gnome",
-    x: 520,
-    y: 490,
+    x: 190,
+    y: 560,
     hat: "hat-night",
     place: "village",
     lines: [
@@ -72,8 +72,8 @@ export const NPCS: {
   {
     id: "nettie",
     name: "Nettie",
-    x: 300,
-    y: 500,
+    x: 180,
+    y: 420,
     hat: "hat-flower",
     place: "village",
     tradeInterior: "hatshop",
@@ -101,8 +101,8 @@ export const NPCS: {
     id: "greg",
     name: "Watcher Greg",
     shortName: "Watcher Greg",
-    x: 196,
-    y: 400,
+    x: 140,
+    y: 380,
     hat: "hat-night",
     place: "dock",
     stay: true,
@@ -119,8 +119,8 @@ export const NPCS: {
   {
     id: "brine",
     name: "Brine",
-    x: 188,
-    y: 640,
+    x: 150,
+    y: 660,
     hat: "hat-straw",
     place: "dock",
     tradeInterior: "bakery",
@@ -134,8 +134,8 @@ export const NPCS: {
     id: "wim",
     name: "Wim",
     shortName: "Wim",
-    x: 268,
-    y: 512,
+    x: 175,
+    y: 500,
     hat: "hat-straw",
     place: "dock",
     stay: true,
@@ -164,8 +164,8 @@ export const NPCS: {
   {
     id: "miller",
     name: "Miller",
-    x: 620,
-    y: 500,
+    x: 200,
+    y: 650,
     hat: "hat-straw",
     place: "shop",
     tradeInterior: "bakery",
@@ -178,4 +178,4 @@ export const NPCS: {
 ];
 
 export const HAVEN_ORIGIN = { x: 1860, y: 760 };
-export const TOWN_SQUARE = { x: 470, y: 480 };
+export const TOWN_SQUARE = { x: 220, y: 540 };

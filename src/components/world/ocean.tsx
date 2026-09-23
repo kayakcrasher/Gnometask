@@ -2,7 +2,8 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/lib/game/store";
-import { to3 } from "@/lib/game/world3";
+import { SEA_LEVEL } from "@/lib/game/data/water";
+import { groundY, to3 } from "@/lib/game/world3";
 
 const SCHOOLS: { cx: number; cy: number; color: string; n: number; speed: number; radius: number }[] = [
   { cx: -10, cy: 470, color: "#d5dde4", n: 5, speed: 0.35, radius: 1.4 },
@@ -138,6 +139,84 @@ export function CastLine() {
       <group ref={fish}>
         <FishBody color={fishing.color} />
       </group>
+    </group>
+  );
+}
+
+const WASH = [
+  { id: "shell-a", kind: "shell" as const, x: -8, y: 470 },
+  { id: "shirt", kind: "cloth" as const, x: 0, y: 640 },
+  { id: "boot", kind: "cloth" as const, x: 15, y: 820 },
+  { id: "shell-b", kind: "shell" as const, x: 900, y: 1560 },
+];
+
+function WalkingCrab({ x, y, phase }: { x: number; y: number; phase: number }) {
+  const ref = useRef<THREE.Group>(null);
+  const leg = useRef(0);
+  useFrame((_, dt) => {
+    if (!ref.current) return;
+    leg.current += dt;
+    const t = leg.current * 0.35 + phase;
+    const along = Math.sin(t) * 28;
+    const p = to3(x + along, y + Math.sin(t * 2) * 6, groundY(x, y) + 0.02);
+    ref.current.position.set(p[0], p[1], p[2]);
+    ref.current.rotation.y = Math.cos(t) > 0 ? Math.PI / 2 : -Math.PI / 2;
+  });
+  return (
+    <group ref={ref}>
+      <mesh position={[0, 0.06, 0]} castShadow>
+        <sphereGeometry args={[0.1, 8, 6]} />
+        <meshStandardMaterial color="#c4553a" />
+      </mesh>
+      <mesh position={[0.08, 0.05, 0.06]} rotation={[0, 0, -0.6]}>
+        <boxGeometry args={[0.12, 0.03, 0.04]} />
+        <meshStandardMaterial color="#8a3030" />
+      </mesh>
+      <mesh position={[0.08, 0.05, -0.06]} rotation={[0, 0, -0.6]}>
+        <boxGeometry args={[0.12, 0.03, 0.04]} />
+        <meshStandardMaterial color="#8a3030" />
+      </mesh>
+    </group>
+  );
+}
+
+export function ShoreLife() {
+  const days = useGame((s) => s.daysPlayed);
+  const got = useGame((s) => s.flotsam);
+  const take = useGame((s) => s.takeFlotsam);
+  return (
+    <group>
+      <WalkingCrab x={10} y={760} phase={0.2} />
+      <WalkingCrab x={-5} y={900} phase={1.4} />
+      <WalkingCrab x={20} y={1040} phase={2.2} />
+      <WalkingCrab x={40} y={430} phase={0.8} />
+      {WASH.map((item, i) => {
+        if ((days + i) % 3 === 2) return null;
+        if (got.includes(`${days}:${item.id}`)) return null;
+        const p = to3(item.x, item.y, Math.max(SEA_LEVEL + 0.04, groundY(item.x, item.y) + 0.02));
+        return (
+          <group
+            key={item.id}
+            position={p}
+            onClick={(e) => {
+              e.stopPropagation();
+              take(item.id);
+            }}
+          >
+            {item.kind === "shell" ? (
+              <mesh rotation={[0.6, 0.4, 0]} castShadow>
+                <sphereGeometry args={[0.08, 8, 6]} />
+                <meshStandardMaterial color="#f2e2c4" />
+              </mesh>
+            ) : (
+              <mesh rotation={[0.2, 0.5, 0.4]} castShadow>
+                <boxGeometry args={[0.16, 0.04, 0.12]} />
+                <meshStandardMaterial color={item.id === "boot" ? "#5b4230" : "#6a8f8a"} />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
     </group>
   );
 }

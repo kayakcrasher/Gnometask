@@ -54,7 +54,22 @@ export function expandPoly(poly: [number, number][], pad: number): [number, numb
   });
 }
 
-export const BEACH_POLY = expandPoly(ISLAND_POLY, 90);
+function beachPad(x: number, y: number) {
+  if (y > 980) return 260;
+  if (x < 250) return 190;
+  return 70;
+}
+
+/** Wider on the west harbor and the south shore, so the dock can sit in the sand beside the sea. */
+export const BEACH_POLY: [number, number][] = ISLAND_POLY.map(([x, y]) => {
+  const cx = 1400;
+  const cy = 700;
+  const dx = x - cx;
+  const dy = y - cy;
+  const len = Math.hypot(dx, dy) || 1;
+  const pad = beachPad(x, y);
+  return [x + (dx / len) * pad, y + (dy / len) * pad];
+});
 
 export function onIsland(x: number, y: number) {
   return insidePoly(x, y, BEACH_POLY);

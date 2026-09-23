@@ -37,14 +37,14 @@ export const VILLAGE_SLOTS: { id: string; x: number; y: number }[] = [
 export const PLACE_ANCHORS: Record<PlaceId, { x: number; y: number }> = {
   cottage: { x: 980, y: 640 },
   garden: { x: 980, y: 800 },
-  shop: { x: 470, y: 470 },
+  shop: { x: 300, y: 540 },
   village: { x: 1200, y: 540 },
   pond: { x: 520, y: 190 },
   woods: { x: 160, y: 240 },
   wildlands: { x: 1760, y: 420 },
   mines: { x: 1380, y: 1220 },
   ruins: { x: 2360, y: 260 },
-  dock: { x: 230, y: 540 },
+  dock: { x: 120, y: 520 },
   haven: { x: 1860, y: 760 },
 };
 
@@ -58,14 +58,14 @@ export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; p
   { id: "pack-bat-b", enemy: "bat", x: 1520, y: 1280, place: "mines" },
   { id: "pack-cobble", enemy: "cobble", x: 2280, y: 180, place: "ruins" },
   { id: "pack-cobble-b", enemy: "cobble", x: 2500, y: 320, place: "ruins" },
-  { id: "pack-crab", enemy: "crab", x: 90, y: 520, place: "dock" },
+  { id: "pack-crab", enemy: "crab", x: 20, y: 860, place: "dock" },
 ];
 
 export const EMPTY_LOTS: { id: string; x: number; y: number }[] = [
-  { id: "lot-inn", x: 260, y: 560 },
-  { id: "lot-chapel", x: 370, y: 570 },
-  { id: "lot-market", x: 580, y: 570 },
-  { id: "lot-school", x: 690, y: 540 },
+  { id: "lot-inn", x: 430, y: 430 },
+  { id: "lot-chapel", x: 500, y: 500 },
+  { id: "lot-market", x: 430, y: 700 },
+  { id: "lot-school", x: 510, y: 680 },
 ];
 
 export const TOWER_SLOTS: { id: string; x: number; y: number }[] = [

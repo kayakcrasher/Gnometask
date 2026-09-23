@@ -93,6 +93,7 @@ export function snap(s: GameSave): GameSave {
     supplyDay: s.supplyDay,
     supplyTaken: s.supplyTaken,
     newcomer: s.newcomer,
+    flotsam: s.flotsam,
     muckRaiders: s.muckRaiders,
     trees: s.trees,
     landing: s.landing,

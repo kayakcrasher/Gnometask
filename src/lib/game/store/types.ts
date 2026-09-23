@@ -42,6 +42,7 @@ export type GameState = GameSave &
     buyBoat: (id: string) => void;
     takeSupply: () => void;
     welcomeNewcomer: () => void;
+    takeFlotsam: (id: string) => void;
     castLine: (where: "shore" | "sea", x: number, y: number, boatId?: string) => void;
     sellFish: (id: string) => void;
     stockFish: (id: string) => void;

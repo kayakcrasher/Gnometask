@@ -165,10 +165,20 @@ function EnemyMesh({ kind }: { kind: EnemyId }) {
   }
   if (kind === "crab") {
     return (
-      <mesh position={[0, 0.1, 0]} castShadow>
-        <sphereGeometry args={[0.18, 8, 6]} />
-        <meshStandardMaterial color="#a8433b" />
-      </mesh>
+      <group>
+        <mesh position={[0, 0.08, 0]} castShadow>
+          <sphereGeometry args={[0.12, 8, 6]} />
+          <meshStandardMaterial color="#c4553a" />
+        </mesh>
+        <mesh position={[0.1, 0.07, 0.07]} rotation={[0, 0, -0.7]}>
+          <boxGeometry args={[0.14, 0.035, 0.045]} />
+          <meshStandardMaterial color="#8a3030" />
+        </mesh>
+        <mesh position={[0.1, 0.07, -0.07]} rotation={[0, 0, -0.7]}>
+          <boxGeometry args={[0.14, 0.035, 0.045]} />
+          <meshStandardMaterial color="#8a3030" />
+        </mesh>
+      </group>
     );
   }
   if (kind === "boar") {

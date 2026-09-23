@@ -13,7 +13,7 @@ import * as THREE from "three";
 import { Terrain } from "./terrain";
 import { Cottage3, Town3, VillageHouses } from "./town";
 import { Harbor3 } from "./boats";
-import { CastLine, OceanLife } from "./ocean";
+import { CastLine, OceanLife, ShoreLife } from "./ocean";
 import { Sky } from "./sky";
 import { YardPlots } from "./yard";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
@@ -135,6 +135,7 @@ function SceneBody({
       />
       <Terrain onWalk={onWalk} />
       <OceanLife />
+      <ShoreLife />
       <CastLine />
       <Cottage3
         upgrades={save.houseUpgrades}
@@ -176,7 +177,7 @@ function SceneBody({
           })
         }
         onCaptain={() =>
-          interact(48, 430, {
+          interact(90, 470, {
             kind: "npc",
             hotspotId: "captain",
             title: "Captain Moth",
@@ -184,7 +185,7 @@ function SceneBody({
             place: "dock",
           })
         }
-        onHouse={() => goInside(258, 530, "dockhouse")}
+        onHouse={() => goInside(125, 530, "dockhouse")}
       />
       <group
         position={to3(78, 560, 0.05)}

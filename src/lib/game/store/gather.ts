@@ -20,7 +20,7 @@ function treeStage(choppedAt: number | undefined, now: number) {
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "buyBoat" | "takeSupply" | "welcomeNewcomer" | "castLine" | "sellFish" | "stockFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "sailTo" | "buyBoat" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -214,6 +214,23 @@ export function gatherSlice(
         speech: `${who.name} takes a rowhouse up the lane. One more gnome. The island gets longer.`,
       });
       sfx("place");
+      scheduleWrite(get);
+    },
+
+    takeFlotsam: (id) => {
+      const s = get();
+      const key = `${s.daysPlayed}:${id}`;
+      if (s.flotsam.includes(key)) return;
+      const pay = id.startsWith("shell") ? 2 : 4;
+      set({
+        flotsam: [...s.flotsam, key],
+        coins: s.coins + pay,
+        coinPopKey: s.coinPopKey + 1,
+        speech: id.startsWith("shell")
+          ? `A shell off the tide. +${pay} coins. The beach keeps a ledger too.`
+          : `Something from a larger wardrobe washed in. +${pay} coins.`,
+      });
+      sfx("buy");
       scheduleWrite(get);
     },
 

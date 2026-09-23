@@ -219,6 +219,7 @@ export type GameSave = {
   supplyDay: number;
   supplyTaken: boolean;
   newcomer: string | null;
+  flotsam: string[];
   muckRaiders: boolean[];
   ownedGear: string[];
   equipment: Equipment;

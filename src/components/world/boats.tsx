@@ -6,6 +6,7 @@ import { BOATS, type BoatId } from "@/lib/game/data/boats";
 import { NEWCOMERS, SUPPLY_BERTH, SUPPLY_PIER, supplyDue } from "@/lib/game/data/supply";
 import { useGame } from "@/lib/game/store";
 import { groundY, to3 } from "@/lib/game/world3";
+import { SEA_LEVEL } from "@/lib/game/data/water";
 import { GnomeRig } from "./gnome-rig";
 
 const WOOD = "#c4894a";
@@ -230,9 +231,9 @@ function Gull({ radius, speed, lift }: { radius: number; speed: number; lift: nu
 function Pier() {
   const posts = [-3.2, -2.2, -1.2, -0.2, 0.8, 1.6];
   return (
-    <group position={to3(150, 520, 0)} rotation={[0, 0.08, 0]}>
-      <mesh position={[-1.4, 0.22, 0]} castShadow receiveShadow>
-        <boxGeometry args={[4.4, 0.1, 0.9]} />
+    <group position={to3(55, 510, 0)}>
+      <mesh position={[-1.7, 0.18, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3.8, 0.1, 0.9]} />
         <meshStandardMaterial color="#c4894a" roughness={0.8} />
       </mesh>
       <mesh position={[-1.4, 0.28, 0.42]}>
@@ -266,10 +267,11 @@ function Pier() {
 }
 
 function Dockhouse({ onEnter }: { onEnter: () => void }) {
-  const p = to3(258, 492, groundY(258, 492));
+  const p = to3(125, 500, groundY(125, 500));
   return (
     <group
       position={p}
+      rotation={[0, Math.PI / 2, 0]}
       onClick={(e) => {
         e.stopPropagation();
         onEnter();
@@ -318,38 +320,44 @@ function Dockhouse({ onEnter }: { onEnter: () => void }) {
 
 function SupplyHull() {
   return (
-    <group scale={1.7}>
-      <mesh position={[0, 0.28, 0]} castShadow>
-        <boxGeometry args={[1.1, 0.42, 3.4]} />
-        <meshStandardMaterial color="#4a3428" />
+    <group scale={2.35}>
+      <mesh position={[0, 0.22, 0]} castShadow>
+        <boxGeometry args={[0.95, 0.28, 3.6]} />
+        <meshStandardMaterial color="#a86b3c" roughness={0.8} />
       </mesh>
-      <mesh position={[0, 0.52, 0]}>
-        <boxGeometry args={[1.05, 0.12, 3.1]} />
+      <mesh position={[0, 0.38, 0]} castShadow>
+        <boxGeometry args={[1.05, 0.08, 3.7]} />
+        <meshStandardMaterial color="#c4894a" roughness={0.75} />
+      </mesh>
+      {[-1.2, -0.4, 0.4, 1.2].map((z) => (
+        <mesh key={z} position={[0, 0.22, z]}>
+          <boxGeometry args={[0.98, 0.04, 0.06]} />
+          <meshStandardMaterial color="#6b4423" />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.62, -0.15]} castShadow>
+        <boxGeometry args={[0.62, 0.42, 1.2]} />
+        <meshStandardMaterial color="#d8c4a0" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, 0.88, -0.15]} castShadow>
+        <boxGeometry args={[0.72, 0.08, 1.35]} />
+        <meshStandardMaterial color="#8a3a32" />
+      </mesh>
+      <mesh position={[0.22, 1.15, -0.05]} castShadow>
+        <cylinderGeometry args={[0.07, 0.09, 0.4, 8]} />
+        <meshStandardMaterial color="#3a2a22" />
+      </mesh>
+      <mesh position={[0, 0.58, 1.2]} castShadow>
+        <boxGeometry args={[0.42, 0.28, 0.42]} />
+        <meshStandardMaterial color="#c4894a" />
+      </mesh>
+      <mesh position={[-0.28, 0.56, -1.35]} castShadow>
+        <boxGeometry args={[0.34, 0.24, 0.4]} />
         <meshStandardMaterial color="#6b4423" />
       </mesh>
-      <mesh position={[0, 0.85, -0.2]} castShadow>
-        <boxGeometry args={[0.7, 0.5, 1.4]} />
-        <meshStandardMaterial color="#efe4cf" />
-      </mesh>
-      <mesh position={[0, 1.2, 0.55]} castShadow>
-        <boxGeometry args={[0.85, 0.35, 0.7]} />
-        <meshStandardMaterial color="#c4553a" />
-      </mesh>
-      <mesh position={[0.28, 1.55, 0.7]} castShadow>
-        <cylinderGeometry args={[0.1, 0.12, 0.45, 8]} />
-        <meshStandardMaterial color="#2a241c" />
-      </mesh>
-      <mesh position={[0, 0.78, 1.15]} castShadow>
-        <boxGeometry args={[0.4, 0.28, 0.4]} />
-        <meshStandardMaterial color="#d6a84c" />
-      </mesh>
-      <mesh position={[-0.28, 0.78, -1.2]} castShadow>
-        <boxGeometry args={[0.35, 0.26, 0.45]} />
-        <meshStandardMaterial color="#3d6ea5" />
-      </mesh>
-      <mesh position={[0, 1.15, -1.35]}>
-        <boxGeometry args={[0.9, 0.55, 0.04]} />
-        <meshStandardMaterial color="#f4efe4" />
+      <mesh position={[0, 0.7, -1.7]}>
+        <boxGeometry args={[0.08, 0.7, 0.08]} />
+        <meshStandardMaterial color="#5b4230" />
       </mesh>
     </group>
   );
@@ -409,11 +417,10 @@ function SupplyShip() {
     if (!due || !ref.current) return;
     t.current = Math.min(1, t.current + dt / 8);
     const eased = 1 - Math.pow(1 - t.current, 3);
-    const y = 980 - eased * (980 - SUPPLY_BERTH.y);
-    const x = 40 + eased * (SUPPLY_BERTH.x - 40);
-    const p = to3(x, y, -0.06);
-    ref.current.position.set(p[0], -0.02 + Math.sin(eased * 10) * 0.03, p[2]);
-    ref.current.rotation.y = Math.PI / 2;
+    const x = -180 + eased * (SUPPLY_BERTH.x - -180);
+    const p = to3(x, SUPPLY_BERTH.y, 0);
+    ref.current.position.set(p[0], SEA_LEVEL + 0.08 + Math.sin(eased * 8) * 0.03, p[2]);
+    ref.current.rotation.y = 0;
     if (!spoke.current && t.current > 0.92) {
       spoke.current = true;
       const name = useGame.getState().newcomer;
@@ -490,7 +497,7 @@ export function Harbor3({
   return (
     <group>
       {BOATS.map((boat) => {
-        const p = to3(boat.x, boat.y, -0.02);
+        const p = to3(boat.x, boat.y, SEA_LEVEL + 0.06);
         return (
           <group
             key={boat.id}
@@ -508,7 +515,7 @@ export function Harbor3({
         );
       })}
       <group
-        position={to3(48, 430, 0.02)}
+        position={to3(90, 470, 0.02)}
         onClick={(e) => {
           e.stopPropagation();
           onCaptain();

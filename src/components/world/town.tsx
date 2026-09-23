@@ -295,22 +295,24 @@ export function Town3({
     <group>
       {TOWN_SHOPS.map((shop) => {
         const p = to3(shop.x, shop.y, groundY(shop.x, shop.y));
-        if (shop.id === "townhall") {
-          return <Hall3 key={shop.id} level={hallLevel} position={p} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />;
-        }
-        if (shop.id === "bank") {
-          return <Bank3 key={shop.id} position={p} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />;
-        }
-        return (
-          <TimberHouse
-            key={shop.id}
-            position={p}
-            roof={shop.roof}
-            tall={shop.tall}
-            sign={shop.id === "townhall" ? `Hall ${hallLevel}` : shop.sign}
-            onEnter={() => onEnter(shop.interior, shop.x, shop.y)}
-          />
+        const faceWest = (
+          <group key={shop.id} position={p} rotation={[0, Math.PI / 2, 0]}>
+            {shop.id === "townhall" ? (
+              <Hall3 level={hallLevel} position={[0, 0, 0]} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />
+            ) : shop.id === "bank" ? (
+              <Bank3 position={[0, 0, 0]} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />
+            ) : (
+              <TimberHouse
+                position={[0, 0, 0]}
+                roof={shop.roof}
+                tall={shop.tall}
+                sign={shop.sign}
+                onEnter={() => onEnter(shop.interior, shop.x, shop.y)}
+              />
+            )}
+          </group>
         );
+        return faceWest;
       })}
       {EMPTY_LOTS.map((lot) => (
         <group key={lot.id} position={to3(lot.x, lot.y, groundY(lot.x, lot.y))}>
@@ -343,14 +345,13 @@ export function Town3({
           ) : null}
         </group>
       ))}
-      <Kenney name="fence_gate" position={to3(360, 500, 0)} scale={1.2} />
-      <Kenney name="fence_simple" position={to3(600, 500, 0)} scale={1.2} />
-      <Kenney name="plant_bushSmall" position={to3(420, 500, 0)} scale={1.2} />
-      <mesh position={to3(470, 480, 0.15)}>
+      <Kenney name="fence_gate" position={to3(200, 540, 0)} scale={1.2} />
+      <Kenney name="plant_bushSmall" position={to3(210, 470, 0)} scale={1.2} />
+      <mesh position={to3(230, 540, 0.15)}>
         <cylinderGeometry args={[0.45, 0.58, 0.22, 16]} />
         <meshStandardMaterial color="#8a7a68" />
       </mesh>
-      <mesh position={to3(470, 480, 0.28)}>
+      <mesh position={to3(230, 540, 0.28)}>
         <cylinderGeometry args={[0.32, 0.32, 0.08, 16]} />
         <meshStandardMaterial color="#6a8f8a" roughness={0.3} />
       </mesh>
