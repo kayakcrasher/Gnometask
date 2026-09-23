@@ -161,5 +161,5 @@ export const NPCS: {
   },
 ];
 
-export const HAVEN_ORIGIN = { x: 1340, y: 820 };
+export const HAVEN_ORIGIN = { x: 1860, y: 760 };
 export const TOWN_SQUARE = { x: 470, y: 480 };

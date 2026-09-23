@@ -1,6 +1,5 @@
-import { Backpack, Heart, ScrollText, Settings2, Shield, Shirt, Sword } from "lucide-react";
+import { Backpack, Heart, Settings2, Shield, Shirt, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { localDate } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import { CATALOG_BY_ID } from "@/lib/game/catalog";
 import { combatLevel, maxHitpoints } from "@/lib/game/xp";
@@ -15,7 +14,6 @@ export function TopBar() {
   const bread = useGame((s) => s.bread);
   const panel = useGame((s) => s.panel);
   const setPanel = useGame((s) => s.setPanel);
-  const tasks = useGame((s) => s.tasks);
   const equipment = useGame((s) => s.equipment);
   const skills = useGame((s) => s.skills);
   const combat = useGame((s) => s.combat);
@@ -23,11 +21,6 @@ export function TopBar() {
   const setStyle = useGame((s) => s.setCombatStyle);
   const eat = useGame((s) => s.combatEat);
   const flee = useGame((s) => s.combatFlee);
-  const today = localDate();
-  const remaining = tasks.filter((t) => {
-    if (t.builtin) return t.createdOn === today && !t.done;
-    return !t.done;
-  }).length;
   const food = honey + bread;
   const maxHp = maxHitpoints(skills);
   const cmb = combatLevel(skills);
@@ -143,18 +136,6 @@ export function TopBar() {
           </div>
         ) : (
         <div className="flex h-14 items-center gap-1 rounded-[20px] bg-pine/92 p-1.5 shadow-panel">
-          <button
-            type="button"
-            onClick={() => setPanel(panel === "chores" ? "place" : "chores")}
-            className={cn(
-              "flex h-11 items-center gap-1.5 rounded-[14px] px-3 font-display text-sm font-semibold",
-              panel === "chores" ? "bg-parchment text-pine" : "text-parchment hover:bg-parchment/10",
-            )}
-          >
-            <ScrollText className="size-4" strokeWidth={2.4} />
-            <span className="hidden md:inline">Works</span>
-            <span className="rounded-full bg-gold px-1.5 py-0.5 text-[11px] font-bold text-ink tabular-nums">{remaining}</span>
-          </button>
           <button
             type="button"
             aria-label="Inventory"

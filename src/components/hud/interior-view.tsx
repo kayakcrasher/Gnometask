@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import { ShopView } from "./shop-view";
-import { TaskList } from "./task-list";
 import { BUILDING_MAX, type InteriorId, type ShopKind } from "@/lib/game/types";
 import { HALL_COST, hallUnlocks } from "@/lib/game/world";
 import { FISH } from "@/lib/game/data/fish";
@@ -417,9 +416,6 @@ export function InteriorView() {
                 Repair the cottage
               </button>
             ) : null}
-            <div className="min-h-0 flex-1 overflow-hidden">
-              <TaskList />
-            </div>
           </div>
         ) : interior === "townhall" ? (
           <HallPanel />

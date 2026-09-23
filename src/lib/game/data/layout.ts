@@ -45,7 +45,7 @@ export const PLACE_ANCHORS: Record<PlaceId, { x: number; y: number }> = {
   mines: { x: 1380, y: 1220 },
   ruins: { x: 2360, y: 260 },
   dock: { x: 120, y: 500 },
-  haven: { x: 1340, y: 820 },
+  haven: { x: 1860, y: 760 },
 };
 
 export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; place: PlaceId }[] = [

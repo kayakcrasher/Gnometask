@@ -1,4 +1,5 @@
 import { Html } from "@react-three/drei";
+import { GnomeRig } from "./gnome-rig";
 import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
 import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
@@ -357,9 +358,20 @@ export function Town3({
         position={to3(HAVEN_ORIGIN.x, HAVEN_ORIGIN.y, groundY(HAVEN_ORIGIN.x, HAVEN_ORIGIN.y))}
         roof="gold"
         sign="Haven"
-        onEnter={() => onEnter("haven-shop", HAVEN_ORIGIN.x, HAVEN_ORIGIN.y)}
+        onEnter={() => onEnter("haven-shop", HAVEN_ORIGIN.x, HAVEN_ORIGIN.y + 70)}
       />
-      <Kenney name="fence_simple" position={to3(HAVEN_ORIGIN.x - 40, HAVEN_ORIGIN.y + 30, 0)} scale={1.3} />
+      <group position={to3(HAVEN_ORIGIN.x + 34, HAVEN_ORIGIN.y + 62, groundY(HAVEN_ORIGIN.x + 34, HAVEN_ORIGIN.y + 62))}>
+        <GnomeRig hat="hat-guard" coat="#35543f" pants="#5b4230" scale={0.92} beard={false} />
+        <mesh position={[0.2, 0.72, 0.16]} castShadow>
+          <boxGeometry args={[0.04, 0.7, 0.04]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+        <mesh position={[0.2, 1.08, 0.16]}>
+          <coneGeometry args={[0.05, 0.12, 5]} />
+          <meshStandardMaterial color="#cfc8ba" metalness={0.4} />
+        </mesh>
+      </group>
+      <Kenney name="fence_simple" position={to3(HAVEN_ORIGIN.x - 48, HAVEN_ORIGIN.y + 36, 0)} scale={1.3} />
     </group>
   );
 }

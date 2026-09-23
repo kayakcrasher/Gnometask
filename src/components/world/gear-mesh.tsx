@@ -17,7 +17,7 @@ export function SwordMesh({ id, striking }: { id: string | null; striking?: bool
         <meshStandardMaterial color={t.dark} metalness={0.65} roughness={0.35} />
       </mesh>
       <mesh position={[0, 0.42, 0]} castShadow>
-        <boxGeometry args={[0.05, 0.48, 0.018]} />
+        <boxGeometry args={[0.07, 0.5, 0.045]} />
         <meshStandardMaterial color={t.metal} metalness={0.75} roughness={0.28} />
       </mesh>
       <mesh position={[0, 0.68, 0]} castShadow>

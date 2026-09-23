@@ -183,44 +183,33 @@ export function GnomeRig({
             <meshStandardMaterial color="#e2b84a" metalness={0.35} roughness={0.4} />
           </mesh>
 
-          {[-1].map((side) => (
-            <group key={side} position={[side * 0.26, 0.7, 0.02]} rotation={[0.2, 0, 0.2]}>
-              <mesh position={[0, -0.14, 0]} castShadow>
-                <boxGeometry args={[0.1, 0.26, 0.1]} />
-                <meshStandardMaterial color={coat} roughness={0.7} />
-              </mesh>
-              <mesh position={[0, -0.3, 0.02]} castShadow>
-                <boxGeometry args={[0.08, 0.08, 0.08]} />
-                <meshStandardMaterial color={skinColor} roughness={0.6} />
-              </mesh>
-              {shield ? (
-                <group position={[0, -0.28, 0.02]}>
-                  <ShieldMesh id={shield} />
-                </group>
-              ) : null}
-            </group>
-          ))}
-          <group
-            position={[0.24, 0.72, 0.06]}
-            rotation={
-              weapon
-                ? [striking ? -0.35 : 0.95, striking ? 0.15 : -0.1, striking ? -0.15 : -0.45]
-                : [0.15, 0, -0.2]
-            }
-          >
-            <mesh position={[0, -0.13, 0]} castShadow>
-              <boxGeometry args={[0.1, 0.24, 0.1]} />
+          <group position={[-0.26, 0.68, 0.04]} rotation={[0.25, 0, 0.35]}>
+            <mesh position={[0, -0.14, 0]} castShadow>
+              <boxGeometry args={[0.1, 0.26, 0.1]} />
               <meshStandardMaterial color={coat} roughness={0.7} />
             </mesh>
-            <mesh position={[0, -0.28, 0.02]} castShadow>
+            <mesh position={[0, -0.3, 0.04]} castShadow>
+              <boxGeometry args={[0.08, 0.08, 0.08]} />
+              <meshStandardMaterial color={skinColor} roughness={0.6} />
+            </mesh>
+            {shield ? (
+              <group position={[0, -0.28, 0.06]}>
+                <ShieldMesh id={shield} />
+              </group>
+            ) : null}
+          </group>
+          <group position={[0.2, 0.78, 0.06]} rotation={[0.55, 0.1, weapon ? -0.85 : -0.25]}>
+            <mesh position={[0, -0.16, 0]} castShadow>
+              <boxGeometry args={[0.1, 0.28, 0.1]} />
+              <meshStandardMaterial color={coat} roughness={0.7} />
+            </mesh>
+          </group>
+          <group position={[0.34, 0.58, 0.24]} rotation={[0.1, 0, striking ? -1.15 : -0.18]}>
+            <mesh castShadow>
               <boxGeometry args={[0.09, 0.08, 0.1]} />
               <meshStandardMaterial color={skinColor} roughness={0.6} />
             </mesh>
-            {weapon ? (
-              <group position={[0.01, -0.3, 0.05]} rotation={[-1.15, 0.35, 0.1]}>
-                <WeaponInHand weaponId={weapon} striking={striking} />
-              </group>
-            ) : null}
+            {weapon ? <WeaponInHand weaponId={weapon} striking={false} /> : null}
           </group>
 
           <mesh position={[0, 0.92, 0]} castShadow>

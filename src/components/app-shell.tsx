@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect } from "react";
 import { LandMap } from "@/components/land/land-map";
 import { TopBar } from "@/components/hud/top-bar";
-import { ChoresDrawer } from "@/components/hud/side-panel";
 import { Speech } from "@/components/hud/speech";
 import { Welcome } from "@/components/hud/welcome";
 import { ClickPopup } from "@/components/hud/click-popup";
@@ -38,7 +37,6 @@ export function AppShell() {
             <TopBar />
             <Speech />
             <ClickPopup />
-            <ChoresDrawer />
             <InventoryView />
             <MenuView />
             <InteriorView />
