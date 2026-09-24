@@ -24,7 +24,7 @@ import { EastHills, Fights3, Landing3, LootFlash3, Npcs3, Rocks3, Towers3, Trees
 import { MountNoble, Sunstep } from "./desert";
 import { CountryRoads, SupplyRunners } from "./roads";
 import { Kenney } from "./kenney";
-import { groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
+import { MOUNT_NOBLE, NOBLE_PLATEAU, groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 import { NPCS } from "@/lib/game/world";
 import { TREE_SPOTS } from "@/lib/game/data/trees";
@@ -247,7 +247,7 @@ function SceneBody({
       />
       <Rocks3 />
       <EastHills />
-      <MountNoble />
+      <MountNoble onWalk={onWalk} />
       <Sunstep />
       <CountryRoads />
       <SupplyRunners />
@@ -503,6 +503,10 @@ export function IslandCanvas({
     if (!onIsland(x, y)) return;
     useGame.getState().closePopup();
     walkTo(x, y);
+    if (Math.hypot(x - MOUNT_NOBLE.x, y - MOUNT_NOBLE.y) <= NOBLE_PLATEAU) {
+      camRef.current.dist = 34;
+      camRef.current.pitch = 0.58;
+    }
   };
 
   if (!ready) return <div className="absolute inset-0 bg-water-deep" />;

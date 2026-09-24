@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { BEACH_POLY, DESERT_POLY, ISLAND_POLY, MOUNT_NOBLE } from "@/lib/game/world3";
 import { VILLAGES, ROADS } from "@/lib/game/data/country";
 import { PARCELS } from "@/lib/game/data/parcels";
@@ -20,12 +21,19 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
   const [picked, setPicked] = useState<string | null>(null);
   const tile = PARCELS.find((p) => p.id === picked) ?? null;
   const owned = tile ? deeds.includes(tile.id) : false;
-  return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#143028]/95 p-3">
-      <div className="mb-2 flex items-center justify-between">
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const sheet = (
+    <div className="fixed inset-0 z-[80] flex flex-col bg-[#143028]/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="mb-2 flex items-center justify-between gap-3">
         <p className="font-display text-lg font-semibold text-parchment">Deed map</p>
-        <button type="button" onClick={onClose} className="rounded-full bg-parchment px-3 py-1 text-xs font-semibold text-ink">
-          Close
+        <button type="button" onClick={onClose} className="h-11 rounded-full bg-parchment px-4 text-sm font-semibold text-ink">
+          Leave
         </button>
       </div>
       <p className="mb-2 text-xs font-semibold text-parchment/80">
@@ -113,10 +121,17 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
               Buy the deed
             </button>
           )}
+          <button type="button" onClick={() => setPicked(null)} className="mt-2 h-10 w-full rounded-[12px] text-sm font-semibold text-bark">
+            Back to the map
+          </button>
         </div>
       ) : (
-        <p className="mt-2 text-center text-xs font-semibold text-parchment/70">Tap a parcel.</p>
+        <p className="mt-2 text-center text-xs font-semibold text-parchment/70">Tap a parcel. Leave is always at the top.</p>
       )}
+      <button type="button" onClick={onClose} className="mt-2 h-12 w-full rounded-full bg-parchment font-display text-base font-semibold text-ink">
+        Leave the map
+      </button>
     </div>
   );
+  return typeof document === "undefined" ? sheet : createPortal(sheet, document.body);
 }

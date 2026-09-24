@@ -2,7 +2,7 @@ import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
 import { cellsOf, filledCount, townGate, townGrid } from "@/lib/game/data/grids";
 import { CASINO_STAGE, prosperity } from "@/lib/game/data/market";
-import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_PLATEAU, NOBLE_RADIUS, SCALE, groundY, to3 } from "@/lib/game/world3";
+import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_PLATEAU, NOBLE_RADIUS, SCALE, groundY, onIsland, to2, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
 const LOTS = cellsOf(townGrid("sunstep"));
@@ -90,23 +90,36 @@ function Casino({ name, accent, stage }: { name: string; accent: string; stage: 
   );
 }
 
-export function MountNoble() {
+export function MountNoble({ onWalk }: { onWalk: (x: number, y: number) => void }) {
   const radius = NOBLE_RADIUS * SCALE;
   const cut = NOBLE_PLATEAU / NOBLE_RADIUS;
   const rise = NOBLE_HEIGHT * (1 - cut);
   const top = radius * cut;
   const p = to3(MOUNT_NOBLE.x, MOUNT_NOBLE.y, 0);
+  const climb = (e: { stopPropagation: () => void; point: { x: number; z: number } }) => {
+    e.stopPropagation();
+    const hit = to2(e.point.x, e.point.z);
+    const d = Math.hypot(hit.x - MOUNT_NOBLE.x, hit.y - MOUNT_NOBLE.y);
+    if (d <= NOBLE_PLATEAU + 12) onWalk(MOUNT_NOBLE.x, MOUNT_NOBLE.y);
+    else if (onIsland(hit.x, hit.y)) onWalk(hit.x, hit.y);
+  };
   return (
     <group position={p}>
-      <mesh position={[0, NOBLE_BASE + rise / 2, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[top, radius, rise, 40]} />
-        <meshStandardMaterial color="#8a7a68" roughness={0.95} />
+      <mesh position={[0, NOBLE_BASE + rise / 2, 0]} castShadow receiveShadow onClick={climb}>
+        <cylinderGeometry args={[top, radius, rise, 48]} />
+        <meshStandardMaterial attach="material-0" color="#8a7a68" roughness={0.95} />
+        <meshStandardMaterial attach="material-1" color="#f7f4ee" roughness={0.88} />
+        <meshStandardMaterial attach="material-2" color="#6e6256" roughness={0.95} />
       </mesh>
-      <mesh position={[0, NOBLE_BASE + rise - 0.04, 0]} receiveShadow>
-        <cylinderGeometry args={[top * 0.96, top * 0.96, 0.08, 28]} />
-        <meshStandardMaterial color="#f4f1ea" roughness={0.9} />
+      <mesh position={[0, NOBLE_BASE + rise + 0.35, 0]} onClick={climb}>
+        <cylinderGeometry args={[0.06, 0.08, 0.7, 8]} />
+        <meshStandardMaterial color="#5b4230" />
       </mesh>
-      <Html position={[0, NOBLE_BASE + rise + 0.45, 0]} center distanceFactor={28} style={{ pointerEvents: "none" }}>
+      <mesh position={[0.16, NOBLE_BASE + rise + 0.58, 0]} onClick={climb}>
+        <boxGeometry args={[0.28, 0.16, 0.02]} />
+        <meshStandardMaterial color="#a33b32" />
+      </mesh>
+      <Html position={[0, NOBLE_BASE + rise + 0.9, 0]} center distanceFactor={28} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
           Mount Noble
         </p>
