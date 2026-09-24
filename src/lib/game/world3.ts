@@ -88,6 +88,18 @@ export const DESERT_POLY: [number, number][] = [
 export const DESERT_BEACH: [number, number][] = expandPoly(DESERT_POLY, 48);
 
 export const MOUNT_NOBLE = { x: 1540, y: 190, name: "Mount Noble" };
+/** Map-space radius of the cone. The mesh uses the same number, so feet meet rock. */
+export const NOBLE_RADIUS = 460;
+/** World-unit height of the cone above the grass. */
+export const NOBLE_HEIGHT = 5.6;
+export const NOBLE_BASE = 0.08;
+
+/** Height of the cone above the grass. Linear, so it matches ConeGeometry. */
+export function nobleRise(x: number, y: number) {
+  const d = Math.hypot(x - MOUNT_NOBLE.x, y - MOUNT_NOBLE.y);
+  if (d >= NOBLE_RADIUS) return 0;
+  return NOBLE_HEIGHT * (1 - d / NOBLE_RADIUS);
+}
 
 export const SUNSTEP = { x: 3320, y: 760, name: "Sunstep" };
 
@@ -117,27 +129,27 @@ export function shapePts(poly: [number, number][]): [number, number][] {
 export function groundY(x: number, y: number) {
   if (!onIsland(x, y)) return -0.4;
   const pond = Math.hypot(x - 520, y - 190);
-  if (pond < 90) return -0.08;
+  if (pond < 90 && nobleRise(x, y) === 0) return -0.08;
+  let h = onDesert(x, y)
+    ? 0.06 + Math.abs(Math.sin(x * 0.012) * Math.cos(y * 0.011)) * 0.14
+    : onGrass(x, y)
+      ? NOBLE_BASE
+      : 0.02;
   const ridge = Math.hypot(x - 1760, y - 340);
-  if (ridge < 160) return 0.55 - ridge / 400;
+  if (ridge < 160) h = Math.max(h, 0.55 - ridge / 400);
   const mines = Math.hypot(x - 1380, y - 1220);
-  if (mines < 140) return 0.28;
+  if (mines < 140) h = Math.max(h, 0.28);
   const ruins = Math.hypot(x - 2360, y - 260);
-  if (ruins < 140) return 0.35;
+  if (ruins < 140) h = Math.max(h, 0.35);
   const eastA = Math.hypot(x - 2480, y - 420);
-  if (eastA < 150) return 0.12 + (1 - eastA / 150) * 0.85;
+  if (eastA < 150) h = Math.max(h, 0.12 + (1 - eastA / 150) * 0.85);
   const eastB = Math.hypot(x - 2320, y - 560);
-  if (eastB < 120) return 0.1 + (1 - eastB / 120) * 0.55;
+  if (eastB < 120) h = Math.max(h, 0.1 + (1 - eastB / 120) * 0.55);
   const eastC = Math.hypot(x - 2200, y - 720);
-  if (eastC < 100) return 0.1 + (1 - eastC / 100) * 0.4;
-  const noble = Math.hypot(x - MOUNT_NOBLE.x, y - MOUNT_NOBLE.y);
-  const peak = noble < 320 ? 0.2 + (1 - noble / 320) ** 1.45 * 3.2 : 0;
-  if (onDesert(x, y)) {
-    const dune = 0.06 + Math.abs(Math.sin(x * 0.012) * Math.cos(y * 0.011)) * 0.14;
-    return Math.max(dune, peak);
-  }
-  if (!onGrass(x, y)) return 0.02;
-  return Math.max(0.08, peak);
+  if (eastC < 100) h = Math.max(h, 0.1 + (1 - eastC / 100) * 0.4);
+  const rise = nobleRise(x, y);
+  if (rise > 0) h = Math.max(h, NOBLE_BASE + rise);
+  return h;
 }
 
 export function nearestPlace(x: number, y: number): PlaceId {

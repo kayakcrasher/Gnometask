@@ -1,6 +1,6 @@
 import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
-import { MOUNT_NOBLE, SUNSTEP, groundY, to3 } from "@/lib/game/world3";
+import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_RADIUS, SCALE, SUNSTEP, groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
 const LOTS = [
@@ -51,22 +51,20 @@ function Adobe({ level }: { level: number }) {
 }
 
 export function MountNoble() {
-  const p = to3(MOUNT_NOBLE.x, MOUNT_NOBLE.y, 0.12);
+  const radius = NOBLE_RADIUS * SCALE;
+  const snow = NOBLE_HEIGHT * 0.16;
+  const p = to3(MOUNT_NOBLE.x, MOUNT_NOBLE.y, 0);
   return (
     <group position={p}>
-      <mesh position={[0, 1.15, 0]} castShadow receiveShadow>
-        <coneGeometry args={[3.6, 2.5, 7]} />
+      <mesh position={[0, NOBLE_BASE + NOBLE_HEIGHT / 2, 0]} castShadow receiveShadow>
+        <coneGeometry args={[radius, NOBLE_HEIGHT, 36]} />
         <meshStandardMaterial color="#8a7a68" roughness={0.95} />
       </mesh>
-      <mesh position={[0.4, 2.15, 0.2]} castShadow>
-        <coneGeometry args={[1.5, 1.7, 6]} />
-        <meshStandardMaterial color="#9a8b78" roughness={0.9} />
+      <mesh position={[0, NOBLE_BASE + NOBLE_HEIGHT - snow / 2, 0]} castShadow>
+        <coneGeometry args={[radius * (snow / NOBLE_HEIGHT), snow, 24]} />
+        <meshStandardMaterial color="#f2efe6" roughness={0.82} />
       </mesh>
-      <mesh position={[0.55, 2.85, 0.15]} castShadow>
-        <coneGeometry args={[0.55, 0.7, 6]} />
-        <meshStandardMaterial color="#f2efe6" roughness={0.8} />
-      </mesh>
-      <Html position={[0, 3.5, 0]} center distanceFactor={22} style={{ pointerEvents: "none" }}>
+      <Html position={[0, NOBLE_BASE + NOBLE_HEIGHT + 0.4, 0]} center distanceFactor={28} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
           Mount Noble
         </p>

@@ -2,7 +2,7 @@ import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
 import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
-import { TOWN_SHOPS, HAVEN_ORIGIN } from "@/lib/game/world";
+import { HAVEN_ORIGIN, TOWN_SHOPS } from "@/lib/game/world";
 import { EMPTY_LOTS, PLACE_ANCHORS, VILLAGE_SLOTS } from "@/lib/game/data/layout";
 import { folkLine, settlerRank } from "@/lib/game/data/folk";
 import { isWeekend } from "@/lib/game/data/market";
@@ -330,6 +330,11 @@ export function Town3({
   const claimed = useGame((s) => s.claimed);
   return (
     <group>
+      <Html position={to3(320, 550, groundY(320, 550) + 2.4)} center distanceFactor={22} style={{ pointerEvents: "none" }}>
+        <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
+          Capitol
+        </p>
+      </Html>
       {TOWN_SHOPS.map((shop) => {
         const p = to3(shop.x, shop.y, groundY(shop.x, shop.y));
         const faceWest = (
