@@ -3,6 +3,8 @@ import { Kenney } from "./kenney";
 import { BoatMesh } from "./boats";
 import { FighterMotion, GnomeRig } from "./gnome-rig";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "@/lib/game/data/trees";
+import { inTownPlot } from "@/lib/game/data/grids";
+import { deckY } from "@/lib/game/data/country";
 import { tideShift, WATCH_POSTS } from "@/lib/game/data/folk";
 import { ROCKS } from "@/lib/game/data/scenery";
 import { Ember } from "./ember";
@@ -40,6 +42,7 @@ export function Trees3({
   return (
     <group>
       {TREE_SPOTS.map((t) => {
+        if (deckY(t.x, t.y) > 0 || inTownPlot(t.x, t.y)) return null;
         const stage = treeStageOf(trees[t.id], now);
         const p = to3(t.x, t.y, groundY(t.x, t.y));
         if (stage === "gone") {

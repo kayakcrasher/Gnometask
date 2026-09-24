@@ -7,6 +7,7 @@ import { ClickPopup } from "@/components/hud/click-popup";
 import { InteriorView } from "@/components/hud/interior-view";
 import { BankRoom } from "@/components/world/bank-room";
 import { CasinoRoom } from "@/components/world/casino-room";
+import { ExchangeRoom } from "@/components/world/exchange-room";
 import { FarIsle } from "@/components/world/far-isle";
 import { GoblinIsle } from "@/components/world/goblin-isle";
 import { InventoryView } from "@/components/hud/inventory-view";
@@ -46,6 +47,7 @@ export function AppShell() {
             <InteriorView />
             {interior === "bank" ? <BankRoom /> : null}
             {interior === "casino" ? <CasinoRoom /> : null}
+            {interior === "exchange" ? <ExchangeRoom /> : null}
             <GoblinIsle />
             <FarIsle />
           </>

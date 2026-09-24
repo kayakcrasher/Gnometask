@@ -6,6 +6,9 @@ import { BUILDING_MAX, type BuildingId, type EquipSlot } from "../types";
 import { havenLevel, HALL_COST, hallUnlocks } from "../world";
 import { applyXp, levelsOf, SKILL_LABEL, totalLevel } from "../xp";
 import { hollowWorth } from "../data/market";
+import { CROPS } from "../data/crops";
+import { GOODS } from "../data/trade";
+import { FISH_BY_ID } from "../data/fish";
 import { scheduleWrite, markPappyExpand } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -25,6 +28,7 @@ export function economySlice(
   | "upgradeHall"
   | "upgradeTower"
   | "wager"
+  | "sellBulk"
   | "liftFence"
 > {
   return {
@@ -434,6 +438,49 @@ export function economySlice(
         speech,
       });
       sfx(pay > bet ? "buy" : "error");
+      scheduleWrite(get);
+    },
+
+    sellBulk: () => {
+      const s = get();
+      let pay = s.logs * 2;
+      const bits: string[] = [];
+      if (s.logs > 0) bits.push(`${s.logs} logs`);
+      const fishBag: Record<string, number> = {};
+      for (const [id, n] of Object.entries(s.fishBag)) {
+        const fish = FISH_BY_ID[id];
+        if (!fish || n < 1) continue;
+        pay += fish.price * n;
+        bits.push(`${n} ${fish.name.toLowerCase()}`);
+      }
+      const produce: Record<string, number> = {};
+      for (const crop of CROPS) {
+        const n = s.produce[crop.id] ?? 0;
+        if (n < 1) continue;
+        pay += crop.price * n;
+        bits.push(`${n} ${crop.name.toLowerCase()}`);
+      }
+      const goods: Record<string, number> = {};
+      for (const good of GOODS) {
+        const n = s.goods[good.id] ?? 0;
+        if (n < 1) continue;
+        pay += good.price * n;
+        bits.push(`${n} ${good.name.toLowerCase()}`);
+      }
+      if (pay < 1) {
+        set({ speech: "The exchange floor is empty. Nothing in bulk to sell." });
+        return;
+      }
+      set({
+        logs: 0,
+        fishBag,
+        produce,
+        goods,
+        coins: s.coins + pay,
+        coinPopKey: s.coinPopKey + 1,
+        speech: `The exchange takes the bulk. ${bits.join(", ")}. +${pay} coins.`,
+      });
+      sfx("buy");
       scheduleWrite(get);
     },
   };

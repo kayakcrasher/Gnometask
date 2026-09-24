@@ -32,14 +32,14 @@ export const PLACE_ANCHORS: Record<PlaceId, { x: number; y: number }> = {
   cottage: { x: 980, y: 640 },
   garden: { x: 980, y: 800 },
   shop: { x: 300, y: 540 },
-  village: { x: 1200, y: 540 },
+  village: { x: cellsOf(townGrid("greenlane"))[0]!.x, y: cellsOf(townGrid("greenlane"))[0]!.y },
   pond: { x: 520, y: 190 },
   woods: { x: 160, y: 240 },
   wildlands: { x: 1760, y: 420 },
   mines: { x: 1380, y: 1220 },
   ruins: { x: 2360, y: 260 },
   dock: { x: 100, y: 530 },
-  haven: { x: 1860, y: 760 },
+  haven: { x: cellsOf(townGrid("haven"))[0]!.x, y: cellsOf(townGrid("haven"))[0]!.y },
 };
 
 export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; place: PlaceId }[] = [

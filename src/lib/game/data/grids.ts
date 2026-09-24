@@ -20,10 +20,22 @@ export type TownGrid = {
 /** Outer towns. The capitol has its own courthouse plan. */
 export const TOWN_GRIDS: TownGrid[] = [
   { id: "tideham", ox: 200, oy: 860, cols: 2, rows: 2 },
-  { id: "greenlane", ox: 1140, oy: 540, cols: 2, rows: 5 },
-  { id: "haven", ox: 1760, oy: 640, cols: 2, rows: 3 },
+  { id: "greenlane", ox: 1420, oy: 980, cols: 2, rows: 4 },
+  { id: "haven", ox: 1840, oy: 900, cols: 2, rows: 3 },
   { id: "sunstep", ox: 3120, oy: 700, cols: 3, rows: 2 },
 ];
+
+export function inTownPlot(x: number, y: number) {
+  for (const grid of TOWN_GRIDS) {
+    const cells = cellsOf(grid);
+    const xs = cells.map((c) => c.x);
+    const ys = cells.map((c) => c.y);
+    if (x >= Math.min(...xs) - 55 && x <= Math.max(...xs) + 55 && y >= Math.min(...ys) - 55 && y <= Math.max(...ys) + 55) {
+      return true;
+    }
+  }
+  return x >= 210 && x <= 960 && y >= 160 && y <= 700;
+}
 
 export function townGrid(id: string) {
   const grid = TOWN_GRIDS.find((g) => g.id === id);

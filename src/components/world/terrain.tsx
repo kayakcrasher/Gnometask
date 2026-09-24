@@ -82,15 +82,19 @@ const waterVert = `
   uniform float uTime;
   varying float vWave;
   varying float vDist;
+  varying vec2 vUv;
   void main() {
     vec3 p = position;
     float dist = length(p.xy);
-    float far = smoothstep(16.0, 52.0, dist);
-    float amp = mix(0.012, 0.2, far);
-    float w = sin(p.x * 0.42 + uTime * 1.15) * amp + cos(p.y * 0.28 + uTime * 0.75) * amp * 0.75;
+    float far = smoothstep(18.0, 70.0, dist);
+    float amp = mix(0.03, 0.42, far);
+    float swell = sin(p.x * 0.22 + uTime * 0.7) * amp + cos(p.y * 0.16 + uTime * 0.45) * amp * 0.8;
+    float chop = sin(p.x * 0.9 + p.y * 0.4 + uTime * 1.4) * amp * 0.25;
+    float w = swell + chop;
     p.z += w;
     vWave = w;
     vDist = dist;
+    vUv = uv;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
   }
 `;
@@ -98,16 +102,24 @@ const waterVert = `
 const waterFrag = `
   uniform vec3 uShallow;
   uniform vec3 uDeep;
+  uniform vec3 uSand;
   uniform vec3 uFoam;
+  uniform float uTime;
   varying float vWave;
   varying float vDist;
+  varying vec2 vUv;
   void main() {
-    float deep = smoothstep(14.0, 46.0, vDist);
+    float deep = smoothstep(36.0, 88.0, vDist);
+    float shore = 1.0 - smoothstep(18.0, 48.0, vDist);
     vec3 col = mix(uShallow, uDeep, deep);
-    float crest = smoothstep(0.06, 0.16, vWave) * deep;
-    float shore = 1.0 - smoothstep(12.0, 22.0, vDist);
-    col = mix(col, uFoam, max(crest, shore * 0.55));
-    gl_FragColor = vec4(col, mix(0.72, 0.94, deep));
+    col = mix(col, uSand, shore * 0.55);
+    float crest = smoothstep(0.08, 0.22, vWave) * (0.35 + deep);
+    float wash = smoothstep(0.42, 0.7, shore) * (1.0 - shore);
+    float glint = pow(max(0.0, sin(vUv.x * 80.0 + uTime * 2.2) * sin(vUv.y * 54.0 - uTime * 1.5)), 12.0);
+    col = mix(col, uFoam, max(crest, wash));
+    col += vec3(glint) * (0.35 + shore);
+    float alpha = mix(0.62, 0.9, deep);
+    gl_FragColor = vec4(col, alpha);
   }
 `;
 
@@ -117,13 +129,15 @@ function Water() {
       new THREE.ShaderMaterial({
         uniforms: {
           uTime: { value: 0 },
-          uShallow: { value: new THREE.Color("#8ecfc6") },
-          uDeep: { value: new THREE.Color("#143e4c") },
-          uFoam: { value: new THREE.Color("#e7f4f1") },
+          uShallow: { value: new THREE.Color("#5eebdc") },
+          uDeep: { value: new THREE.Color("#148fb5") },
+          uSand: { value: new THREE.Color("#f3e2b0") },
+          uFoam: { value: new THREE.Color("#f7fffc") },
         },
         vertexShader: waterVert,
         fragmentShader: waterFrag,
         transparent: true,
+        depthWrite: false,
       }),
     [],
   );

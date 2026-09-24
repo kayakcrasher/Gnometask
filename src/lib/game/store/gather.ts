@@ -6,6 +6,7 @@ import { BOAT_RANK, boatById } from "../data/boats";
 import { NEWCOMERS, supplyDue } from "../data/supply";
 import { FISH_BY_ID, rollFish } from "../data/fish";
 import { levelFromXp, levelsOf } from "../xp";
+import { onIsland } from "../world3";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -125,7 +126,8 @@ export function gatherSlice(
     sailTo: (dest, boatId) => {
       const s = get();
       if (s.combat) return;
-      if (dest === "dock" && s.selectedPlace !== "haven") {
+      const atSea = !onIsland(s.gnomeX, s.gnomeY);
+      if (dest === "dock" && !atSea) {
         set({ speech: "The town dock is already under your boots.", popup: null });
         return;
       }
@@ -146,20 +148,21 @@ export function gatherSlice(
         });
         return;
       }
-      const target = dest === "haven" ? PLACE_ANCHORS.haven : PLACE_ANCHORS.dock;
+      const toSea = dest !== "dock";
+      const target = toSea ? { x: boat.x, y: boat.y } : PLACE_ANCHORS.dock;
       const gained = withXp(s.skills, { sailing: boat.xp });
       set({
         gnomeX: target.x,
         gnomeY: target.y,
-        selectedPlace: dest === "haven" ? "haven" : "dock",
+        selectedPlace: "dock",
         skills: gained.skills,
         boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
         popup: null,
         interior: null,
         speech:
           gained.ding ??
-          (dest === "haven"
-            ? `The ${boat.name.toLowerCase()} noses into Haven. +${boat.xp} Sailing.`
+          (toSea
+            ? `The ${boat.name.toLowerCase()} casts off. You are on the water, not in Haven. +${boat.xp} Sailing.`
             : `Back to the town dock in the ${boat.name.toLowerCase()}. +${boat.xp} Sailing.`),
         bounceKey: s.bounceKey + 1,
       });

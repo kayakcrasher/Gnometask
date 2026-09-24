@@ -311,7 +311,7 @@ export function ClickPopup() {
                 return (
                   <Action
                     key={boat.id}
-                    label={locked ? `${boat.name} · ${boat.need}` : boat.name}
+                    label={locked ? `${boat.name} · ${boat.need}` : `Cast off · ${boat.name}`}
                     tone={boat.id === "sloop" ? "berry" : boat.id === popup.hotspotId ? "gold" : "pine"}
                     disabled={locked}
                     onClick={() => sailTo("haven", boat.id)}

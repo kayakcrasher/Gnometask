@@ -19,7 +19,9 @@ export const ISLAND_POLY: [number, number][] = [
   [420, 50],
   [720, 70],
   [1100, 40],
-  [1680, 60],
+  [1280, -60],
+  [1540, -140],
+  [1800, -60],
   [2140, 50],
   [2520, 120],
   [2700, 260],
@@ -56,9 +58,10 @@ export function expandPoly(poly: [number, number][], pad: number): [number, numb
 }
 
 function beachPad(x: number, y: number) {
+  if (y < 280) return 110;
   if (y > 980) return 220;
   if (x < 400) return 36;
-  return 55;
+  return 70;
 }
 
 export const BEACH_POLY: [number, number][] = ISLAND_POLY.map(([x, y]) => {
@@ -95,7 +98,7 @@ export const MOUNT_NOBLE = { x: 1540, y: 190, name: "Mount Noble" };
 /** Map-space radius of the cone. The mesh uses the same number, so feet meet rock. */
 export const NOBLE_RADIUS = 460;
 /** World-unit height of the cone above the grass. */
-export const NOBLE_HEIGHT = 6.5;
+export const NOBLE_HEIGHT = 9.75;
 /** Visual top of the grass. Feet use this so a gnome is not buried in the bevel. */
 export const LAND_TOP = 0.28;
 export const NOBLE_BASE = LAND_TOP;
@@ -133,7 +136,7 @@ export function shapePts(poly: [number, number][]): [number, number][] {
 }
 
 export function groundY(x: number, y: number) {
-  if (!onIsland(x, y)) return -0.4;
+  if (!onIsland(x, y)) return -0.02;
   const pond = Math.hypot(x - 520, y - 190);
   if (pond < 90 && nobleRise(x, y) === 0) return -0.08;
   let h = onDesert(x, y)

@@ -20,14 +20,14 @@ export const CROPS: CropDef[] = [
 
 export const CROP_BY_ID: Record<string, CropDef> = Object.fromEntries(CROPS.map((c) => [c.id, c]));
 
-/** In front of the cottage door. South is +y. */
+/** A tight bed in front of the cottage, not loose blocks in the lawn. */
 export const YARD_PLOTS: { id: string; x: number; y: number }[] = [
-  { id: "yard-0", x: 900, y: 760 },
-  { id: "yard-1", x: 980, y: 760 },
-  { id: "yard-2", x: 1060, y: 760 },
-  { id: "yard-3", x: 900, y: 840 },
-  { id: "yard-4", x: 980, y: 840 },
-  { id: "yard-5", x: 1060, y: 840 },
+  { id: "yard-0", x: 940, y: 710 },
+  { id: "yard-1", x: 980, y: 710 },
+  { id: "yard-2", x: 1020, y: 710 },
+  { id: "yard-3", x: 940, y: 748 },
+  { id: "yard-4", x: 980, y: 748 },
+  { id: "yard-5", x: 1020, y: 748 },
 ];
 
 export const PLANT_GRACE_MS = 40_000;

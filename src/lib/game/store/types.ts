@@ -71,6 +71,7 @@ export type GameState = GameSave &
     sellParcel: (id: string) => void;
     buyShare: (id: string) => void;
     sellShare: (id: string) => void;
+    sellBulk: () => void;
     takeLoan: (boat: string) => void;
     repayLoan: () => void;
     speak: (text: string, bounce?: boolean) => void;

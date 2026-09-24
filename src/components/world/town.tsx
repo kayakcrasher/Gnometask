@@ -14,6 +14,13 @@ const OFFICES: { lot: string; stock: string; name: string; x: number; y: number 
   { lot: "lot-school", stock: "wall", name: "Watch & Wall", x: 878, y: 390 },
 ];
 
+const EXCHANGE = { x: 560, y: 790 };
+const EXCHANGE_HOUSES = [
+  { name: "Nell", x: 420, y: 790, hat: "hat-straw" },
+  { name: "Hod", x: 490, y: 790, hat: "hat-moss" },
+  { name: "Sal", x: 660, y: 790, hat: "hat-berry" },
+];
+
 function OfficeBlock({ name, floors }: { name: string; floors: number }) {
   const h = 0.48 * floors;
   const glass = floors >= 4;
@@ -439,6 +446,55 @@ export function Town3({
           </group>
         );
       })}
+      <group
+        position={to3(EXCHANGE.x, EXCHANGE.y, groundY(EXCHANGE.x, EXCHANGE.y))}
+        onClick={(e) => {
+          e.stopPropagation();
+          onEnter("exchange", EXCHANGE.x, EXCHANGE.y);
+        }}
+      >
+        <mesh position={[0, 0.7, 0]} castShadow receiveShadow>
+          <boxGeometry args={[2.4, 1.4, 1.6]} />
+          <meshStandardMaterial color="#d9d0c0" />
+        </mesh>
+        <mesh position={[0, 1.5, 0]} castShadow>
+          <boxGeometry args={[2.6, 0.16, 1.8]} />
+          <meshStandardMaterial color="#8a4b3a" />
+        </mesh>
+        <mesh position={[0, 0.45, 0.82]}>
+          <boxGeometry args={[0.4, 0.7, 0.06]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+        <Html position={[0, 2.1, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+          <span className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
+            Gnome Exchange
+          </span>
+        </Html>
+      </group>
+      {EXCHANGE_HOUSES.map((home) => (
+        <group key={home.name} position={to3(home.x, home.y, groundY(home.x, home.y))}>
+          <mesh position={[0, 0.55, 0]} castShadow receiveShadow>
+            <boxGeometry args={[1.15, 1.1, 0.95]} />
+            <meshStandardMaterial color="#efe6d4" />
+          </mesh>
+          <mesh position={[0, 1.2, 0]} castShadow>
+            <boxGeometry args={[1.3, 0.12, 1.1]} />
+            <meshStandardMaterial color="#a35a42" />
+          </mesh>
+          <mesh position={[0, 1.55, 0]}>
+            <boxGeometry args={[0.4, 0.4, 0.4]} />
+            <meshStandardMaterial color="#f2d7a2" emissive="#e2b84a" emissiveIntensity={0.2} />
+          </mesh>
+          <group position={[0.7, 0, 0.4]}>
+            <GnomeRig hat={home.hat} scale={0.72} coat="#6a5344" beard />
+          </group>
+          <Html position={[0, 1.9, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+            <span className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 text-[10px] font-semibold text-parchment">
+              {home.name} · exchange
+            </span>
+          </Html>
+        </group>
+      ))}
       <mesh
         position={to3(CAPITOL_LAWN.x + CAPITOL_LAWN.w / 2, CAPITOL_LAWN.y + CAPITOL_LAWN.h / 2, 0.3)}
         rotation={[-Math.PI / 2, 0, 0]}
