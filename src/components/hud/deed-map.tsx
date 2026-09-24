@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BEACH_POLY, DESERT_POLY, ISLAND_POLY, MOUNT_NOBLE } from "@/lib/game/world3";
-import { VILLAGES } from "@/lib/game/data/country";
+import { VILLAGES, ROADS } from "@/lib/game/data/country";
 import { PARCELS } from "@/lib/game/data/parcels";
 import { TREE_SPOTS } from "@/lib/game/data/trees";
 import { useGame } from "@/lib/game/store";
@@ -35,12 +35,26 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
         <polygon points={poly(BEACH_POLY)} fill="#e7d7a2" />
         <polygon points={poly(DESERT_POLY)} fill="#e2b15a" />
         <polygon points={poly(ISLAND_POLY)} fill="#6f8f66" />
+        {ROADS.map((road) => (
+          <polyline
+            key={road.id}
+            points={road.points.map(([x, y]) => `${x},${y}`).join(" ")}
+            fill="none"
+            stroke="#c4b49a"
+            strokeWidth={10}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ))}
         <polygon points={`${MOUNT_NOBLE.x},${MOUNT_NOBLE.y - 90} ${MOUNT_NOBLE.x + 70},${MOUNT_NOBLE.y + 54} ${MOUNT_NOBLE.x - 70},${MOUNT_NOBLE.y + 54}`} fill="#8a7a68" />
         {VILLAGES.map((v) => (
           <g key={v.id}>
             <circle cx={v.x} cy={v.y} r={v.capitol ? 28 : 16} fill={v.capitol ? "#d6a84c" : "#f2e8d5"} stroke="#24402f" strokeWidth={4} />
             <text x={v.x + 34} y={v.y + 8} fill="#f2e8d5" fontSize={28} fontFamily="sans-serif">
               {v.name}
+            </text>
+            <text x={v.x + 34} y={v.y + 34} fill="#e7d7a2" fontSize={18} fontFamily="sans-serif">
+              {v.trade}
             </text>
           </g>
         ))}

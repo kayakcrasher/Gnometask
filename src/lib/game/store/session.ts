@@ -28,7 +28,9 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
 > {
   return {
     hydrate: () => {
-      const loaded = applyDailyRollover(loadSave());
+      const before = loadSave();
+      const loaded = applyDailyRollover(before);
+      const taxed = loaded.daysPlayed > before.daysPlayed;
       const current = get();
       const named = current.named || loaded.named || Boolean(loaded.gnomeName);
       const gnomeName = current.named ? current.gnomeName : loaded.gnomeName;
@@ -60,7 +62,9 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
             : lifeDragon.state === "raiding"
               ? `${lifeDragon.name} is over the village. The roofs smell like cinnamon and trouble.`
               : gnomeName
-                ? `Welcome back, ${gnomeName}. Click the land — I'll walk.`
+                ? taxed
+                  ? `Welcome back, ${gnomeName}. The capitol took the road tax.`
+                  : `Welcome back, ${gnomeName}. Click the land — I'll walk.`
                 : randOf(GREETS)
           : randOf(GREETS),
       });

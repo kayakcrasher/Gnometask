@@ -7,6 +7,7 @@ import type { Skills } from "./xp";
 import type { QuestSave } from "./quests";
 import { nextNewcomer, supplyDue } from "./data/supply";
 import { growFolk, type Settler } from "./data/folk";
+import { dailyRoadTax } from "./data/country";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
@@ -456,6 +457,7 @@ export function applyDailyRollover(save: GameSave): GameSave {
             },
       buildingHp,
       hp: maxHitpoints(save.skills),
+      coins: save.coins + dailyRoadTax(),
     },
     today,
   ),
