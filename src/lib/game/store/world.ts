@@ -1,6 +1,7 @@
 import { clamp, uid } from "@/lib/utils";
 import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
 import { rolledChart } from "../data/honour";
+import { BEERS, caseBrief, stepCivic, type CivicTown } from "../data/civic";
 import { pickStriker, tideShift, watchNames } from "../data/folk";
 import { ENEMIES, makeCombat, patrolEnemy } from "../combat";
 import { sfx } from "../juice";
@@ -15,7 +16,7 @@ export function worldSlice(
   get: StoreGet,
 ): Pick<
   GameState,
-  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "startLandingFight" | "strikeFlag" | "fireCannon" | "sipTea" | "sootheDragon" | "tickWorld"
+  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "startLandingFight" | "strikeFlag" | "fireCannon" | "sipTea" | "sootheDragon" | "tickWorld" | "enterCourt" | "advanceCase" | "enterPub" | "buyPint"
 > {
   return {
     rallyWalls: () => {
@@ -334,6 +335,77 @@ export function worldSlice(
       scheduleWrite(get);
     },
 
+    enterCourt: (town: CivicTown) => {
+      const s = get();
+      set({
+        interior: "court",
+        popup: null,
+        panel: "place",
+        civic: { ...s.civic, hearing: town },
+        speech: caseBrief(s.civic.caseStage, town),
+      });
+    },
+
+    advanceCase: () => {
+      const s = get();
+      if (s.civic.hearing !== "capitol") {
+        set({ speech: "This bench keeps the lane. The dock case is at the Supreme Court in Port Victoria." });
+        return;
+      }
+      const stage = s.civic.caseStage;
+      if (stage >= 3) {
+        set({ speech: "The bargain stands. Cruise ships pay Port Victoria. Sunstep has its dock." });
+        return;
+      }
+      const next = (stage + 1) as 1 | 2 | 3;
+      const dock = next >= 3;
+      set({
+        civic: { ...s.civic, caseStage: next, dock },
+        speech: caseBrief(next, "capitol"),
+      });
+      sfx(dock ? "win" : "open");
+      scheduleWrite(get);
+    },
+
+    enterPub: (town: CivicTown) => {
+      const s = get();
+      const pub = s.civic.pubs.find((p) => p.town === town);
+      set({
+        interior: "pub",
+        popup: null,
+        panel: "place",
+        civic: { ...s.civic, atPub: town },
+        speech: pub
+          ? `${pub.owner} keeps ${pub.name}. Beloved, and the bank book already holds ${pub.bank}.`
+          : "The pub is dark.",
+      });
+    },
+
+    buyPint: (beerId: string) => {
+      const s = get();
+      const beer = BEERS.find((b) => b.id === beerId);
+      const pub = s.civic.pubs.find((p) => p.town === s.civic.atPub) ?? s.civic.pubs[0];
+      if (!beer || !pub) return;
+      if (s.coins < beer.price) {
+        set({ speech: `${beer.name} is ${beer.price} coins. ${pub.owner} taps the bar.` });
+        sfx("error");
+        return;
+      }
+      const max = maxHitpoints(s.skills);
+      set({
+        coins: s.coins - beer.price,
+        coinPopKey: s.coinPopKey + 1,
+        hp: Math.min(max, s.hp + (beer.id === "stout" ? 4 : 1)),
+        civic: {
+          ...s.civic,
+          pubs: s.civic.pubs.map((p) => (p.town === pub.town ? { ...p, bank: p.bank + beer.price } : p)),
+        },
+        speech: `${pub.owner} draws ${beer.name}. ${beer.blurb} The till, and the interest, both notice.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
     tickWorld: () => {
       const s = get();
       if (!s.named || s.combat) return;
@@ -431,8 +503,13 @@ export function worldSlice(
       const hp = s.hp < max ? Math.min(max, s.hp + 1) : s.hp;
       if (hp !== s.hp) changed = true;
 
-      if (!changed) return;
-      set({ buildingHp, raids, speech, chicken, hp, waveDay });
+      const civic = stepCivic(s.civic, s.daysPlayed);
+      const loud = /timber|story|lantern|jar|rental|still|household|cruise|back room/;
+      const newsChanged = civic.news !== s.civic.news && loud.test(civic.news);
+      if (newsChanged) speech = civic.news;
+      void changed;
+
+      set({ buildingHp, raids, speech, chicken, hp, waveDay, civic });
       scheduleWrite(get);
     },
   };

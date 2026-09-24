@@ -7,6 +7,7 @@ import type { Skills } from "./xp";
 import type { QuestSave } from "./quests";
 import { nextNewcomer, supplyDue } from "./data/supply";
 import { growFolk, type Settler } from "./data/folk";
+import { coerceCivic, seedCivic, stepCivic } from "./data/civic";
 import { dailyRoadTax } from "./data/country";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
@@ -101,6 +102,7 @@ export function defaultSave(): GameSave {
     coach: 5,
     afloat: null,
     cannons: false,
+    civic: seedCivic(1),
   };
 }
 
@@ -342,6 +344,7 @@ export function migrate(raw: unknown): GameSave {
     coach: typeof s.coach === "number" ? Math.max(0, Math.min(5, Math.floor(s.coach))) : 5,
     afloat: typeof s.afloat === "string" ? s.afloat : null,
     cannons: Boolean(s.cannons),
+    civic: coerceCivic(s.civic, typeof s.daysPlayed === "number" ? s.daysPlayed : 1),
   });
 }
 
@@ -469,7 +472,10 @@ export function applyDailyRollover(save: GameSave): GameSave {
   ),
   );
   const grown = growFolk(rolled, true);
-  return { ...rolled, coins: rolled.coins + grown.wage, settlers: grown.settlers, placed: grown.placed };
+  let civic = stepCivic(rolled.civic, rolled.daysPlayed);
+  const extra = Math.min(2, Math.max(0, missed - 1));
+  for (let i = 0; i < extra; i++) civic = stepCivic(civic, rolled.daysPlayed);
+  return { ...rolled, coins: rolled.coins + grown.wage, settlers: grown.settlers, placed: grown.placed, civic };
 }
 
 export function loadSave(): GameSave {

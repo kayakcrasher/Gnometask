@@ -111,6 +111,7 @@ export function GnomeRig({
   armor,
   walking,
   striking,
+  gesture = null,
   scale = 1,
   coat = "#3c9a46",
   pants = "#c4622d",
@@ -124,6 +125,7 @@ export function GnomeRig({
   armor?: string | null;
   walking?: boolean;
   striking?: boolean;
+  gesture?: "wave" | "hammer" | "saw" | "hoe" | null;
   scale?: number;
   coat?: string;
   pants?: string;
@@ -134,12 +136,37 @@ export function GnomeRig({
   const bob = useRef<THREE.Group>(null);
   const legL = useRef<THREE.Group>(null);
   const legR = useRef<THREE.Group>(null);
+  const armR = useRef<THREE.Group>(null);
+  const hand = useRef<THREE.Group>(null);
   const t = useRef(0);
   useFrame((_, d) => {
-    t.current += d * (walking ? 8 : 1.6);
+    t.current += d * (walking || gesture ? 8 : 1.6);
     const swing = walking ? Math.sin(t.current) * 0.5 : 0;
     if (legL.current) legL.current.rotation.x = swing;
     if (legR.current) legR.current.rotation.x = -swing;
+    if (armR.current) {
+      const wave = -2.15 + Math.sin(t.current * 3.2) * 0.55;
+      const hammer = -0.35 - Math.abs(Math.sin(t.current * 1.15)) * 1.35;
+      const saw = -1.15 + Math.sin(t.current * 2.4) * 0.55;
+      const hoe = -0.45 - Math.abs(Math.sin(t.current)) * 1.05;
+      armR.current.rotation.z =
+        gesture === "wave" ? wave : gesture === "hammer" ? hammer : gesture === "saw" ? saw : gesture === "hoe" ? hoe : weapon ? -0.85 : -0.25;
+    }
+    if (hand.current) {
+      if (gesture === "wave") {
+        hand.current.rotation.z = -2.05 + Math.sin(t.current * 3.2) * 0.5;
+        hand.current.rotation.x = 0.2;
+      } else if (gesture === "hammer" || gesture === "hoe") {
+        hand.current.rotation.z = -0.9;
+        hand.current.rotation.x = 0.2 + Math.abs(Math.sin(t.current * 1.15)) * 1.1;
+      } else if (gesture === "saw") {
+        hand.current.rotation.z = -0.7 + Math.sin(t.current * 2.4) * 0.45;
+        hand.current.rotation.x = 0.35;
+      } else {
+        hand.current.rotation.z = striking ? -1.15 : -0.18;
+        hand.current.rotation.x = 0.1;
+      }
+    }
     if (!bob.current) return;
     bob.current.position.y = walking ? Math.abs(Math.sin(t.current)) * 0.045 : Math.sin(t.current) * 0.015;
   });
@@ -198,18 +225,30 @@ export function GnomeRig({
               </group>
             ) : null}
           </group>
-          <group position={[0.2, 0.78, 0.06]} rotation={[0.55, 0.1, weapon ? -0.85 : -0.25]}>
+          <group ref={armR} position={[0.2, 0.78, 0.06]} rotation={[0.55, 0.1, weapon ? -0.85 : -0.25]}>
             <mesh position={[0, -0.16, 0]} castShadow>
               <boxGeometry args={[0.1, 0.28, 0.1]} />
               <meshStandardMaterial color={coat} roughness={0.7} />
             </mesh>
           </group>
-          <group position={[0.34, 0.58, 0.24]} rotation={[0.1, 0, striking ? -1.15 : -0.18]}>
+          <group ref={hand} position={[0.34, 0.58, 0.24]} rotation={[0.1, 0, striking ? -1.15 : -0.18]}>
             <mesh castShadow>
               <boxGeometry args={[0.09, 0.08, 0.1]} />
               <meshStandardMaterial color={skinColor} roughness={0.6} />
             </mesh>
             {weapon ? <WeaponInHand weaponId={weapon} striking={false} /> : null}
+            {gesture === "hammer" || gesture === "hoe" ? (
+              <mesh position={[0.08, 0.02, 0]} rotation={[0, 0, 0.4]} castShadow>
+                <boxGeometry args={[0.05, 0.22, 0.05]} />
+                <meshStandardMaterial color={gesture === "hammer" ? "#6b4428" : "#8a7a68"} />
+              </mesh>
+            ) : null}
+            {gesture === "saw" ? (
+              <mesh position={[0.1, 0.02, 0]} castShadow>
+                <boxGeometry args={[0.22, 0.04, 0.02]} />
+                <meshStandardMaterial color="#c9a227" metalness={0.35} />
+              </mesh>
+            ) : null}
           </group>
 
           <mesh position={[0, 0.92, 0]} castShadow>

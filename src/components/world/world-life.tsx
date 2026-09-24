@@ -139,6 +139,8 @@ export function Npcs3({
 }) {
   const showLabels = useLabels();
   const days = useGame((s) => s.daysPlayed);
+  const gx = useGame((s) => s.gnomeX);
+  const gy = useGame((s) => s.gnomeY);
   const shift = tideShift(days);
   return (
     <group>
@@ -173,7 +175,7 @@ export function Npcs3({
               onNpc(n.id, x, y);
             }}
           >
-            <GnomeRig hat={n.hat} scale={1.15} coat={coat} beard />
+            <GnomeRig hat={n.hat} scale={1.15} coat={coat} beard gesture={Math.hypot((poses[n.id]?.x ?? n.x) - gx, (poses[n.id]?.y ?? n.y) - gy) < 90 ? "wave" : null} />
             {showLabels ? (
             <Html zIndexRange={[8, 0]} position={[0, 1.9, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
@@ -191,6 +193,7 @@ export function Npcs3({
 }
 
 function NpcTalk({ poses, days }: { poses: Record<string, NpcPose>; days: number }) {
+  const civic = useGame((s) => s.civic);
   const talk = TALKS[Math.abs(days) % TALKS.length]!;
   const A = NPCS.find((n) => n.id === talk.a);
   const B = NPCS.find((n) => n.id === talk.b);
@@ -199,10 +202,15 @@ function NpcTalk({ poses, days }: { poses: Record<string, NpcPose>; days: number
   const ay = poses[A.id]?.y ?? A.y;
   const bx = poses[B.id]?.x ?? B.x;
   const by = poses[B.id]?.y ?? B.y;
+  const who = civic?.gnomes?.length ? civic.gnomes[Math.abs(days + (civic.beat || 0)) % civic.gnomes.length] : null;
+  const word = civic?.word || "honest";
+  const line = who
+    ? `${A.shortName ?? A.name}: ${word} is the word. ${who.name} was on about ${who.job} work in ${who.town === "capitol" ? "Port Victoria" : who.town}. ${B.shortName ?? B.name} heard it too.`
+    : talk.line;
   return (
     <Html position={to3((ax + bx) / 2, (ay + by) / 2, groundY((ax + bx) / 2, (ay + by) / 2) + 2.2)} center distanceFactor={22} style={{ pointerEvents: "none" }}>
       <p className="max-w-[220px] rounded-2xl bg-parchment/95 px-2 py-1 text-center font-display text-[10px] font-semibold leading-snug text-ink shadow-panel">
-        {talk.line}
+        {line}
       </p>
     </Html>
   );

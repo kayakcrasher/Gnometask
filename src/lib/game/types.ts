@@ -4,6 +4,7 @@ import type { QuestSave } from "./quests";
 import type { SkillId, Skills } from "./xp";
 import type { TreeStage } from "./data/trees";
 import type { Settler } from "./data/folk";
+import type { CivicState } from "./data/civic";
 
 export type PlaceId =
   | "cottage"
@@ -48,7 +49,9 @@ export type InteriorId =
   | "bank"
   | "dockhouse"
   | "casino"
-  | "exchange";
+  | "exchange"
+  | "court"
+  | "pub";
 
 export type DragonLook = "ember" | "moss" | "night" | "gold";
 export type DragonHorn = "short" | "long" | "crown";
@@ -270,6 +273,7 @@ export type GameSave = {
   coach: number;
   afloat: string | null;
   cannons: boolean;
+  civic: CivicState;
 };
 
 export type GameUi = {

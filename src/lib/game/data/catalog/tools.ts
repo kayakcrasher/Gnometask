@@ -99,4 +99,47 @@ export const TOOLS: CatalogItem[] = [
       reqLevel: p.req,
     };
   }),
+  ...(["wood", "iron"] as const).map((tier) => {
+    const t = TIER_META[tier];
+    return {
+      id: `hammer-${tier}`,
+      name: tier === "wood" ? "Wooden mallet" : "Iron hammer",
+      blurb: tier === "wood" ? "For pegs, shutters, and gentle arguments with nails." : "A real strike. Walls and pubs both flinch. Crafting 6.",
+      price: tier === "wood" ? 10 : 28,
+      kind: "tool" as const,
+      slot: "tool" as const,
+      reqHall: t.hall,
+      reqSkill: tier === "iron" ? ("crafting" as const) : undefined,
+      reqLevel: tier === "iron" ? 6 : undefined,
+    };
+  }),
+  ...(["wood", "iron"] as const).map((tier) => {
+    const t = TIER_META[tier];
+    return {
+      id: `saw-${tier}`,
+      name: tier === "wood" ? "Bow saw" : "Iron saw",
+      blurb: tier === "wood" ? "A tooth for planks. The arm learns the rhythm." : "Cuts true. Carpenters nod. Crafting 6.",
+      price: tier === "wood" ? 12 : 30,
+      kind: "tool" as const,
+      slot: "tool" as const,
+      reqHall: t.hall,
+      reqSkill: tier === "iron" ? ("crafting" as const) : undefined,
+      reqLevel: tier === "iron" ? 6 : undefined,
+    };
+  }),
+  ...(["wood", "iron"] as const).map((tier) => {
+    const t = TIER_META[tier];
+    return {
+      id: `trowel-${tier}`,
+      name: tier === "wood" ? "Garden trowel" : "Iron trowel",
+      blurb: tier === "wood" ? "For window boxes and the cracks in a path." : "Mortar and soil, same wrist. Farming 6.",
+      price: tier === "wood" ? 8 : 24,
+      kind: "tool" as const,
+      slot: "tool" as const,
+      farm: tier === "iron" ? 2 : 1,
+      reqHall: t.hall,
+      reqSkill: tier === "iron" ? ("farming" as const) : undefined,
+      reqLevel: tier === "iron" ? 6 : undefined,
+    };
+  }),
 ];

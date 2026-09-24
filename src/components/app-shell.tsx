@@ -8,6 +8,8 @@ import { InteriorView } from "@/components/hud/interior-view";
 import { BankRoom } from "@/components/world/bank-room";
 import { CasinoRoom } from "@/components/world/casino-room";
 import { ExchangeRoom } from "@/components/world/exchange-room";
+import { CourtRoom } from "@/components/world/court-room";
+import { PubRoom } from "@/components/world/pub-room";
 import { FarIsle } from "@/components/world/far-isle";
 import { GoblinIsle } from "@/components/world/goblin-isle";
 import { InventoryView } from "@/components/hud/inventory-view";
@@ -70,6 +72,8 @@ export function AppShell() {
             {interior === "bank" ? <BankRoom /> : null}
             {interior === "casino" ? <CasinoRoom /> : null}
             {interior === "exchange" ? <ExchangeRoom /> : null}
+            {interior === "court" ? <CourtRoom /> : null}
+            {interior === "pub" ? <PubRoom /> : null}
             <GoblinIsle />
             <FarIsle />
           </>

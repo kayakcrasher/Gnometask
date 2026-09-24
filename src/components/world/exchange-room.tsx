@@ -1,7 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { GnomeRig } from "./gnome-rig";
 import { useGame } from "@/lib/game/store";
-import { sharePrice, STOCKS } from "@/lib/game/data/market";
+import { priceSeries, sharePrice, STOCKS } from "@/lib/game/data/market";
 import { CROPS } from "@/lib/game/data/crops";
 import { GOODS } from "@/lib/game/data/trade";
 import { FISH } from "@/lib/game/data/fish";
@@ -30,6 +30,33 @@ function Hall() {
       <hemisphereLight args={["#fff4e0", "#6b4e32", 0.8]} />
       <pointLight position={[0, 3.2, 0]} intensity={6} />
     </group>
+  );
+}
+
+function Spark({ id, days }: { id: string; days: number }) {
+  const pts = priceSeries(id, days, 16);
+  const min = Math.min(...pts);
+  const max = Math.max(...pts);
+  const span = max - min || 1;
+  const d = pts
+    .map((p, i) => {
+      const x = (i / Math.max(1, pts.length - 1)) * 76;
+      const y = 22 - ((p - min) / span) * 18;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  const up = pts[pts.length - 1]! >= pts[0]!;
+  const last = pts[pts.length - 1] ?? 0;
+  const prev = pts[pts.length - 2] ?? last;
+  return (
+    <div className="flex items-center gap-2">
+      <svg width="76" height="24" aria-hidden>
+        <path d={d} fill="none" stroke={up ? "#2f6b4a" : "#a33b32"} strokeWidth="1.6" />
+      </svg>
+      <span className={`text-[10px] font-bold ${last >= prev ? "text-moss" : "text-berry"}`}>
+        {last >= prev ? "up" : "down"} today
+      </span>
+    </div>
   );
 }
 
@@ -84,6 +111,7 @@ export function ExchangeRoom() {
                     {stock.name} · {price} · held {held}
                   </p>
                   <p className="text-[11px] font-semibold text-bark/70">{stock.blurb}</p>
+                  <Spark id={stock.id} days={days} />
                   <div className="mt-1 flex gap-2">
                     <button type="button" onClick={() => buy(stock.id)} className="h-8 rounded-full bg-gold px-3 text-[11px] font-semibold text-ink">
                       Buy

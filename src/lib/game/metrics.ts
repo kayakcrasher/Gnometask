@@ -70,7 +70,7 @@ export function regionValue(save: GameSave, place: PlaceId, metric: MetricId): n
     case "shop":
       return Math.min(1, 0.35 + save.placed.length * 0.05);
     case "cottage":
-      return save.houseUpgrades.length / 7;
+      return Math.min(1, save.houseUpgrades.length / 11);
     case "garden":
       return placedOfKind(save, "garden") / (GARDEN_SLOTS.length + GARDEN_FEATURE_SLOTS.length);
     case "pond":

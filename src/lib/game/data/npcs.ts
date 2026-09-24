@@ -55,6 +55,8 @@ export const NPCS: {
       "Corinth was a nation. The Goblin King ransacked it and set a whole region's wealth to nothing.",
       "We are the ones who got away. Homes, roads, boats. That is how an island nation stands up again.",
       "Private ground stays private. Your great-grandpa did not flee a king so a neighbour could buy his floor.",
+      "Four gnomes may split a plot. Two homes, and one to let, if the purse pays for timber. That is the law I want kept.",
+      "The supreme bench is in Port Victoria. Sunstep wants a dock. Let the black gown hear it, not the street.",
       "Dark elves hate a rival that works. Pirates hate a hull that isn't theirs. Both will come if we look rich and asleep.",
     ],
   },
@@ -73,6 +75,7 @@ export const NPCS: {
       "A deed is older than the hall. What a gnome stands on is not for sale.",
       "Goblins take. We invest. That is the whole difference, said slowly.",
       "If the hollow gets rich, dark elves will call it competition. Build anyway.",
+      "A gnome with a purse can buy a share of ground. Four names on one plot. Not a fifth. I counted.",
     ],
   },
   {
@@ -126,6 +129,7 @@ export const NPCS: {
       "Dark elves come when a town starts to prosper. They hate a rival that works.",
       "Pirates are the same hunger in a bigger hull. They want trouble and whatever isn't nailed down.",
       "The tower is how we say no. Upgrade it at the tower. A nation is a watch that stayed.",
+      "Nineteen of twenty gnomes keep the law. The twentieth steps off a cruise ship with a still. I know the smell.",
     ],
   },
   {
@@ -162,6 +166,7 @@ export const NPCS: {
       "Your great-grandpa shipped people off a falling city. I sell hulls so their grandchildren can ship goods home.",
       "Pirates like a new harbour. They call it opportunity. I call it a locked door and a watch.",
       "The dockhouse is mine. Two floors, one deed. Buy a hull downstairs. The floor stays.",
+      "If Sunstep gets a dock, cruise ships pay Port Victoria or they do not tie up. I want that sentence from the gown.",
     ],
   },
   {

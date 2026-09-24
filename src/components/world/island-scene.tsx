@@ -22,6 +22,7 @@ import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
 import { EastHills, Fights3, Landing3, LootFlash3, Npcs3, Rocks3, Towers3, Trees3 } from "./world-life";
+import { CivicLife } from "./civic-life";
 import { CountryRoads, SupplyRunners } from "./roads";
 import { Kenney } from "./kenney";
 import { MOUNT_NOBLE, NOBLE_PLATEAU, groundY, nearestPlace, onDesert, onGrass, onIsland, to3 } from "@/lib/game/world3";
@@ -158,6 +159,7 @@ function SceneBody({
       />
       <YardLife />
       <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
+      <CivicLife />
       <VillageHouses
         count={villageCount}
         onClick={(x, y) =>
@@ -366,6 +368,19 @@ function SceneBody({
           armor={save.equipment.armor}
           walking={walking}
           striking={striking}
+          gesture={
+            striking || !walking
+              ? null
+              : save.equipment.tool?.startsWith("hammer")
+                ? "hammer"
+                : save.equipment.tool?.startsWith("saw") || save.equipment.weapon?.startsWith("hatchet")
+                  ? "saw"
+                  : save.equipment.tool?.startsWith("hoe") ||
+                      save.equipment.tool?.startsWith("trowel") ||
+                      save.equipment.tool?.startsWith("pail")
+                    ? "hoe"
+                    : null
+          }
           scale={1.15}
           beard
         />

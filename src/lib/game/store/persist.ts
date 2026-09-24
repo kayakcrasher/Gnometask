@@ -108,6 +108,7 @@ export function snap(s: GameSave): GameSave {
     coach: s.coach,
     afloat: s.afloat,
     cannons: s.cannons,
+    civic: s.civic,
   };
 }
 

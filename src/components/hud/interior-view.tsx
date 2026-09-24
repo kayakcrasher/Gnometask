@@ -65,6 +65,14 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
     title: "Gnome Exchange",
     blurb: "Runners, bulk goods, and the board.",
   },
+  court: {
+    title: "The court",
+    blurb: "A Greek bench. The black gown sits in Port Victoria.",
+  },
+  pub: {
+    title: "The pub",
+    blurb: "Three beers, a room upstairs, and a till that already knows interest.",
+  },
 };
 
 function Aquarium() {
@@ -407,7 +415,7 @@ export function InteriorView() {
   const sipTea = useGame((s) => s.sipTea);
   const repair = useGame((s) => s.repairBuilding);
   const cottageHp = useGame((s) => s.buildingHp.cottage);
-  if (!interior || interior === "bank" || interior === "casino" || interior === "exchange") return null;
+  if (!interior || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
   const meta = COPY[interior];
   const cottageHurt = cottageHp < BUILDING_MAX.cottage;
 
