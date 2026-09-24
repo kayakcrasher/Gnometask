@@ -1,16 +1,10 @@
 import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
-import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_RADIUS, SCALE, SUNSTEP, groundY, to3 } from "@/lib/game/world3";
+import { cellsOf, filledCount, townGrid } from "@/lib/game/data/grids";
+import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_RADIUS, SCALE, groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
-const LOTS = [
-  { x: 3180, y: 700 },
-  { x: 3300, y: 740 },
-  { x: 3220, y: 820 },
-  { x: 3360, y: 840 },
-  { x: 3120, y: 780 },
-  { x: 3400, y: 700 },
-];
+const LOTS = cellsOf(townGrid("sunstep"));
 
 const CACTI = [
   { x: 2900, y: 620 },
@@ -22,7 +16,7 @@ const CACTI = [
 
 export function sunstepSize(days: number, deeds: string[]) {
   const bought = deeds.filter((id) => id.startsWith("d-")).length;
-  const count = Math.min(LOTS.length, 1 + Math.floor(Math.max(0, days) / 4) + Math.floor(bought / 2));
+  const count = Math.min(LOTS.length, filledCount("sunstep", days) + Math.floor(bought / 2));
   const level = Math.min(3, 1 + Math.floor((Math.max(0, days) + bought * 2) / 8));
   return { count, level };
 }
@@ -93,7 +87,7 @@ export function Sunstep() {
           </group>
         </group>
       ))}
-      <Html position={to3(SUNSTEP.x, SUNSTEP.y, groundY(SUNSTEP.x, SUNSTEP.y) + 1.8)} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+      <Html position={to3(LOTS[0]!.x, LOTS[0]!.y, groundY(LOTS[0]!.x, LOTS[0]!.y) + 1.8)} center distanceFactor={18} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
           Sunstep
         </p>

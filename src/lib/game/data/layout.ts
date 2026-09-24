@@ -1,5 +1,6 @@
 import type { PackEnemy } from "../combat";
 import type { PlaceId } from "../types";
+import { cellsOf, townGrid } from "./grids";
 
 export const GARDEN_SLOTS: { id: string; x: number; y: number }[] = [];
 for (let row = 0; row < 4; row++) {
@@ -21,18 +22,11 @@ export const GARDEN_FEATURE_SLOTS: { id: string; x: number; y: number }[] = [
   { id: "gf5", x: 560, y: 880 },
 ];
 
-export const VILLAGE_SLOTS: { id: string; x: number; y: number }[] = [
-  { id: "v0", x: 1124, y: 428 },
-  { id: "v1", x: 1210, y: 414 },
-  { id: "v2", x: 1296, y: 428 },
-  { id: "v3", x: 1124, y: 548 },
-  { id: "v4", x: 1210, y: 562 },
-  { id: "v5", x: 1296, y: 548 },
-  { id: "v6", x: 1110, y: 668 },
-  { id: "v7", x: 1200, y: 682 },
-  { id: "v8", x: 1290, y: 668 },
-  { id: "v9", x: 1380, y: 500 },
-];
+export const VILLAGE_SLOTS: { id: string; x: number; y: number }[] = cellsOf(townGrid("greenlane")).map((c, i) => ({
+  id: `v${i}`,
+  x: c.x,
+  y: c.y,
+}));
 
 export const PLACE_ANCHORS: Record<PlaceId, { x: number; y: number }> = {
   cottage: { x: 980, y: 640 },
@@ -61,12 +55,9 @@ export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; p
   { id: "pack-crab", enemy: "crab", x: 20, y: 860, place: "dock" },
 ];
 
-export const EMPTY_LOTS: { id: string; x: number; y: number }[] = [
-  { id: "lot-inn", x: 430, y: 430 },
-  { id: "lot-chapel", x: 500, y: 500 },
-  { id: "lot-market", x: 430, y: 700 },
-  { id: "lot-school", x: 510, y: 680 },
-];
+export const EMPTY_LOTS: { id: string; x: number; y: number }[] = cellsOf(townGrid("capitol"))
+  .slice(6, 10)
+  .map((c, i) => ({ id: ["lot-inn", "lot-chapel", "lot-market", "lot-school"][i]!, x: c.x, y: c.y }));
 
 export const TOWER_SLOTS: { id: string; x: number; y: number }[] = [
   { id: "t0", x: 186, y: 528 },

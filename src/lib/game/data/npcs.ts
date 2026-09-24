@@ -1,4 +1,7 @@
 import type { BuildingId, InteriorId, PlaceId } from "../types";
+import { cellsOf, townGrid } from "./grids";
+
+const capitol = cellsOf(townGrid("capitol"));
 
 export const TOWN_SHOPS: {
   id: string;
@@ -11,12 +14,12 @@ export const TOWN_SHOPS: {
   sign: string;
   building?: BuildingId;
 }[] = [
-  { id: "hatshop", x: 250, y: 400, label: "Hat shop", interior: "hatshop", roof: "gold", sign: "Hats", building: "village" },
-  { id: "armory", x: 270, y: 490, label: "Armory", interior: "armory", roof: "stone", sign: "Steel", building: "village" },
-  { id: "townhall", x: 320, y: 560, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village" },
-  { id: "bakery", x: 270, y: 640, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village" },
-  { id: "general", x: 250, y: 730, label: "Builder's yard", interior: "general", roof: "moss", sign: "Yard", building: "village" },
-  { id: "bank", x: 400, y: 560, label: "The Bank", interior: "bank", roof: "gold", tall: true, sign: "Bank", building: "village" },
+  { id: "hatshop", x: capitol[0]!.x, y: capitol[0]!.y, label: "Hat shop", interior: "hatshop", roof: "gold", sign: "Hats", building: "village" },
+  { id: "armory", x: capitol[1]!.x, y: capitol[1]!.y, label: "Armory", interior: "armory", roof: "stone", sign: "Steel", building: "village" },
+  { id: "bank", x: capitol[2]!.x, y: capitol[2]!.y, label: "The Bank", interior: "bank", roof: "gold", tall: true, sign: "Bank", building: "village" },
+  { id: "townhall", x: capitol[3]!.x, y: capitol[3]!.y, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village" },
+  { id: "bakery", x: capitol[4]!.x, y: capitol[4]!.y, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village" },
+  { id: "general", x: capitol[5]!.x, y: capitol[5]!.y, label: "Builder's yard", interior: "general", roof: "moss", sign: "Yard", building: "village" },
 ];
 
 export const NPCS: {
@@ -175,5 +178,5 @@ export const NPCS: {
   },
 ];
 
-export const HAVEN_ORIGIN = { x: 1860, y: 760 };
+export const HAVEN_ORIGIN = cellsOf(townGrid("haven"))[0]!;
 export const TOWN_SQUARE = { x: 220, y: 540 };

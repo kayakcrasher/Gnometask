@@ -4,43 +4,49 @@ import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { GnomeRig } from "./gnome-rig";
 import { ROADS, RUNNERS, pathToCapitol } from "@/lib/game/data/country";
+import { TOWN_GRIDS, townStreets } from "@/lib/game/data/grids";
 import { groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
 const ROAD_WIDTH = 1.85;
+const ROAD_Y = 0.2;
 
 function roadGeometry() {
   const positions: number[] = [];
-  const push = (ax: number, ay: number, bx: number, by: number) => {
+  const push = (ax: number, ay: number, bx: number, by: number, width: number) => {
     const a = to3(ax, ay, 0);
     const b = to3(bx, by, 0);
     const dx = b[0] - a[0];
     const dz = b[2] - a[2];
     const len = Math.hypot(dx, dz);
     if (len < 0.02) return;
-    const px = (-dz / len) * (ROAD_WIDTH / 2);
-    const pz = (dx / len) * (ROAD_WIDTH / 2);
-    const y = groundY((ax + bx) / 2, (ay + by) / 2) + 0.06;
-    const x1 = a[0] + px;
-    const z1 = a[2] + pz;
-    const x2 = a[0] - px;
-    const z2 = a[2] - pz;
-    const x3 = b[0] + px;
-    const z3 = b[2] + pz;
-    const x4 = b[0] - px;
-    const z4 = b[2] - pz;
-    positions.push(x1, y, z1, x2, y, z2, x3, y, z3, x2, y, z2, x4, y, z4, x3, y, z3);
+    const px = (-dz / len) * (width / 2);
+    const pz = (dx / len) * (width / 2);
+    const y = ROAD_Y;
+    const v = [
+      [a[0] + px, y, a[2] + pz],
+      [a[0] - px, y, a[2] - pz],
+      [b[0] + px, y, b[2] + pz],
+      [b[0] - px, y, b[2] - pz],
+    ];
+    const tri = [0, 2, 1, 1, 2, 3];
+    for (const i of tri) positions.push(v[i]![0], v[i]![1], v[i]![2]);
   };
   for (const road of ROADS) {
     for (let i = 1; i < road.points.length; i++) {
       const [ax, ay] = road.points[i - 1]!;
       const [bx, by] = road.points[i]!;
-      const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 48));
+      const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 80));
       for (let k = 0; k < n; k++) {
         const t0 = k / n;
         const t1 = (k + 1) / n;
-        push(ax + (bx - ax) * t0, ay + (by - ay) * t0, ax + (bx - ax) * t1, ay + (by - ay) * t1);
+        push(ax + (bx - ax) * t0, ay + (by - ay) * t0, ax + (bx - ax) * t1, ay + (by - ay) * t1, ROAD_WIDTH);
       }
+    }
+  }
+  for (const town of TOWN_GRIDS) {
+    for (const seg of townStreets(town)) {
+      push(seg.ax, seg.ay, seg.bx, seg.by, seg.alley ? 0.62 : 1.2);
     }
   }
   const geo = new THREE.BufferGeometry();
@@ -53,7 +59,7 @@ export function CountryRoads() {
   const geo = useMemo(() => roadGeometry(), []);
   return (
     <mesh geometry={geo} receiveShadow>
-      <meshStandardMaterial color="#c4b49a" roughness={0.94} />
+      <meshStandardMaterial color="#e4d3ae" roughness={0.9} side={THREE.DoubleSide} />
     </mesh>
   );
 }

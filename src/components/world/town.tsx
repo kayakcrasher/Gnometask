@@ -2,12 +2,17 @@ import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
 import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
-import { HAVEN_ORIGIN, TOWN_SHOPS } from "@/lib/game/world";
+import { TOWN_SHOPS } from "@/lib/game/world";
 import { EMPTY_LOTS, PLACE_ANCHORS, VILLAGE_SLOTS } from "@/lib/game/data/layout";
+import { cellsOf, filledCount, townGrid } from "@/lib/game/data/grids";
 import { folkLine, settlerRank } from "@/lib/game/data/folk";
 import { isWeekend } from "@/lib/game/data/market";
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
+
+const capitolHall = cellsOf(townGrid("capitol"))[3]!;
+const havenCells = cellsOf(townGrid("haven"));
+const tideCells = cellsOf(townGrid("tideham"));
 
 function TimberHouse({
   position,
@@ -328,9 +333,12 @@ export function Town3({
   onEnter: (id: InteriorId, x: number, y: number) => void;
 }) {
   const claimed = useGame((s) => s.claimed);
+  const days = useGame((s) => s.daysPlayed);
+  const havenN = filledCount("haven", days);
+  const tideN = filledCount("tideham", days);
   return (
     <group>
-      <Html position={to3(320, 550, groundY(320, 550) + 2.4)} center distanceFactor={22} style={{ pointerEvents: "none" }}>
+      <Html position={to3(capitolHall.x, capitolHall.y, 2.6)} center distanceFactor={22} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
           Capitol
         </p>
@@ -387,60 +395,53 @@ export function Town3({
           ) : null}
         </group>
       ))}
-      <Kenney name="fence_gate" position={to3(200, 540, 0)} scale={1.2} />
-      <Kenney name="plant_bushSmall" position={to3(210, 470, 0)} scale={1.2} />
-      <mesh position={to3(230, 540, 0.15)}>
+      <Kenney name="fence_gate" position={to3(216, 346, 0)} scale={1.2} />
+      <mesh position={to3(330, 403, 0.4)}>
         <cylinderGeometry args={[0.45, 0.58, 0.22, 16]} />
         <meshStandardMaterial color="#8a7a68" />
       </mesh>
-      <mesh position={to3(230, 540, 0.28)}>
+      <mesh position={to3(330, 403, 0.52)}>
         <cylinderGeometry args={[0.32, 0.32, 0.08, 16]} />
         <meshStandardMaterial color="#6a8f8a" roughness={0.3} />
       </mesh>
-      <TimberHouse
-        position={to3(HAVEN_ORIGIN.x, HAVEN_ORIGIN.y, groundY(HAVEN_ORIGIN.x, HAVEN_ORIGIN.y))}
-        roof="gold"
-        sign="Haven"
-        onEnter={() => onEnter("haven-shop", HAVEN_ORIGIN.x, HAVEN_ORIGIN.y + 70)}
-      />
-      <group position={to3(HAVEN_ORIGIN.x + 34, HAVEN_ORIGIN.y + 62, groundY(HAVEN_ORIGIN.x + 34, HAVEN_ORIGIN.y + 62))}>
+      {havenCells.slice(0, havenN).map((cell, i) => (
+        <TimberHouse
+          key={`haven-${cell.col}-${cell.row}`}
+          position={to3(cell.x, cell.y, groundY(cell.x, cell.y))}
+          roof={i === 0 ? "gold" : i % 2 ? "stone" : "moss"}
+          sign={i === 0 ? "Haven" : "Home"}
+          onEnter={() => onEnter("haven-shop", cell.x, cell.y)}
+        />
+      ))}
+      <group position={to3(havenCells[0]!.x + 28, havenCells[0]!.y + 8, groundY(havenCells[0]!.x, havenCells[0]!.y))}>
         <GnomeRig hat="hat-guard" coat="#35543f" pants="#5b4230" scale={0.92} beard={false} />
-        <mesh position={[0.2, 0.72, 0.16]} castShadow>
-          <boxGeometry args={[0.04, 0.7, 0.04]} />
-          <meshStandardMaterial color="#5b4230" />
-        </mesh>
-        <mesh position={[0.2, 1.08, 0.16]}>
-          <coneGeometry args={[0.05, 0.12, 5]} />
-          <meshStandardMaterial color="#cfc8ba" metalness={0.4} />
-        </mesh>
       </group>
-      <Kenney name="fence_simple" position={to3(HAVEN_ORIGIN.x - 48, HAVEN_ORIGIN.y + 36, 0)} scale={1.3} />
+      {tideCells.slice(0, tideN).map((cell) => (
+        <group key={`tide-${cell.col}-${cell.row}`} position={to3(cell.x, cell.y, groundY(cell.x, cell.y))}>
+          <mesh position={[0, 0.32, 0]} castShadow>
+            <boxGeometry args={[0.7, 0.5, 0.6]} />
+            <meshStandardMaterial color="#c4a574" />
+          </mesh>
+          <mesh position={[0, 0.66, 0]} castShadow>
+            <boxGeometry args={[0.82, 0.12, 0.72]} />
+            <meshStandardMaterial color="#8a4a3a" />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }
 
 export function VillageHouses({ count, onClick }: { count: number; onClick: (x: number, y: number) => void }) {
-  const spots = [
-    [1124, 428],
-    [1210, 414],
-    [1296, 428],
-    [1124, 548],
-    [1210, 562],
-    [1296, 548],
-    [1110, 668],
-    [1200, 682],
-    [1290, 668],
-    [1380, 500],
-  ];
   return (
     <group>
-      {spots.slice(0, Math.max(0, count)).map(([x, y], i) => (
+      {VILLAGE_SLOTS.slice(0, Math.max(0, count)).map((slot) => (
         <TimberHouse
-          key={i}
-          position={to3(x!, y!, groundY(x!, y!))}
-          roof={i % 2 ? "cream" : "moss"}
+          key={slot.id}
+          position={to3(slot.x, slot.y, groundY(slot.x, slot.y))}
+          roof={slot.id.endsWith("0") || slot.id.endsWith("2") || slot.id.endsWith("4") ? "cream" : "moss"}
           sign="Home"
-          onEnter={() => onClick(x!, y!)}
+          onEnter={() => onClick(slot.x, slot.y)}
         />
       ))}
       <Settlers />
