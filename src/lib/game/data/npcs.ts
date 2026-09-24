@@ -1,7 +1,7 @@
 import type { BuildingId, InteriorId, PlaceId } from "../types";
-import { cellsOf, townGrid } from "./grids";
+import { CAPITOL_FOUNTAIN, CAPITOL_SHOPS, cellsOf, townGrid } from "./grids";
 
-const capitol = cellsOf(townGrid("capitol"));
+const shopAt = (id: string) => CAPITOL_SHOPS.find((s) => s.id === id)!;
 
 export const TOWN_SHOPS: {
   id: string;
@@ -13,13 +13,14 @@ export const TOWN_SHOPS: {
   tall?: boolean;
   sign: string;
   building?: BuildingId;
+  face: number;
 }[] = [
-  { id: "hatshop", x: capitol[0]!.x, y: capitol[0]!.y, label: "Hat shop", interior: "hatshop", roof: "gold", sign: "Hats", building: "village" },
-  { id: "armory", x: capitol[1]!.x, y: capitol[1]!.y, label: "Armory", interior: "armory", roof: "stone", sign: "Steel", building: "village" },
-  { id: "bank", x: capitol[2]!.x, y: capitol[2]!.y, label: "The Bank", interior: "bank", roof: "gold", tall: true, sign: "Bank", building: "village" },
-  { id: "townhall", x: capitol[3]!.x, y: capitol[3]!.y, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village" },
-  { id: "bakery", x: capitol[4]!.x, y: capitol[4]!.y, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village" },
-  { id: "general", x: capitol[5]!.x, y: capitol[5]!.y, label: "Builder's yard", interior: "general", roof: "moss", sign: "Yard", building: "village" },
+  { id: "hatshop", x: shopAt("hatshop").x, y: shopAt("hatshop").y, label: "Hat shop", interior: "hatshop", roof: "gold", sign: "Hats", building: "village", face: Math.PI },
+  { id: "armory", x: shopAt("armory").x, y: shopAt("armory").y, label: "Armory", interior: "armory", roof: "stone", sign: "Steel", building: "village", face: Math.PI },
+  { id: "townhall", x: shopAt("townhall").x, y: shopAt("townhall").y, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village", face: Math.PI },
+  { id: "bakery", x: shopAt("bakery").x, y: shopAt("bakery").y, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village", face: Math.PI },
+  { id: "general", x: shopAt("general").x, y: shopAt("general").y, label: "Builder's yard", interior: "general", roof: "moss", sign: "Yard", building: "village", face: Math.PI },
+  { id: "bank", x: shopAt("bank").x, y: shopAt("bank").y, label: "The Bank", interior: "bank", roof: "gold", tall: true, sign: "Bank", building: "village", face: Math.PI },
 ];
 
 export const NPCS: {
@@ -55,8 +56,8 @@ export const NPCS: {
   {
     id: "stoic",
     name: "The Stoic Gnome",
-    x: 190,
-    y: 560,
+    x: 300,
+    y: 280,
     hat: "hat-night",
     place: "village",
     lines: [
@@ -70,8 +71,8 @@ export const NPCS: {
   {
     id: "nettie",
     name: "Nettie",
-    x: 180,
-    y: 420,
+    x: 240,
+    y: 640,
     hat: "hat-flower",
     place: "village",
     tradeInterior: "hatshop",
@@ -149,8 +150,8 @@ export const NPCS: {
   {
     id: "pipkin",
     name: "Pipkin",
-    x: 1100,
-    y: 800,
+    x: 920,
+    y: 640,
     hat: "hat-berry",
     place: "garden",
     tradeInterior: "general",
@@ -164,8 +165,8 @@ export const NPCS: {
   {
     id: "miller",
     name: "Miller",
-    x: 200,
-    y: 650,
+    x: 560,
+    y: 640,
     hat: "hat-straw",
     place: "shop",
     tradeInterior: "bakery",
@@ -179,4 +180,4 @@ export const NPCS: {
 ];
 
 export const HAVEN_ORIGIN = cellsOf(townGrid("haven"))[0]!;
-export const TOWN_SQUARE = { x: 220, y: 540 };
+export const TOWN_SQUARE = CAPITOL_FOUNTAIN;

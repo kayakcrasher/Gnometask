@@ -3,16 +3,61 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { GnomeRig } from "./gnome-rig";
-import { ROADS, RUNNERS, pathToCapitol } from "@/lib/game/data/country";
-import { TOWN_GRIDS, townStreets } from "@/lib/game/data/grids";
+import { ROADS, RUNNERS, ROAD_TOP, pathToCapitol } from "@/lib/game/data/country";
+import { TOWN_GRIDS, capitolStreets, townStreets } from "@/lib/game/data/grids";
 import { groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
-const ROAD_WIDTH = 1.85;
-const ROAD_Y = 0.2;
+const COUNTRY_WIDTH = 2.6;
+
+function cobbleTexture() {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 256;
+  const g = c.getContext("2d");
+  if (!g) return null;
+  g.fillStyle = "#5e564c";
+  g.fillRect(0, 0, 256, 256);
+  const tones = ["#cbbba4", "#b7a690", "#d9cbb6", "#a89480", "#e4d7c4", "#9c8b78"];
+  const n = 7;
+  const cw = 256 / n;
+  const ch = 256 / n;
+  for (let row = 0; row < n; row++) {
+    for (let col = 0; col < n; col++) {
+      const shift = row % 2 === 0 ? 0 : cw * 0.45;
+      const x = col * cw + shift + 4;
+      const y = row * ch + 4;
+      g.fillStyle = tones[(row * 3 + col * 2) % tones.length]!;
+      g.fillRect(x, y, cw - 8, ch - 8);
+      g.fillStyle = "rgba(255,255,255,0.18)";
+      g.fillRect(x + 3, y + 3, cw - 16, 3);
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
 
 function roadGeometry() {
   const positions: number[] = [];
+  const uvs: number[] = [];
+  const up = (a: number[], b: number[], c: number[]) => {
+    const abx = b[0]! - a[0]!;
+    const abz = b[2]! - a[2]!;
+    const acx = c[0]! - a[0]!;
+    const acz = c[2]! - a[2]!;
+    return abz * acx - abx * acz;
+  };
+  const tri = (a: number[], b: number[], c: number[], ua: number[], ub: number[], uc: number[]) => {
+    const order = up(a, b, c) >= 0 ? [a, b, c, ua, ub, uc] : [a, c, b, ua, uc, ub];
+    for (let i = 0; i < 3; i++) {
+      positions.push(order[i]![0]!, order[i]![1]!, order[i]![2]!);
+      uvs.push(order[i + 3]![0]!, order[i + 3]![1]!);
+    }
+  };
   const push = (ax: number, ay: number, bx: number, by: number, width: number) => {
     const a = to3(ax, ay, 0);
     const b = to3(bx, by, 0);
@@ -22,44 +67,59 @@ function roadGeometry() {
     if (len < 0.02) return;
     const px = (-dz / len) * (width / 2);
     const pz = (dx / len) * (width / 2);
-    const y = ROAD_Y;
-    const v = [
-      [a[0] + px, y, a[2] + pz],
-      [a[0] - px, y, a[2] - pz],
-      [b[0] + px, y, b[2] + pz],
-      [b[0] - px, y, b[2] - pz],
-    ];
-    const tri = [0, 2, 1, 1, 2, 3];
-    for (const i of tri) positions.push(v[i]![0], v[i]![1], v[i]![2]);
+    const top = ROAD_TOP;
+    const bot = ROAD_TOP - 0.07;
+    const p1 = [a[0] + px, top, a[2] + pz];
+    const p2 = [a[0] - px, top, a[2] - pz];
+    const p3 = [b[0] + px, top, b[2] + pz];
+    const p4 = [b[0] - px, top, b[2] - pz];
+    const u1 = len / 0.55;
+    const v1 = width / 0.55;
+    tri(p1, p3, p4, [0, 0], [u1, 0], [u1, v1]);
+    tri(p1, p4, p2, [0, 0], [u1, v1], [0, v1]);
+    const s1 = [p1[0]!, bot, p1[2]!];
+    const s2 = [p2[0]!, bot, p2[2]!];
+    const s3 = [p3[0]!, bot, p3[2]!];
+    const s4 = [p4[0]!, bot, p4[2]!];
+    tri(p1, s1, s3, [0, 0], [0, 0.2], [u1, 0.2]);
+    tri(p1, s3, p3, [0, 0], [u1, 0.2], [u1, 0]);
+    tri(p2, p4, s4, [0, 0], [u1, 0], [u1, 0.2]);
+    tri(p2, s4, s2, [0, 0], [u1, 0.2], [0, 0.2]);
   };
   for (const road of ROADS) {
     for (let i = 1; i < road.points.length; i++) {
       const [ax, ay] = road.points[i - 1]!;
       const [bx, by] = road.points[i]!;
-      const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 80));
-      for (let k = 0; k < n; k++) {
-        const t0 = k / n;
-        const t1 = (k + 1) / n;
-        push(ax + (bx - ax) * t0, ay + (by - ay) * t0, ax + (bx - ax) * t1, ay + (by - ay) * t1, ROAD_WIDTH);
-      }
+      push(ax, ay, bx, by, COUNTRY_WIDTH);
     }
   }
   for (const town of TOWN_GRIDS) {
-    for (const seg of townStreets(town)) {
-      push(seg.ax, seg.ay, seg.bx, seg.by, seg.alley ? 0.62 : 1.2);
-    }
+    for (const seg of townStreets(town)) push(seg.ax, seg.ay, seg.bx, seg.by, seg.width ?? 1.8);
   }
+  for (const seg of capitolStreets()) push(seg.ax, seg.ay, seg.bx, seg.by, seg.width ?? 2.4);
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   geo.computeVertexNormals();
   return geo;
 }
 
+function ignoreRaycast() {}
+
 export function CountryRoads() {
   const geo = useMemo(() => roadGeometry(), []);
+  const map = useMemo(() => cobbleTexture(), []);
   return (
-    <mesh geometry={geo} receiveShadow>
-      <meshStandardMaterial color="#e4d3ae" roughness={0.9} side={THREE.DoubleSide} />
+    <mesh geometry={geo} receiveShadow renderOrder={2} raycast={ignoreRaycast}>
+      <meshStandardMaterial
+        map={map ?? undefined}
+        color={map ? "#ffffff" : "#d7c7a4"}
+        roughness={0.92}
+        side={THREE.DoubleSide}
+        polygonOffset
+        polygonOffsetFactor={-2}
+        polygonOffsetUnits={-2}
+      />
     </mesh>
   );
 }

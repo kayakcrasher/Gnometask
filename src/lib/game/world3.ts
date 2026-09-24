@@ -1,4 +1,5 @@
 import { PLACE_ANCHORS } from "./data/layout";
+import { deckY } from "./data/country";
 import type { PlaceId } from "./types";
 
 export const SCALE = 0.05;
@@ -95,7 +96,9 @@ export const MOUNT_NOBLE = { x: 1540, y: 190, name: "Mount Noble" };
 export const NOBLE_RADIUS = 460;
 /** World-unit height of the cone above the grass. */
 export const NOBLE_HEIGHT = 6.5;
-export const NOBLE_BASE = 0.08;
+/** Visual top of the grass. Feet use this so a gnome is not buried in the bevel. */
+export const LAND_TOP = 0.28;
+export const NOBLE_BASE = LAND_TOP;
 
 /** Height of the cone above the grass. Linear, so it matches ConeGeometry. */
 export function nobleRise(x: number, y: number) {
@@ -134,10 +137,10 @@ export function groundY(x: number, y: number) {
   const pond = Math.hypot(x - 520, y - 190);
   if (pond < 90 && nobleRise(x, y) === 0) return -0.08;
   let h = onDesert(x, y)
-    ? 0.06 + Math.abs(Math.sin(x * 0.012) * Math.cos(y * 0.011)) * 0.14
+    ? 0.24 + Math.abs(Math.sin(x * 0.012) * Math.cos(y * 0.011)) * 0.05
     : onGrass(x, y)
-      ? NOBLE_BASE
-      : 0.02;
+      ? LAND_TOP
+      : 0.2;
   const ridge = Math.hypot(x - 1760, y - 340);
   if (ridge < 160) h = Math.max(h, 0.55 - ridge / 400);
   const mines = Math.hypot(x - 1380, y - 1220);
@@ -152,6 +155,8 @@ export function groundY(x: number, y: number) {
   if (eastC < 100) h = Math.max(h, 0.1 + (1 - eastC / 100) * 0.4);
   const rise = nobleRise(x, y);
   if (rise > 0) h = Math.max(h, NOBLE_BASE + rise);
+  const deck = deckY(x, y);
+  if (deck > h) h = deck;
   return h;
 }
 

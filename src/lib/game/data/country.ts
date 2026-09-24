@@ -1,6 +1,6 @@
-import { cellsOf, townGrid } from "./grids";
+import { CAPITOL_HALL, capitolStreets, cellsOf, townGrid, townStreets, TOWN_GRIDS } from "./grids";
 
-const capitolCell = cellsOf(townGrid("capitol"))[3]!;
+const capitolCell = CAPITOL_HALL;
 const tideCell = cellsOf(townGrid("tideham"))[0]!;
 const laneCell = cellsOf(townGrid("greenlane"))[4]!;
 const havenCell = cellsOf(townGrid("haven"))[0]!;
@@ -80,23 +80,23 @@ export const ROADS: { id: string; points: [number, number][] }[] = [
       [145, 940],
       [520, 1000],
       [860, 980],
-      [860, 680],
-      [430, 574],
+      [900, 920],
+      [680, 860],
     ],
   },
   {
     id: "greenlane",
     points: [
-      [860, 680],
-      [1100, 820],
-      [1420, 860],
-      [1700, 900],
+      [680, 860],
+      [1000, 980],
+      [1280, 1040],
+      [1700, 980],
     ],
   },
   {
     id: "haven",
     points: [
-      [1700, 900],
+      [1700, 980],
       [1860, 940],
       [2080, 920],
     ],
@@ -132,13 +132,40 @@ export function onCapitolRoad(x: number, y: number, reach = 70) {
   return false;
 }
 
+/** Top of the cobble, in world units. Sits above the grass mesh. */
+export const ROAD_TOP = 0.36;
+
+/** Height to stand on when a point is on cobble, otherwise 0. */
+export function deckY(x: number, y: number) {
+  const near = (ax: number, ay: number, bx: number, by: number, half: number) => {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2));
+    return Math.hypot(x - ax - dx * t, y - ay - dy * t) <= half;
+  };
+  for (const road of ROADS) {
+    for (let i = 1; i < road.points.length; i++) {
+      const a = road.points[i - 1]!;
+      const b = road.points[i]!;
+      if (near(a[0], a[1], b[0], b[1], 28)) return ROAD_TOP;
+    }
+  }
+  const segs = [...TOWN_GRIDS.flatMap((g) => townStreets(g)), ...capitolStreets()];
+  for (const s of segs) {
+    const world = s.width ?? (s.alley ? 0.85 : 1.8);
+    if (near(s.ax, s.ay, s.bx, s.by, world / 0.05 / 2)) return ROAD_TOP;
+  }
+  return 0;
+}
+
 function roadById(id: string) {
   return ROADS.find((r) => r.id === id)?.points ?? [];
 }
 
 /** Waypoints from a town's gate to the capitol steps. */
 export function pathToCapitol(townId: string): [number, number][] {
-  const gate: [number, number] = [430, 574];
+  const gate: [number, number] = [680, 860];
   if (townId === "tideham") return roadById("tideham");
   if (townId === "greenlane") return [...[...roadById("greenlane")].reverse(), gate];
   if (townId === "haven") {

@@ -4,13 +4,13 @@ import { Kenney } from "./kenney";
 import { to3, groundY } from "@/lib/game/world3";
 import { TOWN_SHOPS } from "@/lib/game/world";
 import { EMPTY_LOTS, PLACE_ANCHORS, VILLAGE_SLOTS } from "@/lib/game/data/layout";
-import { cellsOf, filledCount, townGrid } from "@/lib/game/data/grids";
+import { CAPITOL_FOUNTAIN, CAPITOL_HALL, CAPITOL_LAWN, cellsOf, filledCount, townGrid } from "@/lib/game/data/grids";
 import { folkLine, settlerRank } from "@/lib/game/data/folk";
 import { isWeekend } from "@/lib/game/data/market";
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
-const capitolHall = cellsOf(townGrid("capitol"))[3]!;
+const capitolHall = CAPITOL_HALL;
 const havenCells = cellsOf(townGrid("haven"));
 const tideCells = cellsOf(townGrid("tideham"));
 
@@ -346,7 +346,7 @@ export function Town3({
       {TOWN_SHOPS.map((shop) => {
         const p = to3(shop.x, shop.y, groundY(shop.x, shop.y));
         const faceWest = (
-          <group key={shop.id} position={p} rotation={[0, Math.PI / 2, 0]}>
+          <group key={shop.id} position={p} rotation={[0, shop.face, 0]}>
             {shop.id === "townhall" ? (
               <Hall3 level={hallLevel} position={[0, 0, 0]} onEnter={() => onEnter(shop.interior, shop.x, shop.y)} />
             ) : shop.id === "bank" ? (
@@ -395,14 +395,41 @@ export function Town3({
           ) : null}
         </group>
       ))}
-      <Kenney name="fence_gate" position={to3(216, 346, 0)} scale={1.2} />
-      <mesh position={to3(330, 403, 0.4)}>
-        <cylinderGeometry args={[0.45, 0.58, 0.22, 16]} />
+      <mesh
+        position={to3(CAPITOL_LAWN.x + CAPITOL_LAWN.w / 2, CAPITOL_LAWN.y + CAPITOL_LAWN.h / 2, 0.3)}
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        raycast={() => undefined}
+      >
+        <planeGeometry args={[CAPITOL_LAWN.w * 0.05, CAPITOL_LAWN.h * 0.05]} />
+        <meshStandardMaterial color="#7ea35a" roughness={0.95} />
+      </mesh>
+      <mesh position={to3(CAPITOL_FOUNTAIN.x, CAPITOL_FOUNTAIN.y, 0.42)}>
+        <cylinderGeometry args={[0.55, 0.7, 0.28, 16]} />
         <meshStandardMaterial color="#8a7a68" />
       </mesh>
-      <mesh position={to3(330, 403, 0.52)}>
-        <cylinderGeometry args={[0.32, 0.32, 0.08, 16]} />
-        <meshStandardMaterial color="#6a8f8a" roughness={0.3} />
+      <mesh position={to3(CAPITOL_FOUNTAIN.x, CAPITOL_FOUNTAIN.y, 0.58)}>
+        <cylinderGeometry args={[0.38, 0.38, 0.1, 16]} />
+        <meshStandardMaterial color="#7eb0b4" roughness={0.25} />
+      </mesh>
+      {[
+        [-0.9, 0],
+        [0.9, 0],
+        [0, -0.9],
+        [0, 0.9],
+      ].map(([x, z], i) => (
+        <mesh key={i} position={to3(CAPITOL_FOUNTAIN.x + x! * 20, CAPITOL_FOUNTAIN.y + z! * 20, 0.42)} castShadow>
+          <boxGeometry args={[0.55, 0.16, 0.22]} />
+          <meshStandardMaterial color="#6b4423" />
+        </mesh>
+      ))}
+      <mesh position={to3(CAPITOL_HALL.x - 70, CAPITOL_HALL.y - 20, 1.1)} castShadow>
+        <cylinderGeometry args={[0.04, 0.05, 1.6, 6]} />
+        <meshStandardMaterial color="#5b4230" />
+      </mesh>
+      <mesh position={to3(CAPITOL_HALL.x - 58, CAPITOL_HALL.y - 20, 1.7)}>
+        <boxGeometry args={[0.46, 0.28, 0.04]} />
+        <meshStandardMaterial color="#8d3d3a" />
       </mesh>
       {havenCells.slice(0, havenN).map((cell, i) => (
         <TimberHouse

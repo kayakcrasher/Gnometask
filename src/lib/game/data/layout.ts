@@ -1,6 +1,6 @@
 import type { PackEnemy } from "../combat";
 import type { PlaceId } from "../types";
-import { cellsOf, townGrid } from "./grids";
+import { CAPITOL_LOTS, cellsOf, townGrid } from "./grids";
 
 export const GARDEN_SLOTS: { id: string; x: number; y: number }[] = [];
 for (let row = 0; row < 4; row++) {
@@ -55,9 +55,7 @@ export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; p
   { id: "pack-crab", enemy: "crab", x: 20, y: 860, place: "dock" },
 ];
 
-export const EMPTY_LOTS: { id: string; x: number; y: number }[] = cellsOf(townGrid("capitol"))
-  .slice(6, 10)
-  .map((c, i) => ({ id: ["lot-inn", "lot-chapel", "lot-market", "lot-school"][i]!, x: c.x, y: c.y }));
+export const EMPTY_LOTS: { id: string; x: number; y: number }[] = CAPITOL_LOTS;
 
 export const TOWER_SLOTS: { id: string; x: number; y: number }[] = [
   { id: "t0", x: 186, y: 528 },
