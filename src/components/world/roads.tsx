@@ -153,76 +153,109 @@ function at(pts: [number, number][], dist: number) {
 }
 
 function DonkeyCart({ crates }: { crates: { current: THREE.Group | null } }) {
+  const legs = useRef<THREE.Group>(null);
+  const wheels = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime * 7;
+    const swing = Math.sin(t) * 0.6;
+    legs.current?.children.forEach((leg, i) => {
+      leg.rotation.x = swing * (i % 2 === 0 ? 1 : -1);
+    });
+    const spin = clock.elapsedTime * 5;
+    wheels.current?.children.forEach((wheel) => {
+      wheel.rotation.x = spin;
+    });
+  });
   return (
-    <group position={[0.42, 0, 0.15]}>
-      <group position={[0, 0, 0.72]}>
-        <mesh position={[0, 0.42, 0]} castShadow>
-          <boxGeometry args={[0.32, 0.28, 0.62]} />
-          <meshStandardMaterial color="#8d6a45" roughness={0.8} />
+    <group>
+      <group position={[0, 0, 1.05]}>
+        <mesh position={[0, 0.52, 0]} castShadow>
+          <boxGeometry args={[0.38, 0.32, 0.78]} />
+          <meshStandardMaterial color="#8d6a45" roughness={0.82} />
         </mesh>
-        <mesh position={[0, 0.58, 0.28]} castShadow>
-          <boxGeometry args={[0.22, 0.18, 0.24]} />
-          <meshStandardMaterial color="#a68462" />
-        </mesh>
-        <mesh position={[0.08, 0.72, 0.3]} rotation={[0.4, 0, 0.5]}>
-          <boxGeometry args={[0.05, 0.16, 0.02]} />
-          <meshStandardMaterial color="#5b4230" />
-        </mesh>
-        <mesh position={[-0.08, 0.72, 0.3]} rotation={[0.4, 0, -0.5]}>
-          <boxGeometry args={[0.05, 0.16, 0.02]} />
-          <meshStandardMaterial color="#5b4230" />
-        </mesh>
-        <mesh position={[0, 0.5, 0.4]}>
-          <boxGeometry args={[0.06, 0.04, 0.04]} />
-          <meshStandardMaterial color="#2a241c" />
-        </mesh>
-        <mesh position={[0, 0.42, -0.36]}>
-          <boxGeometry args={[0.08, 0.16, 0.08]} />
+        <mesh position={[0, 0.62, 0.22]}>
+          <boxGeometry args={[0.4, 0.08, 0.2]} />
           <meshStandardMaterial color="#6b5340" />
         </mesh>
-        {[-0.14, 0.14].map((x) =>
-          [-0.16, 0.16].map((z) => (
-            <mesh key={`${x}-${z}`} position={[x, 0.16, z]} castShadow>
-              <boxGeometry args={[0.07, 0.28, 0.07]} />
-              <meshStandardMaterial color="#4a3424" />
-            </mesh>
-          )),
-        )}
+        <mesh position={[0, 0.78, 0.42]} castShadow>
+          <boxGeometry args={[0.24, 0.22, 0.28]} />
+          <meshStandardMaterial color="#a68462" />
+        </mesh>
+        <mesh position={[0, 0.74, 0.56]}>
+          <boxGeometry args={[0.1, 0.06, 0.08]} />
+          <meshStandardMaterial color="#d9c4a8" />
+        </mesh>
+        <mesh position={[0.09, 0.96, 0.4]} rotation={[0.2, 0, 0.4]}>
+          <boxGeometry args={[0.06, 0.18, 0.03]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+        <mesh position={[-0.09, 0.96, 0.4]} rotation={[0.2, 0, -0.4]}>
+          <boxGeometry args={[0.06, 0.18, 0.03]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+        <mesh position={[0, 0.48, -0.42]} rotation={[0.8, 0, 0]}>
+          <boxGeometry args={[0.06, 0.06, 0.22]} />
+          <meshStandardMaterial color="#6b5340" />
+        </mesh>
+        <group ref={legs}>
+          {[
+            [-0.14, 0.16],
+            [0.14, 0.16],
+            [-0.14, -0.18],
+            [0.14, -0.18],
+          ].map(([x, z], i) => (
+            <group key={i} position={[x, 0.4, z]}>
+              <mesh position={[0, -0.16, 0]} castShadow>
+                <boxGeometry args={[0.08, 0.32, 0.08]} />
+                <meshStandardMaterial color="#4a3424" />
+              </mesh>
+            </group>
+          ))}
+        </group>
       </group>
-      <mesh position={[0.12, 0.38, 0.28]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.7, 6]} />
-        <meshStandardMaterial color="#5b4230" />
+      {[-0.1, 0.1].map((x) => (
+        <mesh key={x} position={[x, 0.48, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.03, 0.03, 0.85, 6]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.5, -0.45]} castShadow>
+        <boxGeometry args={[0.78, 0.36, 1.05]} />
+        <meshStandardMaterial color="#c4894a" roughness={0.75} />
       </mesh>
-      <mesh position={[-0.12, 0.38, 0.28]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.7, 6]} />
-        <meshStandardMaterial color="#5b4230" />
-      </mesh>
-      <mesh position={[0, 0.46, -0.15]} castShadow>
-        <boxGeometry args={[0.7, 0.28, 0.85]} />
-        <meshStandardMaterial color="#c4894a" roughness={0.78} />
-      </mesh>
-      <mesh position={[0, 0.64, -0.15]}>
-        <boxGeometry args={[0.76, 0.06, 0.9]} />
+      <mesh position={[0, 0.72, -0.45]}>
+        <boxGeometry args={[0.84, 0.08, 1.12]} />
         <meshStandardMaterial color="#8a5a32" />
       </mesh>
-      {[-0.32, 0.32].map((x) => (
-        <group key={x} position={[x, 0.2, -0.15]}>
-          <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.2, 0.2, 0.08, 14]} />
-            <meshStandardMaterial color="#3e2e20" />
-          </mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.08, 0.08, 0.1, 8]} />
-            <meshStandardMaterial color="#d6c4a4" />
-          </mesh>
-        </group>
-      ))}
-      <group ref={crates} position={[0, 0.78, -0.15]}>
-        <mesh position={[-0.12, 0, 0.05]} castShadow>
+      <mesh position={[0, 0.78, -0.82]} castShadow>
+        <boxGeometry args={[0.7, 0.16, 0.22]} />
+        <meshStandardMaterial color="#6b4428" />
+      </mesh>
+      <group ref={wheels}>
+        {[
+          [-0.42, -0.15],
+          [0.42, -0.15],
+          [-0.42, -0.75],
+          [0.42, -0.75],
+        ].map(([x, z], i) => (
+          <group key={i} position={[x, 0.24, z]}>
+            <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
+              <cylinderGeometry args={[0.24, 0.24, 0.08, 14]} />
+              <meshStandardMaterial color="#3e2e20" />
+            </mesh>
+            <mesh rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.08, 0.08, 0.1, 8]} />
+              <meshStandardMaterial color="#d6c4a4" />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      <group ref={crates} position={[0, 0.86, -0.35]}>
+        <mesh position={[-0.14, 0, 0.08]} castShadow>
           <boxGeometry args={[0.28, 0.24, 0.28]} />
           <meshStandardMaterial color="#c4a574" />
         </mesh>
-        <mesh position={[0.16, 0.02, -0.08]} castShadow>
+        <mesh position={[0.16, 0.02, -0.1]} castShadow>
           <boxGeometry args={[0.24, 0.22, 0.24]} />
           <meshStandardMaterial color="#8a6238" />
         </mesh>
@@ -272,9 +305,11 @@ function Runner({
         speak(line);
       }}
     >
-      <GnomeRig hat={hat} scale={1.15} coat={coat} beard />
       <DonkeyCart crates={crates} />
-      <Html position={[0, 1.9, 0]} center distanceFactor={20} style={{ pointerEvents: "none" }}>
+      <group position={[0, 0.32, -0.72]}>
+        <GnomeRig hat={hat} scale={1.15} coat={coat} beard />
+      </group>
+      <Html position={[0, 1.85, -0.72]} center distanceFactor={20} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/75 px-2 py-0.5 text-[10px] font-semibold text-parchment">{name}</p>
       </Html>
     </group>

@@ -503,7 +503,6 @@ export function IslandCanvas({
     if (!onIsland(x, y)) return;
     useGame.getState().closePopup();
     walkTo(x, y);
-    useGame.getState().selectPlace(nearestPlace(x, y));
   };
 
   if (!ready) return <div className="absolute inset-0 bg-water-deep" />;
