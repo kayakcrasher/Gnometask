@@ -1,4 +1,4 @@
-import { onGrass, onIsland } from "../world3";
+import { onDesert, onGrass, onIsland } from "../world3";
 
 /** World Y of the sea surface. Land sits above this. Hulls float on it. */
 export const SEA_LEVEL = -0.16;
@@ -10,7 +10,7 @@ export const SEA_LEVEL = -0.16;
  * - Past the beach is deep water. You cannot walk it. Boats float. Waves grow.
  */
 export function onBeach(x: number, y: number) {
-  return onIsland(x, y) && !onGrass(x, y);
+  return onIsland(x, y) && !onGrass(x, y) && !onDesert(x, y);
 }
 
 export function inDeepWater(x: number, y: number) {

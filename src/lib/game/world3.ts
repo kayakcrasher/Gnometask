@@ -60,7 +60,6 @@ function beachPad(x: number, y: number) {
   return 55;
 }
 
-/** Wider on the west harbor and the south shore, so the dock can sit in the sand beside the sea. */
 export const BEACH_POLY: [number, number][] = ISLAND_POLY.map(([x, y]) => {
   const cx = 1400;
   const cy = 700;
@@ -71,12 +70,37 @@ export const BEACH_POLY: [number, number][] = ISLAND_POLY.map(([x, y]) => {
   return [x + (dx / len) * pad, y + (dy / len) * pad];
 });
 
-export function onIsland(x: number, y: number) {
-  return insidePoly(x, y, BEACH_POLY);
-}
+/**
+ * New land east of the old shore. Where this overlaps the green island, the grass stays grass.
+ * The far point is Sunstep, on the eastern desert shore.
+ */
+export const DESERT_POLY: [number, number][] = [
+  [2700, 260],
+  [2640, 500],
+  [2420, 700],
+  [2680, 980],
+  [3120, 1140],
+  [3480, 880],
+  [3460, 560],
+  [3180, 320],
+];
+
+export const DESERT_BEACH: [number, number][] = expandPoly(DESERT_POLY, 48);
+
+export const MOUNT_NOBLE = { x: 1540, y: 190, name: "Mount Noble" };
+
+export const SUNSTEP = { x: 3320, y: 760, name: "Sunstep" };
 
 export function onGrass(x: number, y: number) {
   return insidePoly(x, y, ISLAND_POLY);
+}
+
+export function onDesert(x: number, y: number) {
+  return insidePoly(x, y, DESERT_POLY) && !onGrass(x, y);
+}
+
+export function onIsland(x: number, y: number) {
+  return insidePoly(x, y, BEACH_POLY) || insidePoly(x, y, DESERT_BEACH);
 }
 
 /**
@@ -106,8 +130,14 @@ export function groundY(x: number, y: number) {
   if (eastB < 120) return 0.1 + (1 - eastB / 120) * 0.55;
   const eastC = Math.hypot(x - 2200, y - 720);
   if (eastC < 100) return 0.1 + (1 - eastC / 100) * 0.4;
+  const noble = Math.hypot(x - MOUNT_NOBLE.x, y - MOUNT_NOBLE.y);
+  const peak = noble < 320 ? 0.2 + (1 - noble / 320) ** 1.45 * 3.2 : 0;
+  if (onDesert(x, y)) {
+    const dune = 0.06 + Math.abs(Math.sin(x * 0.012) * Math.cos(y * 0.011)) * 0.14;
+    return Math.max(dune, peak);
+  }
   if (!onGrass(x, y)) return 0.02;
-  return 0.08;
+  return Math.max(0.08, peak);
 }
 
 export function nearestPlace(x: number, y: number): PlaceId {

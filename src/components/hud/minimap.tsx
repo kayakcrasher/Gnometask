@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type MouseEvent as ReactMouseEvent } from "react";
-import { ISLAND_POLY, BEACH_POLY } from "@/lib/game/world3";
+import { ISLAND_POLY, BEACH_POLY, DESERT_POLY, MOUNT_NOBLE } from "@/lib/game/world3";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { NPCS } from "@/lib/game/world";
 import { WORLD_PACK } from "@/lib/game/catalog";
@@ -9,8 +9,8 @@ import { DeedMap } from "./deed-map";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
-const VW = 2800;
-const VH = 1480;
+const VW = 3700;
+const VH = 1600;
 
 function poly(pts: [number, number][]) {
   return pts.map(([x, y]) => `${x},${y}`).join(" ");
@@ -64,7 +64,9 @@ export function Minimap({
         aria-label="Island map. Click to walk."
       >
         <polygon points={poly(BEACH_POLY)} fill="#eaddb0" />
+        <polygon points={poly(DESERT_POLY)} fill="#e2b15a" />
         <polygon points={poly(ISLAND_POLY)} fill="#6f8f66" />
+        <polygon points={`${MOUNT_NOBLE.x},${MOUNT_NOBLE.y - 50} ${MOUNT_NOBLE.x + 40},${MOUNT_NOBLE.y + 36} ${MOUNT_NOBLE.x - 40},${MOUNT_NOBLE.y + 36}`} fill="#6b5b4d" />
         {Object.entries(PLACE_ANCHORS).map(([id, a]) => (
           <circle key={id} cx={a.x} cy={a.y} r={id === "shop" || id === "cottage" ? 28 : 18} fill="#d6a84c" opacity={0.9} />
         ))}

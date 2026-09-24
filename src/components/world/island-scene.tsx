@@ -21,6 +21,7 @@ import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
 import { EastHills, Fights3, Landing3, LootFlash3, Npcs3, Rocks3, Towers3, Trees3 } from "./world-life";
+import { MountNoble, Sunstep } from "./desert";
 import { Kenney } from "./kenney";
 import { groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
@@ -245,6 +246,8 @@ function SceneBody({
       />
       <Rocks3 />
       <EastHills />
+      <MountNoble />
+      <Sunstep />
       <Npcs3
         poses={npcPoses}
         onNpc={(id, x, y) => {

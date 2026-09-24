@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { BEACH_POLY, ISLAND_POLY } from "@/lib/game/world3";
+import { BEACH_POLY, DESERT_POLY, ISLAND_POLY, MOUNT_NOBLE, SUNSTEP } from "@/lib/game/world3";
 import { PARCELS } from "@/lib/game/data/parcels";
 import { TREE_SPOTS } from "@/lib/game/data/trees";
 import { useGame } from "@/lib/game/store";
 
-const VW = 2800;
-const VH = 1500;
+const VW = 3700;
+const VH = 1600;
 
 function poly(pts: [number, number][]) {
   return pts.map(([x, y]) => `${x},${y}`).join(" ");
@@ -28,11 +28,14 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       <p className="mb-2 text-xs font-semibold text-parchment/80">
-        Gold is yours. Cream is a gnome's, and that deed does not sell. Pale hollow ground is the only land you can buy.
+        Gold is yours. Cream is a gnome's, and that deed does not sell. Pale hollow and the tan desert can be bought. The peak is Mount Noble.
       </p>
       <svg viewBox={`0 0 ${VW} ${VH}`} className="min-h-0 flex-1 rounded-[18px] bg-[#1e4d5a]">
         <polygon points={poly(BEACH_POLY)} fill="#e7d7a2" />
+        <polygon points={poly(DESERT_POLY)} fill="#e2b15a" />
         <polygon points={poly(ISLAND_POLY)} fill="#6f8f66" />
+        <polygon points={`${MOUNT_NOBLE.x},${MOUNT_NOBLE.y - 70} ${MOUNT_NOBLE.x + 55},${MOUNT_NOBLE.y + 40} ${MOUNT_NOBLE.x - 55},${MOUNT_NOBLE.y + 40}`} fill="#8a7a68" />
+        <circle cx={SUNSTEP.x} cy={SUNSTEP.y} r={18} fill="#a8433b" />
         <ellipse cx="2480" cy="420" rx="90" ry="50" fill="#4f6b42" />
         <ellipse cx="2320" cy="560" rx="70" ry="40" fill="#4f6b42" />
         <ellipse cx="2200" cy="720" rx="55" ry="32" fill="#4f6b42" />

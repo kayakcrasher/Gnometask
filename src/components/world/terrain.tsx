@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Kenney } from "./kenney";
-import { BEACH_POLY, ISLAND_POLY, onIsland, shapePts, to2, to3 } from "@/lib/game/world3";
+import { BEACH_POLY, DESERT_POLY, ISLAND_POLY, onIsland, shapePts, to2, to3 } from "@/lib/game/world3";
 import { SEA_LEVEL } from "@/lib/game/data/water";
 
 function polyGeom(pts: [number, number][], depth: number, y: number) {
@@ -55,6 +55,7 @@ function grassTexture() {
 function IslandMesh({ onWalk }: { onWalk: (x: number, y: number) => void }) {
   const grass = useMemo(() => polyGeom(shapePts(ISLAND_POLY), 0.55, 0.08), []);
   const sand = useMemo(() => polyGeom(shapePts(BEACH_POLY), 0.4, 0.02), []);
+  const desert = useMemo(() => polyGeom(shapePts(DESERT_POLY), 0.42, 0.05), []);
   const tex = useMemo(() => grassTexture(), []);
   const walk = (e: { button?: number; point: THREE.Vector3; stopPropagation: () => void }) => {
     if (e.button != null && e.button !== 0) return;
@@ -66,6 +67,9 @@ function IslandMesh({ onWalk }: { onWalk: (x: number, y: number) => void }) {
     <group>
       <mesh geometry={sand} receiveShadow onClick={walk}>
         <meshStandardMaterial color="#ecd9a2" roughness={0.96} />
+      </mesh>
+      <mesh geometry={desert} receiveShadow onClick={walk}>
+        <meshStandardMaterial color="#e4b56a" roughness={0.94} />
       </mesh>
       <mesh geometry={grass} receiveShadow onClick={walk}>
         <meshStandardMaterial map={tex ?? undefined} color={tex ? "#ffffff" : "#6f8f66"} roughness={0.88} />

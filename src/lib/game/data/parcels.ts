@@ -1,5 +1,5 @@
 import { NPCS } from "./npcs";
-import { onGrass } from "../world3";
+import { onDesert, onGrass } from "../world3";
 
 export type Parcel = {
   id: string;
@@ -46,6 +46,24 @@ function buildParcels(): Parcel[] {
         price,
         owner: npc?.id ?? null,
         ownerName: npc?.shortName ?? npc?.name ?? null,
+      });
+    }
+  }
+  for (let x = 2560; x <= 3400; x += w) {
+    for (let y = 320; y <= 1100; y += h) {
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      if (!onDesert(cx, cy)) continue;
+      const far = Math.hypot(x - 280, y - 520) / 90;
+      out.push({
+        id: `d-${x}-${y}`,
+        x,
+        y,
+        w,
+        h,
+        price: Math.round(22 + far * 5),
+        owner: null,
+        ownerName: null,
       });
     }
   }

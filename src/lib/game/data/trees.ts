@@ -82,6 +82,23 @@ export const TREE_SPOTS: TreeSpot[] = [
   { id: "t50", kind: "pine", x: 2000, y: 980, model: "tree_pineRoundA", scale: 1.25 },
   { id: "t51", kind: "oak", x: 360, y: 900, model: "tree_oak", scale: 1.15 },
   { id: "t52", kind: "pine", x: 300, y: 240, model: "tree_pineTallA", scale: 1.35, size: "large" },
+  { id: "f1", kind: "pine", x: 760, y: 140, model: "tree_pineTallA", scale: 1.4, size: "large" },
+  { id: "f2", kind: "oak", x: 920, y: 200, model: "tree_oak", scale: 1.25 },
+  { id: "f3", kind: "pine", x: 1040, y: 110, model: "tree_pineTallA_detailed", scale: 1.5, size: "large" },
+  { id: "f4", kind: "oak", x: 1180, y: 170, model: "tree_oak_dark", scale: 1.3 },
+  { id: "f5", kind: "thin", x: 1280, y: 250, model: "tree_tall", scale: 1.2 },
+  { id: "f6", kind: "pine", x: 1360, y: 120, model: "tree_pineRoundA", scale: 1.35, size: "large" },
+  { id: "f7", kind: "oak", x: 1460, y: 280, model: "tree_detailed", scale: 1.15 },
+  { id: "f8", kind: "pine", x: 1680, y: 140, model: "tree_pineTallA", scale: 1.45, size: "large" },
+  { id: "f9", kind: "oak", x: 1780, y: 240, model: "tree_fat", scale: 1.2 },
+  { id: "f10", kind: "thin", x: 1880, y: 150, model: "tree_thin", scale: 1.15 },
+  { id: "f11", kind: "pine", x: 1980, y: 260, model: "tree_cone", scale: 1.3 },
+  { id: "f12", kind: "oak", x: 860, y: 300, model: "tree_oak", scale: 1.2 },
+  { id: "f13", kind: "pine", x: 1120, y: 320, model: "tree_pineSmallA", scale: 1.2 },
+  { id: "f14", kind: "oak", x: 1580, y: 360, model: "tree_oak_dark", scale: 1.25 },
+  { id: "f15", kind: "pine", x: 2060, y: 140, model: "tree_pineTallA_detailed", scale: 1.4, size: "large" },
+  { id: "f16", kind: "thin", x: 680, y: 220, model: "tree_small", scale: 1.1 },
+  { id: "f17", kind: "oak", x: 1720, y: 320, model: "tree_simple", scale: 1.15 },
 ];
 
 export function treeSize(spot: TreeSpot): TreeSize {
