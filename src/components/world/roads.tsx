@@ -12,32 +12,37 @@ const COUNTRY_WIDTH = 1.65;
 
 function cobbleTexture() {
   const c = document.createElement("canvas");
-  c.width = 256;
-  c.height = 256;
+  c.width = 512;
+  c.height = 512;
   const g = c.getContext("2d");
   if (!g) return null;
-  g.fillStyle = "#5e564c";
-  g.fillRect(0, 0, 256, 256);
-  const tones = ["#cbbba4", "#b7a690", "#d9cbb6", "#a89480", "#e4d7c4", "#9c8b78"];
-  const n = 7;
-  const cw = 256 / n;
-  const ch = 256 / n;
-  for (let row = 0; row < n; row++) {
-    for (let col = 0; col < n; col++) {
-      const shift = row % 2 === 0 ? 0 : cw * 0.45;
-      const x = col * cw + shift + 4;
-      const y = row * ch + 4;
-      g.fillStyle = tones[(row * 3 + col * 2) % tones.length]!;
-      g.fillRect(x, y, cw - 8, ch - 8);
-      g.fillStyle = "rgba(255,255,255,0.18)";
-      g.fillRect(x + 3, y + 3, cw - 16, 3);
-    }
+  let seed = 19;
+  const rnd = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed & 2147483647) / 2147483647;
+  };
+  g.fillStyle = "#c4b49a";
+  g.fillRect(0, 0, 512, 512);
+  const tones = ["#d9cbb6", "#b7a690", "#e6d8c4", "#a89480", "#cfc3ae", "#8f8170", "#efe4d4"];
+  for (let i = 0; i < 90; i++) {
+    const x = rnd() * 512;
+    const y = rnd() * 512;
+    const w = 28 + rnd() * 64;
+    const h = 22 + rnd() * 46;
+    g.fillStyle = tones[Math.floor(rnd() * tones.length)]!;
+    g.beginPath();
+    g.moveTo(x + rnd() * 8, y);
+    g.lineTo(x + w, y + rnd() * 8);
+    g.lineTo(x + w - rnd() * 8, y + h);
+    g.lineTo(x + rnd() * 6, y + h - rnd() * 6);
+    g.closePath();
+    g.fill();
   }
   const tex = new THREE.CanvasTexture(c);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = 8;
   return tex;
 }
 
@@ -73,8 +78,8 @@ function roadGeometry() {
     const p2 = [a[0] - px, top, a[2] - pz];
     const p3 = [b[0] + px, top, b[2] + pz];
     const p4 = [b[0] - px, top, b[2] - pz];
-    const u1 = len / 0.55;
-    const v1 = width / 0.55;
+    const u1 = len / 1.6;
+    const v1 = width / 1.6;
     tri(p1, p3, p4, [0, 0], [u1, 0], [u1, v1]);
     tri(p1, p4, p2, [0, 0], [u1, v1], [0, v1]);
     const s1 = [p1[0]!, bot, p1[2]!];

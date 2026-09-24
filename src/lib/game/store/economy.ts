@@ -23,6 +23,7 @@ export function economySlice(
   | "upgradeGuard"
   | "upgradeHall"
   | "upgradeTower"
+  | "wager"
   | "liftFence"
 > {
   return {
@@ -396,6 +397,35 @@ export function economySlice(
       sfx("buy");
       scheduleWrite(get);
       markPappyExpand(get, set);
+    },
+
+    wager: () => {
+      const s = get();
+      const stake = 5;
+      if (s.coins < stake) {
+        set({ speech: "The pit wants five coins. Your purse is short." });
+        return;
+      }
+      const roll = Math.random();
+      let pay = 0;
+      let speech = "The wheel takes the five. The lights stay on.";
+      if (roll < 0.04) {
+        pay = 50;
+        speech = "Jackpot on the strip. Fifty coins.";
+      } else if (roll < 0.16) {
+        pay = 15;
+        speech = "The dune pays fifteen.";
+      } else if (roll < 0.4) {
+        pay = 8;
+        speech = "A small light. Eight comes back.";
+      }
+      set({
+        coins: s.coins - stake + pay,
+        coinPopKey: s.coinPopKey + 1,
+        speech,
+      });
+      sfx(pay > stake ? "buy" : "error");
+      scheduleWrite(get);
     },
   };
 }

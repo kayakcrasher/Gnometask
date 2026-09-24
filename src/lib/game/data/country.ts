@@ -1,4 +1,9 @@
-import { CAPITOL_HALL, capitolStreets, cellsOf, townGrid, townStreets, TOWN_GRIDS } from "./grids";
+import { CAPITOL_GATE, CAPITOL_HALL, capitolStreets, cellsOf, townGate, townGrid, townStreets, TOWN_GRIDS } from "./grids";
+
+const tide = townGate("tideham");
+const lane = townGate("greenlane");
+const havenGate = townGate("haven");
+const sunGate = townGate("sunstep");
 
 const capitolCell = CAPITOL_HALL;
 const tideCell = cellsOf(townGrid("tideham"))[0]!;
@@ -62,8 +67,8 @@ export const VILLAGES: VillagePin[] = [
     name: "Sunstep",
     x: sunCell.x,
     y: sunCell.y,
-    trade: "Salt",
-    tradeBlurb: "Salt pans and clay. A long road, and the jars are worth the walk.",
+    trade: "The Strip",
+    tradeBlurb: "Neon and the wheel. Sunstep keeps no salt. It keeps the night, and the night pays in coin.",
   },
 ];
 
@@ -77,39 +82,40 @@ export const ROADS: { id: string; points: [number, number][] }[] = [
     id: "tideham",
     points: [
       [145, 760],
-      [145, 940],
-      [520, 1000],
-      [860, 980],
-      [900, 920],
-      [680, 860],
+      [tide.west, tide.midY],
+      [tide.west, tide.y],
+      [tide.x, tide.y],
+      [520, 1020],
+      [CAPITOL_GATE.x, 960],
+      [CAPITOL_GATE.x, CAPITOL_GATE.y],
     ],
   },
   {
     id: "greenlane",
     points: [
-      [680, 860],
-      [1000, 980],
-      [1280, 1040],
-      [1700, 980],
+      [CAPITOL_GATE.x, CAPITOL_GATE.y],
+      [980, 940],
+      [lane.x, 980],
+      [lane.x, lane.y],
     ],
   },
   {
     id: "haven",
     points: [
-      [1700, 980],
-      [1860, 940],
-      [2080, 920],
+      [lane.x, 980],
+      [1500, 980],
+      [havenGate.x, 980],
+      [havenGate.x, havenGate.y],
     ],
   },
   {
     id: "sunstep",
     points: [
-      [2080, 920],
-      [2300, 980],
-      [2620, 1020],
-      [3000, 1040],
-      [3240, 1000],
-      [3360, 960],
+      [havenGate.x, 980],
+      [2200, 1000],
+      [2700, 1020],
+      [sunGate.x, 1000],
+      [sunGate.x, sunGate.y],
     ],
   },
 ];
@@ -165,7 +171,7 @@ function roadById(id: string) {
 
 /** Waypoints from a town's gate to the capitol steps. */
 export function pathToCapitol(townId: string): [number, number][] {
-  const gate: [number, number] = [680, 860];
+  const gate: [number, number] = [CAPITOL_GATE.x, CAPITOL_GATE.y];
   if (townId === "tideham") return roadById("tideham");
   if (townId === "greenlane") return [...[...roadById("greenlane")].reverse(), gate];
   if (townId === "haven") {

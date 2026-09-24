@@ -43,40 +43,63 @@ export function cellsOf(grid: TownGrid) {
 
 export type StreetSeg = { ax: number; ay: number; bx: number; by: number; alley: boolean; width?: number };
 
-/** Alleys between neighbouring lots, streets between blocks, and a ring road. */
+/** Alleys and streets that run from one side of the ring to the other, so nothing dead-ends inside town. */
 export function townStreets(grid: TownGrid): StreetSeg[] {
   const cells = cellsOf(grid);
-  const segs: StreetSeg[] = [];
-  const half = LOT * 0.42;
-  for (let i = 0; i < cells.length; i++) {
-    for (let j = i + 1; j < cells.length; j++) {
-      const a = cells[i]!;
-      const b = cells[j]!;
-      if (a.row === b.row && Math.abs(a.col - b.col) === 1) {
-        const mid = (a.x + b.x) / 2;
-        const alley = Math.abs(a.x - b.x) <= LOT + 4;
-        segs.push({ ax: mid, ay: a.y - half, bx: mid, by: a.y + half, alley, width: alley ? 0.65 : 1.45 });
-      }
-      if (a.col === b.col && Math.abs(a.row - b.row) === 1) {
-        const mid = (a.y + b.y) / 2;
-        const alley = Math.abs(a.y - b.y) <= LOT + 4;
-        segs.push({ ax: a.x - half, ay: mid, bx: a.x + half, by: mid, alley, width: alley ? 0.65 : 1.45 });
-      }
-    }
-  }
   const xs = cells.map((c) => c.x);
   const ys = cells.map((c) => c.y);
   const minX = Math.min(...xs) - 40;
   const maxX = Math.max(...xs) + 40;
   const minY = Math.min(...ys) - 40;
   const maxY = Math.max(...ys) + 40;
-  segs.push(
+  const segs: StreetSeg[] = [
     { ax: minX, ay: minY, bx: maxX, by: minY, alley: false, width: 1.45 },
     { ax: minX, ay: maxY, bx: maxX, by: maxY, alley: false, width: 1.45 },
     { ax: minX, ay: minY, bx: minX, by: maxY, alley: false, width: 1.45 },
     { ax: maxX, ay: minY, bx: maxX, by: maxY, alley: false, width: 1.45 },
-  );
+  ];
+  const cols = [...new Set(cells.map((c) => c.col))].sort((a, b) => a - b);
+  for (let i = 1; i < cols.length; i++) {
+    const left = cells.find((c) => c.col === cols[i - 1])!;
+    const right = cells.find((c) => c.col === cols[i])!;
+    const alley = Math.abs(left.x - right.x) <= LOT + 4;
+    segs.push({
+      ax: (left.x + right.x) / 2,
+      ay: minY,
+      bx: (left.x + right.x) / 2,
+      by: maxY,
+      alley,
+      width: alley ? 0.65 : 1.45,
+    });
+  }
+  const rows = [...new Set(cells.map((c) => c.row))].sort((a, b) => a - b);
+  for (let i = 1; i < rows.length; i++) {
+    const up = cells.find((c) => c.row === rows[i - 1])!;
+    const down = cells.find((c) => c.row === rows[i])!;
+    const alley = Math.abs(up.y - down.y) <= LOT + 4;
+    segs.push({
+      ax: minX,
+      ay: (up.y + down.y) / 2,
+      bx: maxX,
+      by: (up.y + down.y) / 2,
+      alley,
+      width: alley ? 0.65 : 1.45,
+    });
+  }
   return segs;
+}
+
+/** South gate of a town ring. The country road ends here. */
+export function townGate(id: string) {
+  const cells = cellsOf(townGrid(id));
+  const xs = cells.map((c) => c.x);
+  const ys = cells.map((c) => c.y);
+  return {
+    x: Math.round((Math.min(...xs) + Math.max(...xs)) / 2),
+    y: Math.max(...ys) + 40,
+    west: Math.min(...xs) - 40,
+    midY: Math.round((Math.min(...ys) + Math.max(...ys)) / 2),
+  };
 }
 
 /** Courthouse square. Hall faces the camera, shops face it across the main street. */
@@ -100,17 +123,20 @@ export const CAPITOL_LOTS: { id: string; x: number; y: number }[] = [
   { id: "lot-school", x: 878, y: 390 },
 ];
 
-/** Streets around the square, a main street, and the alleys behind the blocks. */
+export const CAPITOL_GATE = { x: 720, y: 860 };
+
+/** Streets around the square, tied to the country road at the south gate. */
 export function capitolStreets(): StreetSeg[] {
   return [
-    { ax: 230, ay: 185, bx: 820, by: 185, alley: false, width: 1.55 },
-    { ax: 230, ay: 475, bx: 820, by: 475, alley: false, width: 1.85 },
+    { ax: 230, ay: 185, bx: 930, by: 185, alley: false, width: 1.55 },
+    { ax: 230, ay: 475, bx: 930, by: 475, alley: false, width: 1.85 },
     { ax: 230, ay: 185, bx: 230, by: 620, alley: false, width: 1.45 },
-    { ax: 720, ay: 185, bx: 720, by: 620, alley: false, width: 1.55 },
+    { ax: 720, ay: 185, bx: 720, by: CAPITOL_GATE.y, alley: false, width: 1.55 },
+    { ax: 930, ay: 185, bx: 930, by: 475, alley: false, width: 1.45 },
     { ax: 380, ay: 255, bx: 560, by: 255, alley: false, width: 1.1 },
     { ax: 470, ay: 195, bx: 470, by: 300, alley: false, width: 1.1 },
-    { ax: 834, ay: 250, bx: 834, by: 430, alley: true, width: 0.65 },
-    { ax: 270, ay: 600, bx: 700, by: 600, alley: true, width: 0.65 },
+    { ax: 834, ay: 185, bx: 834, by: 475, alley: true, width: 0.65 },
+    { ax: 270, ay: 610, bx: 700, by: 610, alley: true, width: 0.65 },
   ];
 }
 

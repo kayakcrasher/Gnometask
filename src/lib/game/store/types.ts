@@ -87,6 +87,7 @@ export type GameState = GameSave &
     upgradeGuard: () => void;
     upgradeHall: () => void;
     upgradeTower: (slotId: string) => void;
+    wager: () => void;
     rallyWalls: () => void;
     startPatrol: (place?: PlaceId) => void;
     startDragon: (which?: "dragon" | "absence") => void;
