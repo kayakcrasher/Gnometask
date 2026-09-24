@@ -123,7 +123,7 @@ const waterFrag = `
   }
 `;
 
-function Water() {
+function Water({ onWalk }: { onWalk: (x: number, y: number) => void }) {
   const mat = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -145,7 +145,17 @@ function Water() {
     mat.uniforms.uTime!.value = clock.elapsedTime;
   });
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, SEA_LEVEL, 0]} material={mat} renderOrder={-1}>
+    <mesh
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[0, SEA_LEVEL, 0]}
+      material={mat}
+      renderOrder={-1}
+      onClick={(e) => {
+        e.stopPropagation();
+        const hit = to2(e.point.x, e.point.z);
+        onWalk(hit.x, hit.y);
+      }}
+    >
       <planeGeometry args={[360, 260, 80, 50]} />
     </mesh>
   );
@@ -164,7 +174,7 @@ function Pond() {
 export function Terrain({ onWalk }: { onWalk: (x: number, y: number) => void }) {
   return (
     <group>
-      <Water />
+      <Water onWalk={onWalk} />
       <IslandMesh onWalk={onWalk} />
       <Pond />
       <Kenney name="cliff_large_rock" position={to3(1760, 300, 0.12)} scale={1.35} />

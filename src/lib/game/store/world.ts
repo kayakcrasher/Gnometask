@@ -15,7 +15,7 @@ export function worldSlice(
   get: StoreGet,
 ): Pick<
   GameState,
-  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "startLandingFight" | "strikeFlag" | "sipTea" | "sootheDragon" | "tickWorld"
+  "rallyWalls" | "startPatrol" | "startDragon" | "startCreature" | "startRaidFight" | "startLandingFight" | "strikeFlag" | "fireCannon" | "sipTea" | "sootheDragon" | "tickWorld"
 > {
   return {
     rallyWalls: () => {
@@ -257,6 +257,43 @@ export function worldSlice(
           : `The banner rips. ${flagHp} left on the cloth.`,
       });
       sfx(flagDown ? "win" : "hit");
+      scheduleWrite(get);
+    },
+
+    fireCannon: () => {
+      const s = get();
+      const landing = s.landing;
+      if (!s.cannons) {
+        set({ speech: "No cannon. Wim sells one at the dock for 45 coins." });
+        return;
+      }
+      if (!s.afloat) {
+        set({ speech: "The cannon wants a deck. Cast off first." });
+        return;
+      }
+      if (!landing) {
+        set({ speech: "No goblin boat on the water." });
+        return;
+      }
+      const dist = Math.hypot(s.gnomeX - landing.boatX, s.gnomeY - landing.boatY);
+      if (dist > 320) {
+        set({ speech: "Too far. Sail closer to their hull." });
+        return;
+      }
+      const goblins = landing.goblins.map((g) => ({ ...g }));
+      const runt = goblins.find((g) => g.alive);
+      let speech = "The cannon coughs smoke and hits water.";
+      if (runt) {
+        runt.alive = false;
+        speech = "The cannon takes a runt off their deck.";
+      }
+      const flagHp = runt ? landing.flagHp : Math.max(0, (landing.flagHp ?? 10) - 4);
+      const flagDown = flagHp <= 0 || landing.flagDown;
+      set({
+        landing: { ...landing, goblins, flagHp, flagDown },
+        speech: flagDown && !landing.flagDown ? "Their flag takes the shot and drops." : speech,
+      });
+      sfx("hit");
       scheduleWrite(get);
     },
 

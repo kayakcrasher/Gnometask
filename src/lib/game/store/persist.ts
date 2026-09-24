@@ -105,6 +105,9 @@ export function snap(s: GameSave): GameSave {
     trees: s.trees,
     landing: s.landing,
     combatStyle: s.combatStyle,
+    coach: s.coach,
+    afloat: s.afloat,
+    cannons: s.cannons,
   };
 }
 

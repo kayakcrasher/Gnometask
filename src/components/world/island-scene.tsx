@@ -12,7 +12,8 @@ import {
 import * as THREE from "three";
 import { Terrain } from "./terrain";
 import { Cottage3, Town3, VillageHouses } from "./town";
-import { Harbor3 } from "./boats";
+import { BoatMesh, Harbor3 } from "./boats";
+import { MountNoble, Sunstep } from "./desert";
 import { CastLine, OceanLife, ShoreLife } from "./ocean";
 import { Sky } from "./sky";
 import { YardPlots } from "./yard";
@@ -21,10 +22,9 @@ import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
 import { EastHills, Fights3, Landing3, LootFlash3, Npcs3, Rocks3, Towers3, Trees3 } from "./world-life";
-import { MountNoble, Sunstep } from "./desert";
 import { CountryRoads, SupplyRunners } from "./roads";
 import { Kenney } from "./kenney";
-import { MOUNT_NOBLE, NOBLE_PLATEAU, groundY, nearestPlace, onIsland, to3 } from "@/lib/game/world3";
+import { MOUNT_NOBLE, NOBLE_PLATEAU, groundY, nearestPlace, onDesert, onGrass, onIsland, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 import { NPCS } from "@/lib/game/world";
 import { TREE_SPOTS } from "@/lib/game/data/trees";
@@ -343,6 +343,21 @@ function SceneBody({
         }
       />
       <Kenney name="log_large" position={to3(70, 250, 0.08)} scale={1.0} />
+      {save.afloat ? (
+        <group position={to3(pos.x, pos.y, p3[1] - 0.55)} rotation={[0, face, 0]}>
+          <group scale={2.4}>
+            <BoatMesh
+              kind={
+                save.afloat === "sail" || save.afloat === "fisher" || save.afloat === "barge" || save.afloat === "sloop"
+                  ? save.afloat
+                  : "row"
+              }
+              rowing={walking}
+              cannon={save.cannons}
+            />
+          </group>
+        </group>
+      ) : null}
       <group position={p3} rotation={[0, face, 0]}>
         <GnomeRig
           hat={save.hat}
@@ -500,7 +515,10 @@ export function IslandCanvas({
 
   const walk = (x: number, y: number) => {
     if (dragged.current) return;
-    if (!onIsland(x, y)) return;
+    const sea = Boolean(useGame.getState().afloat);
+    if (sea) {
+      if (onGrass(x, y) || onDesert(x, y)) return;
+    } else if (!onIsland(x, y)) return;
     useGame.getState().closePopup();
     walkTo(x, y);
     if (Math.hypot(x - MOUNT_NOBLE.x, y - MOUNT_NOBLE.y) <= NOBLE_PLATEAU) {

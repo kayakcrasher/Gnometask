@@ -266,6 +266,10 @@ export type GameSave = {
   trees: Record<string, TreeSave>;
   landing: GoblinLanding | null;
   combatStyle: CombatStyle;
+  /** 0 unused, 1–4 Pappy's lessons, 5 finished. */
+  coach: number;
+  afloat: string | null;
+  cannons: boolean;
 };
 
 export type GameUi = {

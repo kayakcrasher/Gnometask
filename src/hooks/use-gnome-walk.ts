@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 
 import { clamp } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import type { GnomeFacing } from "@/components/land/gnome";
-import { onIsland } from "@/lib/game/world3";
+import { onDesert, onGrass, onIsland } from "@/lib/game/world3";
 
 const SPEED = 260;
 
@@ -14,6 +14,9 @@ function facingOf(dx: number, dy: number): GnomeFacing {
 export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number }>) {
   const savedX = useGame((s) => s.gnomeX);
   const savedY = useGame((s) => s.gnomeY);
+  const afloat = useGame((s) => s.afloat);
+  const afloatRef = useRef(afloat);
+  afloatRef.current = afloat;
   const combatOn = useGame((s) => Boolean(s.combat));
   const setGnomePos = useGame((s) => s.setGnomePos);
   const setFollowWalk = useGame((s) => s.setFollowWalk);
@@ -81,7 +84,9 @@ export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number 
       const step = Math.min(dist, SPEED * dt);
       speedRef.current = SPEED;
       const next = { x: cur.x + (dx / dist) * step, y: cur.y + (dy / dist) * step };
-      if (!onIsland(next.x, next.y)) {
+      const sea = Boolean(afloatRef.current);
+      const legal = sea ? !onGrass(next.x, next.y) && !onDesert(next.x, next.y) : onIsland(next.x, next.y);
+      if (!legal) {
         targetRef.current = null;
         setMarker(null);
         setWalking(false);
@@ -99,9 +104,11 @@ export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number 
 
   const walkTo = useCallback(
     (x: number, y: number, arrive?: () => void) => {
-      const nx = clamp(x, 20, 3640);
-      const ny = clamp(y, -220, 1480);
-      if (!onIsland(nx, ny)) {
+      const sea = Boolean(afloatRef.current);
+      const nx = clamp(x, sea ? -520 : 20, 3800);
+      const ny = clamp(y, sea ? -280 : -220, 1560);
+      const legal = sea ? !onGrass(nx, ny) && !onDesert(nx, ny) : onIsland(nx, ny);
+      if (!legal) {
         arrive?.();
         return;
       }

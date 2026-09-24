@@ -98,6 +98,9 @@ export function defaultSave(): GameSave {
     trees: {},
     landing: null,
     combatStyle: "attack",
+    coach: 5,
+    afloat: null,
+    cannons: false,
   };
 }
 
@@ -336,6 +339,9 @@ export function migrate(raw: unknown): GameSave {
     trees: s.trees && typeof s.trees === "object" ? s.trees : {},
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",
+    coach: typeof s.coach === "number" ? Math.max(0, Math.min(5, Math.floor(s.coach))) : 5,
+    afloat: typeof s.afloat === "string" ? s.afloat : null,
+    cannons: Boolean(s.cannons),
   });
 }
 

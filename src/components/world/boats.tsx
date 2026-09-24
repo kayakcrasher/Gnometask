@@ -56,7 +56,47 @@ function Mast({ h, sailW, z = 0, tint = SAIL }: { h: number; sailW: number; z?: 
   );
 }
 
-export function BoatMesh({ kind }: { kind: BoatId | "goblin" }) {
+function Oars({ rowing }: { rowing?: boolean }) {
+  const left = useRef<THREE.Group>(null);
+  const right = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    const speed = rowing ? 3.8 : 1.7;
+    const dip = Math.sin(clock.elapsedTime * speed) * (rowing ? 0.72 : 0.4);
+    if (left.current) left.current.rotation.x = dip;
+    if (right.current) right.current.rotation.x = -dip;
+  });
+  return (
+    <group>
+      <group ref={left} position={[-0.2, 0.22, 0.02]}>
+        <mesh position={[-0.22, 0, 0]} rotation={[0, 0, 0.45]}>
+          <boxGeometry args={[0.48, 0.03, 0.045]} />
+          <meshStandardMaterial color="#6b4428" />
+        </mesh>
+      </group>
+      <group ref={right} position={[0.2, 0.22, 0.02]}>
+        <mesh position={[0.22, 0, 0]} rotation={[0, 0, -0.45]}>
+          <boxGeometry args={[0.48, 0.03, 0.045]} />
+          <meshStandardMaterial color="#6b4428" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function Cannon() {
+  return (
+    <group>
+      {[-1, 1].map((side) => (
+        <mesh key={side} position={[side * 0.18, 0.28, 0.22]} rotation={[Math.PI / 2, side * -0.25, 0]} castShadow>
+          <cylinderGeometry args={[0.04, 0.055, 0.28, 8]} />
+          <meshStandardMaterial color="#2c2926" metalness={0.45} roughness={0.4} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+export function BoatMesh({ kind, rowing, cannon }: { kind: BoatId | "goblin"; rowing?: boolean; cannon?: boolean }) {
   if (kind === "row") {
     return (
       <group>
@@ -69,6 +109,8 @@ export function BoatMesh({ kind }: { kind: BoatId | "goblin" }) {
           <boxGeometry args={[0.16, 0.03, 0.22]} />
           <meshStandardMaterial color="#e6d3b0" />
         </mesh>
+        <Oars rowing={rowing} />
+        {cannon ? <Cannon /> : null}
       </group>
     );
   }
@@ -77,6 +119,8 @@ export function BoatMesh({ kind }: { kind: BoatId | "goblin" }) {
       <group>
         <Hull length={1.15} width={0.42} color="#d08a45" />
         <Mast h={1.15} sailW={0.55} />
+        <Oars rowing={rowing} />
+        {cannon ? <Cannon /> : null}
       </group>
     );
   }
@@ -93,6 +137,8 @@ export function BoatMesh({ kind }: { kind: BoatId | "goblin" }) {
           <meshStandardMaterial color="#d6ecff" />
         </mesh>
         <Mast h={0.7} sailW={0.28} z={0.28} />
+        <Oars rowing={rowing} />
+        {cannon ? <Cannon /> : null}
       </group>
     );
   }
@@ -110,6 +156,7 @@ export function BoatMesh({ kind }: { kind: BoatId | "goblin" }) {
             <meshStandardMaterial color={color as string} />
           </mesh>
         ))}
+        {cannon ? <Cannon /> : null}
       </group>
     );
   }
@@ -138,6 +185,7 @@ export function BoatMesh({ kind }: { kind: BoatId | "goblin" }) {
         <boxGeometry args={[0.16, 0.12, 0.18]} />
         <meshStandardMaterial color="#6b5340" />
       </mesh>
+      {cannon ? <Cannon /> : null}
     </group>
   );
 }
@@ -494,9 +542,12 @@ export function Harbor3({
   onHouse: () => void;
 }) {
   const yard = to3(90, 430, 0);
+  const afloat = useGame((s) => s.afloat);
+  const cannons = useGame((s) => s.cannons);
   return (
     <group>
       {BOATS.map((boat) => {
+        if (afloat === boat.id) return null;
         const p = to3(boat.x, boat.y, SEA_LEVEL + 0.06);
         return (
           <group
@@ -510,7 +561,7 @@ export function Harbor3({
           >
             <Bob speed={0.7 + boat.need * 0.05}>
               <group scale={2.4}>
-                <BoatMesh kind={boat.id} />
+                <BoatMesh kind={boat.id} cannon={cannons} />
               </group>
             </Bob>
           </group>

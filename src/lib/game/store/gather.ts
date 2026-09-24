@@ -22,7 +22,7 @@ function treeStage(rec: { stage?: string; choppedAt?: number } | undefined, now:
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "buyBoat" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "buyBoat" | "buyCannon" | "advanceCoach" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -154,6 +154,7 @@ export function gatherSlice(
       set({
         gnomeX: target.x,
         gnomeY: target.y,
+        afloat: toSea ? boat.id : null,
         selectedPlace: "dock",
         skills: gained.skills,
         boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
@@ -162,7 +163,7 @@ export function gatherSlice(
         speech:
           gained.ding ??
           (toSea
-            ? `The ${boat.name.toLowerCase()} casts off. You are on the water, not in Haven. +${boat.xp} Sailing.`
+            ? `The ${boat.name.toLowerCase()} casts off. Tap the water to move. Oars work themselves. +${boat.xp} Sailing.`
             : `Back to the town dock in the ${boat.name.toLowerCase()}. +${boat.xp} Sailing.`),
         bounceKey: s.bounceKey + 1,
       });
@@ -203,6 +204,34 @@ export function gatherSlice(
         speech: `Wim slides the ${boat.name.toLowerCase()} onto your account. She's at the pier.`,
       });
       sfx("buy");
+      scheduleWrite(get);
+    },
+
+    buyCannon: () => {
+      const s = get();
+      if (s.cannons) {
+        set({ speech: "The cannons are already bolted to every hull." });
+        return;
+      }
+      if (s.coins < 45) {
+        set({ speech: "A cannon is 45 coins. Wim taps the barrel." });
+        sfx("error");
+        return;
+      }
+      set({
+        coins: s.coins - 45,
+        cannons: true,
+        coinPopKey: s.coinPopKey + 1,
+        speech: "Wim bolts a cannon onto every boat you sail. Goblin hulls are the target.",
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+
+    advanceCoach: () => {
+      const s = get();
+      const next = Math.min(5, (s.coach || 1) + 1);
+      set({ coach: next });
       scheduleWrite(get);
     },
 

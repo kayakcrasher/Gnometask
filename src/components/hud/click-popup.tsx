@@ -144,6 +144,11 @@ export function ClickPopup() {
   const pieHeld = useGame((s) => s.pieHeld);
   const woodsGreeted = useGame((s) => s.woodsGreeted);
   const sailTo = useGame((s) => s.sailTo);
+  const buyCannon = useGame((s) => s.buyCannon);
+  const fireCannon = useGame((s) => s.fireCannon);
+  const afloat = useGame((s) => s.afloat);
+  const cannons = useGame((s) => s.cannons);
+  const landing = useGame((s) => s.landing);
   const castLine = useGame((s) => s.castLine);
   const skills = useGame((s) => s.skills);
   const placed = useGame((s) => s.placed);
@@ -152,7 +157,28 @@ export function ClickPopup() {
   const chart = useGame((s) => s.chart);
   const sailChart = useGame((s) => s.sailChart);
 
-  if (!popup || combat) return null;
+  if (combat) return null;
+
+  const seaBar = afloat ? (
+    <div className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3 pb-[env(safe-area-inset-bottom)] md:bottom-5">
+      <div
+        className="pointer-events-auto flex w-full max-w-md flex-wrap gap-1.5 rounded-[20px] bg-parchment p-3 shadow-panel"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {!cannons ? (
+          <Action label={coins < 45 ? "Cannons · 45" : "Bolt cannons · 45"} tone="gold" disabled={coins < 45} onClick={buyCannon} />
+        ) : landing ? (
+          <Action label="Fire cannon" tone="berry" onClick={fireCannon} />
+        ) : (
+          <p className="flex flex-1 items-center px-1 text-xs font-semibold text-bark/70">Tap the water. The oars keep time.</p>
+        )}
+        <Action label="Back to dock" tone="quiet" onClick={() => sailTo("dock", afloat)} />
+      </div>
+    </div>
+  ) : null;
+
+  if (!popup) return seaBar;
 
   const enemy = popup.enemyId ? ENEMIES[popup.enemyId as EnemyId] : null;
   const building = popup.building;
@@ -283,7 +309,10 @@ export function ClickPopup() {
           ) : null}
 
           {popup.kind === "flag" ? (
-            <Action label="Attack" tone="berry" onClick={strikeFlag} />
+            <>
+              <Action label="Attack" tone="berry" onClick={strikeFlag} />
+              {afloat && cannons ? <Action label="Fire cannon" tone="gold" onClick={fireCannon} /> : null}
+            </>
           ) : null}
 
           {popup.hotspotId === "captain" ? (
@@ -318,7 +347,12 @@ export function ClickPopup() {
                   />
                 );
               })}
-              <Action label="Back to dock" tone="quiet" onClick={() => sailTo("dock", "row")} />
+              <Action label="Back to dock" tone="quiet" onClick={() => sailTo("dock", afloat ?? "row")} />
+              {!cannons ? (
+                <Action label="Cannons · 45" tone="gold" disabled={coins < 45} onClick={buyCannon} />
+              ) : landing ? (
+                <Action label="Fire cannon" tone="berry" onClick={fireCannon} />
+              ) : null}
               <Action
                 label="Fish from this hull"
                 tone="gold"
