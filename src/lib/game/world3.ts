@@ -99,15 +99,18 @@ export const MOUNT_NOBLE = { x: 1540, y: 190, name: "Mount Noble" };
 export const NOBLE_RADIUS = 460;
 /** World-unit height of the cone above the grass. */
 export const NOBLE_HEIGHT = 9.75;
+/** Map radius of the flat top. Feet use the same cut, so you can stand and look. */
+export const NOBLE_PLATEAU = 80;
 /** Visual top of the grass. Feet use this so a gnome is not buried in the bevel. */
 export const LAND_TOP = 0.28;
 export const NOBLE_BASE = LAND_TOP;
 
-/** Height of the cone above the grass. Linear, so it matches ConeGeometry. */
+/** Height of the cone above the grass. Flat across the plateau, then linear to the foot. */
 export function nobleRise(x: number, y: number) {
   const d = Math.hypot(x - MOUNT_NOBLE.x, y - MOUNT_NOBLE.y);
   if (d >= NOBLE_RADIUS) return 0;
-  return NOBLE_HEIGHT * (1 - d / NOBLE_RADIUS);
+  const along = Math.max(d, NOBLE_PLATEAU);
+  return NOBLE_HEIGHT * (1 - along / NOBLE_RADIUS);
 }
 
 export const SUNSTEP = { x: 3320, y: 760, name: "Sunstep" };

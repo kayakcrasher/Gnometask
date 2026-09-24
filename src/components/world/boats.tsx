@@ -472,7 +472,7 @@ function SupplyShip() {
             welcome();
           }}
         >
-          <GnomeRig hat={who.hat} scale={0.9} beard={false} />
+          <GnomeRig hat={who.hat} scale={1.15} beard={false} />
           <Html position={[0, 1.6, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
             <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
               {who.name}

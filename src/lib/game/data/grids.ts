@@ -144,6 +144,7 @@ export function capitolStreets(): StreetSeg[] {
     { ax: 230, ay: 475, bx: 930, by: 475, alley: false, width: 1.85 },
     { ax: 230, ay: 185, bx: 230, by: 620, alley: false, width: 1.45 },
     { ax: 720, ay: 185, bx: 720, by: CAPITOL_GATE.y, alley: false, width: 1.55 },
+    { ax: 400, ay: 848, bx: 760, by: 848, alley: false, width: 1.7 },
     { ax: 930, ay: 185, bx: 930, by: 475, alley: false, width: 1.45 },
     { ax: 380, ay: 255, bx: 560, by: 255, alley: false, width: 1.1 },
     { ax: 470, ay: 195, bx: 470, by: 300, alley: false, width: 1.1 },

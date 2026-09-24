@@ -173,9 +173,9 @@ export function Npcs3({
               onNpc(n.id, x, y);
             }}
           >
-            <GnomeRig hat={n.hat} scale={n.id === "pappy" ? 1.05 : n.id === "greg" ? 0.95 : 0.88} coat={coat} beard />
+            <GnomeRig hat={n.hat} scale={1.15} coat={coat} beard />
             {showLabels ? (
-            <Html zIndexRange={[8, 0]} position={[0, n.id === "pappy" ? 1.7 : 1.5, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+            <Html zIndexRange={[8, 0]} position={[0, 1.9, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
                 {n.shortName ?? n.name} · {n.job}
                 {onWatch ? " · watch" : ""}

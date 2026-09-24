@@ -2,7 +2,7 @@ import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
 import { cellsOf, filledCount, townGate, townGrid } from "@/lib/game/data/grids";
 import { CASINO_STAGE, prosperity } from "@/lib/game/data/market";
-import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_RADIUS, SCALE, groundY, to3 } from "@/lib/game/world3";
+import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_PLATEAU, NOBLE_RADIUS, SCALE, groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
 const LOTS = cellsOf(townGrid("sunstep"));
@@ -92,19 +92,21 @@ function Casino({ name, accent, stage }: { name: string; accent: string; stage: 
 
 export function MountNoble() {
   const radius = NOBLE_RADIUS * SCALE;
-  const snow = NOBLE_HEIGHT * 0.16;
+  const cut = NOBLE_PLATEAU / NOBLE_RADIUS;
+  const rise = NOBLE_HEIGHT * (1 - cut);
+  const top = radius * cut;
   const p = to3(MOUNT_NOBLE.x, MOUNT_NOBLE.y, 0);
   return (
     <group position={p}>
-      <mesh position={[0, NOBLE_BASE + NOBLE_HEIGHT / 2, 0]} castShadow receiveShadow>
-        <coneGeometry args={[radius, NOBLE_HEIGHT, 36]} />
+      <mesh position={[0, NOBLE_BASE + rise / 2, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[top, radius, rise, 40]} />
         <meshStandardMaterial color="#8a7a68" roughness={0.95} />
       </mesh>
-      <mesh position={[0, NOBLE_BASE + NOBLE_HEIGHT - snow / 2, 0]} castShadow>
-        <coneGeometry args={[radius * (snow / NOBLE_HEIGHT), snow, 24]} />
-        <meshStandardMaterial color="#f2efe6" roughness={0.82} />
+      <mesh position={[0, NOBLE_BASE + rise - 0.04, 0]} receiveShadow>
+        <cylinderGeometry args={[top * 0.96, top * 0.96, 0.08, 28]} />
+        <meshStandardMaterial color="#f4f1ea" roughness={0.9} />
       </mesh>
-      <Html position={[0, NOBLE_BASE + NOBLE_HEIGHT + 0.4, 0]} center distanceFactor={28} style={{ pointerEvents: "none" }}>
+      <Html position={[0, NOBLE_BASE + rise + 0.45, 0]} center distanceFactor={28} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
           Mount Noble
         </p>
@@ -154,7 +156,7 @@ export function Sunstep() {
           >
             <Casino name={house.name} accent={house.accent} stage={stage} />
             <group position={[0.85, 0, 0.35]}>
-              <GnomeRig hat={i % 2 ? "hat-straw" : "hat-night"} scale={0.72} coat="#8a6238" beard={i % 2 === 0} />
+              <GnomeRig hat={i % 2 ? "hat-straw" : "hat-night"} scale={1.15} coat="#8a6238" beard={i % 2 === 0} />
             </group>
           </group>
         );

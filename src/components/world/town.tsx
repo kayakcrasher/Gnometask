@@ -322,7 +322,7 @@ function WeekendQuill() {
         speak("Quill Bram. The ferry purser. It's the weekend, so the steps are as far as I go. The ledger opens when the week does.");
       }}
     >
-      <GnomeRig hat="hat-night" scale={0.9} coat="#2f3d34" beard />
+      <GnomeRig hat="hat-night" scale={1.15} coat="#2f3d34" beard />
       <Html position={[0, 1.6, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 text-[11px] font-semibold text-parchment">Quill · weekend</p>
       </Html>
@@ -486,7 +486,7 @@ export function Town3({
             <meshStandardMaterial color="#f2d7a2" emissive="#e2b84a" emissiveIntensity={0.2} />
           </mesh>
           <group position={[0.7, 0, 0.4]}>
-            <GnomeRig hat={home.hat} scale={0.72} coat="#6a5344" beard />
+            <GnomeRig hat={home.hat} scale={1.15} coat="#6a5344" beard />
           </group>
           <Html position={[0, 1.9, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
             <span className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 text-[10px] font-semibold text-parchment">
@@ -541,7 +541,7 @@ export function Town3({
         />
       ))}
       <group position={to3(havenCells[0]!.x + 28, havenCells[0]!.y + 8, groundY(havenCells[0]!.x, havenCells[0]!.y))}>
-        <GnomeRig hat="hat-guard" coat="#35543f" pants="#5b4230" scale={0.92} beard={false} />
+        <GnomeRig hat="hat-guard" coat="#35543f" pants="#5b4230" scale={1.15} beard={false} />
       </group>
       {tideCells.slice(0, tideN).map((cell) => (
         <group key={`tide-${cell.col}-${cell.row}`} position={to3(cell.x, cell.y, groundY(cell.x, cell.y))}>
@@ -614,7 +614,7 @@ function Settlers() {
                 </mesh>
               </group>
             )}
-            <GnomeRig hat={n.hat} scale={0.82} beard={false} coat="#6a3d58" />
+            <GnomeRig hat={n.hat} scale={1.15} beard={false} coat="#6a3d58" />
             <Html position={[0, 1.45, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
                 {label}

@@ -154,46 +154,76 @@ function at(pts: [number, number][], dist: number) {
 
 function DonkeyCart({ crates }: { crates: { current: THREE.Group | null } }) {
   return (
-    <group>
-      <group position={[-0.05, 0.22, 0.28]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.34, 0.22, 0.16]} />
-          <meshStandardMaterial color="#8a7a68" />
+    <group position={[0.42, 0, 0.15]}>
+      <group position={[0, 0, 0.72]}>
+        <mesh position={[0, 0.42, 0]} castShadow>
+          <boxGeometry args={[0.32, 0.28, 0.62]} />
+          <meshStandardMaterial color="#8d6a45" roughness={0.8} />
         </mesh>
-        <mesh position={[0, 0.08, 0.16]} castShadow>
-          <boxGeometry args={[0.14, 0.12, 0.14]} />
-          <meshStandardMaterial color="#9a8b78" />
+        <mesh position={[0, 0.58, 0.28]} castShadow>
+          <boxGeometry args={[0.22, 0.18, 0.24]} />
+          <meshStandardMaterial color="#a68462" />
         </mesh>
-        <mesh position={[0.05, 0.18, 0.22]} rotation={[0.3, 0, 0.3]}>
-          <boxGeometry args={[0.04, 0.12, 0.02]} />
+        <mesh position={[0.08, 0.72, 0.3]} rotation={[0.4, 0, 0.5]}>
+          <boxGeometry args={[0.05, 0.16, 0.02]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+        <mesh position={[-0.08, 0.72, 0.3]} rotation={[0.4, 0, -0.5]}>
+          <boxGeometry args={[0.05, 0.16, 0.02]} />
+          <meshStandardMaterial color="#5b4230" />
+        </mesh>
+        <mesh position={[0, 0.5, 0.4]}>
+          <boxGeometry args={[0.06, 0.04, 0.04]} />
+          <meshStandardMaterial color="#2a241c" />
+        </mesh>
+        <mesh position={[0, 0.42, -0.36]}>
+          <boxGeometry args={[0.08, 0.16, 0.08]} />
           <meshStandardMaterial color="#6b5340" />
         </mesh>
-        <mesh position={[-0.05, 0.18, 0.22]} rotation={[0.3, 0, -0.3]}>
-          <boxGeometry args={[0.04, 0.12, 0.02]} />
-          <meshStandardMaterial color="#6b5340" />
-        </mesh>
+        {[-0.14, 0.14].map((x) =>
+          [-0.16, 0.16].map((z) => (
+            <mesh key={`${x}-${z}`} position={[x, 0.16, z]} castShadow>
+              <boxGeometry args={[0.07, 0.28, 0.07]} />
+              <meshStandardMaterial color="#4a3424" />
+            </mesh>
+          )),
+        )}
       </group>
-      <mesh position={[0, 0.18, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.36, 6]} />
+      <mesh position={[0.12, 0.38, 0.28]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.025, 0.025, 0.7, 6]} />
         <meshStandardMaterial color="#5b4230" />
       </mesh>
-      <mesh position={[0, 0.28, -0.22]} castShadow>
-        <boxGeometry args={[0.42, 0.14, 0.36]} />
-        <meshStandardMaterial color="#a67c52" />
+      <mesh position={[-0.12, 0.38, 0.28]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.025, 0.025, 0.7, 6]} />
+        <meshStandardMaterial color="#5b4230" />
       </mesh>
-      {[-0.2, 0.2].map((x) => (
-        <mesh key={x} position={[x, 0.14, -0.22]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.1, 0.1, 0.04, 10]} />
-          <meshStandardMaterial color="#3e2e20" />
-        </mesh>
+      <mesh position={[0, 0.46, -0.15]} castShadow>
+        <boxGeometry args={[0.7, 0.28, 0.85]} />
+        <meshStandardMaterial color="#c4894a" roughness={0.78} />
+      </mesh>
+      <mesh position={[0, 0.64, -0.15]}>
+        <boxGeometry args={[0.76, 0.06, 0.9]} />
+        <meshStandardMaterial color="#8a5a32" />
+      </mesh>
+      {[-0.32, 0.32].map((x) => (
+        <group key={x} position={[x, 0.2, -0.15]}>
+          <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
+            <cylinderGeometry args={[0.2, 0.2, 0.08, 14]} />
+            <meshStandardMaterial color="#3e2e20" />
+          </mesh>
+          <mesh rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.08, 0.08, 0.1, 8]} />
+            <meshStandardMaterial color="#d6c4a4" />
+          </mesh>
+        </group>
       ))}
-      <group ref={crates} position={[0, 0.42, -0.22]}>
-        <mesh position={[-0.08, 0, 0]} castShadow>
-          <boxGeometry args={[0.16, 0.14, 0.16]} />
+      <group ref={crates} position={[0, 0.78, -0.15]}>
+        <mesh position={[-0.12, 0, 0.05]} castShadow>
+          <boxGeometry args={[0.28, 0.24, 0.28]} />
           <meshStandardMaterial color="#c4a574" />
         </mesh>
-        <mesh position={[0.1, 0.02, 0]} castShadow>
-          <boxGeometry args={[0.14, 0.16, 0.14]} />
+        <mesh position={[0.16, 0.02, -0.08]} castShadow>
+          <boxGeometry args={[0.24, 0.22, 0.24]} />
           <meshStandardMaterial color="#8a6238" />
         </mesh>
       </group>
@@ -242,9 +272,9 @@ function Runner({
         speak(line);
       }}
     >
-      <GnomeRig hat={hat} scale={0.72} coat={coat} beard />
+      <GnomeRig hat={hat} scale={1.15} coat={coat} beard />
       <DonkeyCart crates={crates} />
-      <Html position={[0, 1.35, 0]} center distanceFactor={20} style={{ pointerEvents: "none" }}>
+      <Html position={[0, 1.9, 0]} center distanceFactor={20} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/75 px-2 py-0.5 text-[10px] font-semibold text-parchment">{name}</p>
       </Html>
     </group>
