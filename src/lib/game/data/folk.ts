@@ -93,7 +93,7 @@ export function heartLine(id: string, days: number, settlers: Settler[], hall: n
   if (id === "pappy") {
     return led
       ? `The ${shift} watch can hold. A leader in the hall, and the boat-folk have a capital worth staying for.`
-      : "They have heart, and they keep an eye on the water. Until this hollow has a strong leader, the goblins will keep coming.";
+      : "They have heart, and they keep an eye on the water. Corinth fell to a king who stole. Until this hollow has a strong leader, the goblins will keep coming.";
   }
   const post = WATCH_POSTS.find((p) => p.id === id);
   if (!post) return null;

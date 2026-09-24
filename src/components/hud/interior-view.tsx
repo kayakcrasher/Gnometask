@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[] }> = {
   cottage: {
     title: "Inside the cottage",
-    blurb: "Kettle and boots. Tea restores heart. Ol Pappy is down on the dock.",
+    blurb: "Your great-grandpa's roof. Tea restores heart. You arrived with empty pockets. Ol Pappy is on the dock.",
   },
   hatshop: {
     title: "Hat shop",

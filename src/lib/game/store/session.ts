@@ -136,7 +136,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
           kind: "npc",
           hotspotId: "pappy",
           title: "Ol Pappy St. Francis",
-          blurb: "You made the dock. Come talk. The hollow starts here.",
+          blurb: "Empty pockets. I knew your great-grandpa. The cottage and the garden tiles are his. Come talk.",
           place: "dock",
           npcId: "pappy",
         },
@@ -144,7 +144,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         panel: "place",
         abroad: null,
         raids: [],
-        speech: `Welcome, ${trimmed}. Ol Pappy is on the dock. The cottage is up the path.`,
+        speech: `Welcome, ${trimmed}. You inherited a house and a few garden tiles. Nothing in your pockets. Ol Pappy is on the dock.`,
       });
       writeSave(snap(get()));
     },

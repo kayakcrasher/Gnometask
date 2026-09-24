@@ -78,7 +78,7 @@ export const ENEMIES: Record<
   },
   goblin: {
     name: "Green goblin",
-    blurb: "Came in on a raft. Wants the pies, not the conversation.",
+    blurb: "Green, and here to steal. The Goblin King's leftovers still practice the old trade.",
     hp: 16,
     dmg: 4,
     coins: 11,
@@ -105,7 +105,7 @@ export const ENEMIES: Record<
   },
   darkelf: {
     name: "Dark elf raider",
-    blurb: "Silver at the ear. Arrives by the night tide.",
+    blurb: "Hates a town that competes. If gnomes are building, a dark elf comes to break the work.",
     hp: 32,
     dmg: 6,
     coins: 20,

@@ -194,7 +194,7 @@ export function worldSlice(
         selectedPlace: "dock",
         gnomeX: raid.x - 42,
         gnomeY: raid.y,
-        speech: raid.kind === "goblin" ? "A green goblin from the raft. It wants pie." : "A dark elf from the night tide.",
+        speech: raid.kind === "goblin" ? "A goblin. It came to steal, not to talk." : "A dark elf. The hollow is working, so they came to stop it.",
       });
       armAutoAttack(get, 800);
     },

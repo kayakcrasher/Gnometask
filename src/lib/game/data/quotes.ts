@@ -1,8 +1,8 @@
 export const GREETS = [
-  "Click the land. I'll walk. That's the whole personality.",
-  "The ridge is awake. So is the hollow.",
-  "Timber, walls, watch. That's how a village lasts.",
-  "I already stretched. Your turn to raise the gate.",
+  "Empty pockets. A house. A few garden tiles. That's a start.",
+  "Corinth fell. This island is how we stand back up.",
+  "Gnomes build. Goblins steal. Remember which one you are.",
+  "The boats are moving again. Don't waste the morning.",
 ];
 
 export const CHEERS = [
@@ -22,14 +22,14 @@ export const NUDGES = [
 
 export const PLACE_LINES: Record<string, string[]> = {
   cottage: [
-    "Home is the hat stand and the kettle.",
-    "A cottage is just a hat that you live in.",
-    "Boots off. The kettle's on. Then the wall.",
+    "Your great-grandpa left this roof. Boots off. Then build.",
+    "Empty pockets on the way in. The kettle does not charge admission.",
+    "A house is a promise the Goblin King did not get to break.",
   ],
   garden: [
-    "If you water it, it remembers.",
-    "Weeds are just plants with bad timing.",
-    "The beds look hopeful today.",
+    "A few tiles, not a kingdom. He left you enough to plant.",
+    "If you water it, it remembers who did the work.",
+    "Goblins like a row they didn't hoe. Don't leave one unwatched.",
   ],
   shop: [
     "All the shops live on the square now. Hats, steel, pies, palisades.",
@@ -62,14 +62,14 @@ export const PLACE_LINES: Record<string, string[]> = {
     "Ore is just rocks that got ambitious.",
   ],
   ruins: [
-    "Someone built this on purpose. Then left.",
-    "The stones remember. They are not over it.",
-    "Rubble sprites pay rent in bruises.",
+    "Someone built this, and a thief army set it to nothing.",
+    "Corinth looked richer than this. That did not save it.",
+    "Rubble is what theft leaves when it is finished.",
   ],
   dock: [
-    "Goblins come in wet. Dark elves come in smug.",
-    "Coil the rope. Watch the tide. That's a dock.",
-    "If it pinches or loots, it lives here first.",
+    "Goblins steal. Pirates steal louder. Dark elves just hate that we compete.",
+    "The boats are going again. That is the whole good news.",
+    "Coil the rope. A nation that naps gets ransacked.",
   ],
   haven: [
     "Haven arrives the way moss does. Slowly, then all at once.",

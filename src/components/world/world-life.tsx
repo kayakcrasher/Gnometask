@@ -121,8 +121,8 @@ export function Rocks3() {
 const TALKS: { a: string; b: string; line: string }[] = [
   { a: "nettie", b: "miller", line: "Nettie: The hats sold. Miller: Then the pies can wait on the same purse." },
   { a: "wim", b: "brine", line: "Wim: Another hull for Oar & Yard. Brine: I'll take the rope money upstairs." },
-  { a: "pipkin", b: "pappy", line: "Pipkin: The co-op wants the south rows. Pappy: Write it down and split the purse." },
-  { a: "greg", b: "stoic", line: "Greg: The wall fund is thin. Stoic: Watch & Wall dipped. Buy it." },
+  { a: "pipkin", b: "pappy", line: "Pipkin: The garden tiles are his. Pappy: His great-grandpa left them. Empty pockets, and a hoe." },
+  { a: "greg", b: "stoic", line: "Greg: Goblins steal. Dark elves hate a rival. Stoic: Then we get rich on purpose, and we post a watch." },
   { a: "miller", b: "pipkin", line: "Miller: Flour's short. Pipkin: The co-op has a sack if the oven pays." },
   { a: "bramble", b: "nettie", line: "Bramble: Pine is not for sale. Nettie: Then the co-op buys the hats, not the trees." },
 ];

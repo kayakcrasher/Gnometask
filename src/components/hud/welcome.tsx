@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LORE } from "@/lib/game/data/lore";
 import { useGame } from "@/lib/game/store";
 import { unlockAudio } from "@/lib/game/juice";
 
@@ -43,7 +44,7 @@ export function Welcome() {
           The hollow
         </h1>
         <p className="mt-2 text-sm font-semibold leading-relaxed text-bark/75">
-          A defence island that grows as you play. You step off at the dock. Ol Pappy is waiting there. Ember stays hidden until the hall is level 3.
+          {LORE.welcome} {LORE.you} Ol Pappy is on the dock. He knew your great-grandpa.
         </p>
 
         {mode === "gate" ? (
