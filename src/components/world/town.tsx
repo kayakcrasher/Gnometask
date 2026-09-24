@@ -31,9 +31,9 @@ function TimberHouse({
   const combat = useGame((s) => s.combat);
   const interior = useGame((s) => s.interior);
   const showLabel = !combat && !interior && panel === "place";
-  const h = tall ? 2.35 : 1.7;
-  const w = tall ? 2.15 : 1.75;
-  const d = 1.45;
+  const h = tall ? 2.85 : 2.15;
+  const w = tall ? 2.7 : 2.35;
+  const d = tall ? 1.95 : 1.85;
   const upper = h - 0.84;
   const rc = roof === "pine" || roof === "moss" ? "#8d4e3c" : "#c4553a";
   return (
@@ -130,9 +130,9 @@ function Hall3({
 }) {
   const stone = level >= 3;
   const castle = level >= 5;
-  const w = 1.7 + level * 0.22;
-  const d = 1.35 + level * 0.08;
-  const wall = castle ? 2.15 : 1.15 + level * 0.12;
+  const w = 2.2 + level * 0.24;
+  const d = 1.75 + level * 0.1;
+  const wall = castle ? 2.55 : 1.45 + level * 0.14;
   const body = stone ? "#c9c3b4" : "#f0e2c4";
   const roof = castle ? "#8d4e3c" : "#c4553a";
   return (
@@ -215,8 +215,8 @@ function Bank3({
 }) {
   const coins = useGame((s) => s.coins);
   const tier = coins >= 200 ? 4 : coins >= 100 ? 3 : coins >= 40 ? 2 : 1;
-  const w = 1.5 + tier * 0.28;
-  const h = 1.15 + tier * 0.28;
+  const w = 1.95 + tier * 0.32;
+  const h = 1.5 + tier * 0.32;
   const stone = tier >= 2;
   return (
     <group
@@ -227,23 +227,23 @@ function Bank3({
       }}
     >
       <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[w, h, 1.35]} />
+        <boxGeometry args={[w, h, 1.75]} />
         <meshStandardMaterial color={stone ? "#d9d3c6" : "#f0e2c4"} />
       </mesh>
       {tier >= 3
         ? [-1, 1].map((side) => (
-            <mesh key={side} position={[side * (w / 2 - 0.15), h * 0.45, 0.7]} castShadow>
+            <mesh key={side} position={[side * (w / 2 - 0.15), h * 0.45, 0.92]} castShadow>
               <boxGeometry args={[0.14, h * 0.7, 0.14]} />
               <meshStandardMaterial color="#c9c3b4" />
             </mesh>
           ))
         : null}
-      <mesh position={[0, 0.36, 0.72]} castShadow>
+      <mesh position={[0, 0.36, 0.92]} castShadow>
         <boxGeometry args={[0.4, 0.7, 0.06]} />
         <meshStandardMaterial color="#5b4230" />
       </mesh>
       <mesh position={[0, h + 0.28, 0]} castShadow>
-        <boxGeometry args={[w + 0.2, 0.16, 1.55]} />
+        <boxGeometry args={[w + 0.24, 0.18, 1.95]} />
         <meshStandardMaterial color={tier >= 4 ? "#d6a84c" : "#c4553a"} />
       </mesh>
       {tier >= 4 ? (
@@ -256,7 +256,7 @@ function Bank3({
         <boxGeometry args={[0.28, 0.18, 0.04]} />
         <meshStandardMaterial color="#e2b84a" metalness={0.4} />
       </mesh>
-      <mesh position={[0, 0.08, 1.15]} receiveShadow>
+      <mesh position={[0, 0.08, 1.35]} receiveShadow>
         <boxGeometry args={[1.1, 0.16, 0.7]} />
         <meshStandardMaterial color="#c9c3b4" />
       </mesh>
@@ -265,7 +265,7 @@ function Bank3({
         <meshStandardMaterial color="#efe4cf" />
       </mesh>
       {[-1, 1].map((side) => (
-        <mesh key={`lamp-${side}`} position={[side * (w / 2 - 0.2), h * 0.72, 0.72]}>
+        <mesh key={`lamp-${side}`} position={[side * (w / 2 - 0.2), h * 0.72, 0.92]}>
           <sphereGeometry args={[0.08, 10, 8]} />
           <meshStandardMaterial color="#f2d7a2" emissive="#e2b84a" emissiveIntensity={0.35} />
         </mesh>
@@ -367,7 +367,7 @@ export function Town3({
       {EMPTY_LOTS.map((lot) => (
         <group key={lot.id} position={to3(lot.x, lot.y, groundY(lot.x, lot.y))}>
           <mesh position={[0, 0.05, 0]} receiveShadow>
-            <boxGeometry args={[1.15, 0.08, 0.9]} />
+            <boxGeometry args={[1.45, 0.08, 1.15]} />
             <meshStandardMaterial color="#cfc8ba" />
           </mesh>
           {[

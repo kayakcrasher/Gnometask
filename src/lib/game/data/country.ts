@@ -148,7 +148,7 @@ export function deckY(x: number, y: number) {
     for (let i = 1; i < road.points.length; i++) {
       const a = road.points[i - 1]!;
       const b = road.points[i]!;
-      if (near(a[0], a[1], b[0], b[1], 28)) return ROAD_TOP;
+      if (near(a[0], a[1], b[0], b[1], 18)) return ROAD_TOP;
     }
   }
   const segs = [...TOWN_GRIDS.flatMap((g) => townStreets(g)), ...capitolStreets()];

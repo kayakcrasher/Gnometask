@@ -56,8 +56,8 @@ export const NPCS: {
   {
     id: "stoic",
     name: "The Stoic Gnome",
-    x: 300,
-    y: 280,
+    x: 420,
+    y: 270,
     hat: "hat-night",
     place: "village",
     lines: [
@@ -71,8 +71,8 @@ export const NPCS: {
   {
     id: "nettie",
     name: "Nettie",
-    x: 240,
-    y: 640,
+    x: 300,
+    y: 505,
     hat: "hat-flower",
     place: "village",
     tradeInterior: "hatshop",
@@ -150,8 +150,8 @@ export const NPCS: {
   {
     id: "pipkin",
     name: "Pipkin",
-    x: 920,
-    y: 640,
+    x: 652,
+    y: 505,
     hat: "hat-berry",
     place: "garden",
     tradeInterior: "general",
@@ -165,8 +165,8 @@ export const NPCS: {
   {
     id: "miller",
     name: "Miller",
-    x: 560,
-    y: 640,
+    x: 476,
+    y: 505,
     hat: "hat-straw",
     place: "shop",
     tradeInterior: "bakery",

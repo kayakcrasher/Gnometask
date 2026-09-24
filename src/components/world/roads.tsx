@@ -8,7 +8,7 @@ import { TOWN_GRIDS, capitolStreets, townStreets } from "@/lib/game/data/grids";
 import { groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
-const COUNTRY_WIDTH = 2.6;
+const COUNTRY_WIDTH = 1.65;
 
 function cobbleTexture() {
   const c = document.createElement("canvas");

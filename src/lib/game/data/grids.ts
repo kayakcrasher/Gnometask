@@ -1,6 +1,6 @@
 /** Space between lot centers inside a block. A street is inserted every two lots. */
-export const LOT = 78;
-export const STREET_EXTRA = 40;
+export const LOT = 70;
+export const STREET_EXTRA = 18;
 
 export function gridPoint(ox: number, oy: number, col: number, row: number) {
   return {
@@ -55,63 +55,62 @@ export function townStreets(grid: TownGrid): StreetSeg[] {
       if (a.row === b.row && Math.abs(a.col - b.col) === 1) {
         const mid = (a.x + b.x) / 2;
         const alley = Math.abs(a.x - b.x) <= LOT + 4;
-        segs.push({ ax: mid, ay: a.y - half, bx: mid, by: a.y + half, alley, width: alley ? 0.85 : 2.4 });
+        segs.push({ ax: mid, ay: a.y - half, bx: mid, by: a.y + half, alley, width: alley ? 0.65 : 1.45 });
       }
       if (a.col === b.col && Math.abs(a.row - b.row) === 1) {
         const mid = (a.y + b.y) / 2;
         const alley = Math.abs(a.y - b.y) <= LOT + 4;
-        segs.push({ ax: a.x - half, ay: mid, bx: a.x + half, by: mid, alley, width: alley ? 0.85 : 2.4 });
+        segs.push({ ax: a.x - half, ay: mid, bx: a.x + half, by: mid, alley, width: alley ? 0.65 : 1.45 });
       }
     }
   }
   const xs = cells.map((c) => c.x);
   const ys = cells.map((c) => c.y);
-  const minX = Math.min(...xs) - 56;
-  const maxX = Math.max(...xs) + 56;
-  const minY = Math.min(...ys) - 56;
-  const maxY = Math.max(...ys) + 56;
+  const minX = Math.min(...xs) - 40;
+  const maxX = Math.max(...xs) + 40;
+  const minY = Math.min(...ys) - 40;
+  const maxY = Math.max(...ys) + 40;
   segs.push(
-    { ax: minX, ay: minY, bx: maxX, by: minY, alley: false, width: 2.4 },
-    { ax: minX, ay: maxY, bx: maxX, by: maxY, alley: false, width: 2.4 },
-    { ax: minX, ay: minY, bx: minX, by: maxY, alley: false, width: 2.4 },
-    { ax: maxX, ay: minY, bx: maxX, by: maxY, alley: false, width: 2.4 },
+    { ax: minX, ay: minY, bx: maxX, by: minY, alley: false, width: 1.45 },
+    { ax: minX, ay: maxY, bx: maxX, by: maxY, alley: false, width: 1.45 },
+    { ax: minX, ay: minY, bx: minX, by: maxY, alley: false, width: 1.45 },
+    { ax: maxX, ay: minY, bx: maxX, by: maxY, alley: false, width: 1.45 },
   );
   return segs;
 }
 
-/** Courthouse square. Hall faces the camera, shops face it across a wide main street. */
-export const CAPITOL_HALL = { x: 360, y: 380 };
-export const CAPITOL_FOUNTAIN = { x: 360, y: 250 };
-export const CAPITOL_LAWN = { x: 200, y: 190, w: 450, h: 330 };
+/** Courthouse square. Hall faces the camera, shops face it across the main street. */
+export const CAPITOL_HALL = { x: 470, y: 330 };
+export const CAPITOL_FOUNTAIN = { x: 470, y: 255 };
+export const CAPITOL_LAWN = { x: 270, y: 200, w: 380, h: 230 };
 
 export const CAPITOL_SHOPS: { id: string; x: number; y: number }[] = [
-  { id: "hatshop", x: 240, y: 710 },
-  { id: "armory", x: 400, y: 710 },
-  { id: "bakery", x: 560, y: 710 },
-  { id: "bank", x: 760, y: 710 },
+  { id: "hatshop", x: 300, y: 548 },
+  { id: "armory", x: 388, y: 548 },
+  { id: "bakery", x: 476, y: 548 },
+  { id: "bank", x: 564, y: 548 },
   { id: "townhall", x: CAPITOL_HALL.x, y: CAPITOL_HALL.y },
-  { id: "general", x: 920, y: 710 },
+  { id: "general", x: 652, y: 548 },
 ];
 
 export const CAPITOL_LOTS: { id: string; x: number; y: number }[] = [
-  { id: "lot-inn", x: 760, y: 280 },
-  { id: "lot-chapel", x: 760, y: 450 },
-  { id: "lot-market", x: 940, y: 280 },
-  { id: "lot-school", x: 940, y: 450 },
+  { id: "lot-inn", x: 790, y: 280 },
+  { id: "lot-chapel", x: 790, y: 390 },
+  { id: "lot-market", x: 878, y: 280 },
+  { id: "lot-school", x: 878, y: 390 },
 ];
 
-/** Wide streets around the square, a main street, and the alleys behind the blocks. */
+/** Streets around the square, a main street, and the alleys behind the blocks. */
 export function capitolStreets(): StreetSeg[] {
-  const wide = 3.6;
   return [
-    { ax: 180, ay: 170, bx: 1040, by: 170, alley: false, width: wide },
-    { ax: 180, ay: 590, bx: 1040, by: 590, alley: false, width: wide },
-    { ax: 180, ay: 170, bx: 180, by: 820, alley: false, width: 2.6 },
-    { ax: 680, ay: 170, bx: 680, by: 860, alley: false, width: 2.8 },
-    { ax: 250, ay: 250, bx: 470, by: 250, alley: false, width: 1.6 },
-    { ax: 360, ay: 190, bx: 360, by: 320, alley: false, width: 1.5 },
-    { ax: 840, ay: 200, bx: 840, by: 520, alley: true, width: 0.9 },
-    { ax: 200, ay: 800, bx: 820, by: 800, alley: true, width: 0.9 },
+    { ax: 230, ay: 185, bx: 820, by: 185, alley: false, width: 1.55 },
+    { ax: 230, ay: 475, bx: 820, by: 475, alley: false, width: 1.85 },
+    { ax: 230, ay: 185, bx: 230, by: 620, alley: false, width: 1.45 },
+    { ax: 720, ay: 185, bx: 720, by: 620, alley: false, width: 1.55 },
+    { ax: 380, ay: 255, bx: 560, by: 255, alley: false, width: 1.1 },
+    { ax: 470, ay: 195, bx: 470, by: 300, alley: false, width: 1.1 },
+    { ax: 834, ay: 250, bx: 834, by: 430, alley: true, width: 0.65 },
+    { ax: 270, ay: 600, bx: 700, by: 600, alley: true, width: 0.65 },
   ];
 }
 
