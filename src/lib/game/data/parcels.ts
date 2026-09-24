@@ -1,4 +1,5 @@
 import { NPCS } from "./npcs";
+import { onCapitolRoad } from "./country";
 import { onDesert, onGrass } from "../world3";
 
 export type Parcel = {
@@ -37,6 +38,7 @@ function buildParcels(): Parcel[] {
       const npc = home ? NPCS.find((n) => n.id === home.npc) : undefined;
       const far = Math.hypot(x - 280, y - 520) / 90;
       const price = Math.round((18 + far * 6) * (npc ? 2 : 1));
+      const road = onCapitolRoad(x + w / 2, y + h / 2, 100);
       out.push({
         id,
         x,
@@ -44,8 +46,8 @@ function buildParcels(): Parcel[] {
         w,
         h,
         price,
-        owner: npc?.id ?? null,
-        ownerName: npc?.shortName ?? npc?.name ?? null,
+        owner: road ? "capitol" : (npc?.id ?? null),
+        ownerName: road ? "The Capitol" : (npc?.shortName ?? npc?.name ?? null),
       });
     }
   }
@@ -54,6 +56,7 @@ function buildParcels(): Parcel[] {
       const cx = x + w / 2;
       const cy = y + h / 2;
       if (!onDesert(cx, cy)) continue;
+      const road = onCapitolRoad(cx, cy, 100);
       const far = Math.hypot(x - 280, y - 520) / 90;
       out.push({
         id: `d-${x}-${y}`,
@@ -62,8 +65,8 @@ function buildParcels(): Parcel[] {
         w,
         h,
         price: Math.round(22 + far * 5),
-        owner: null,
-        ownerName: null,
+        owner: road ? "capitol" : null,
+        ownerName: road ? "The Capitol" : null,
       });
     }
   }

@@ -106,7 +106,10 @@ export function honourSlice(
       if (tile.owner) {
         sfx("error");
         set({
-          speech: `${tile.ownerName ?? "That gnome"} holds this. Private property is sacred. The old law does not sell a neighbour's floor.`,
+          speech:
+            tile.owner === "capitol"
+              ? "The capitol holds the road. That ground is not for sale."
+              : `${tile.ownerName ?? "That gnome"} holds this. Private property is sacred. The old law does not sell a neighbour's floor.`,
         });
         return;
       }

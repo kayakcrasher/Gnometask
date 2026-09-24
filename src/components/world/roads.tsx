@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -7,47 +7,54 @@ import { ROADS, RUNNERS, pathToCapitol } from "@/lib/game/data/country";
 import { groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
-function steps(ax: number, ay: number, bx: number, by: number) {
-  const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 36));
-  const out: [number, number, number, number][] = [];
-  for (let i = 0; i < n; i++) {
-    const t0 = i / n;
-    const t1 = (i + 1) / n;
-    out.push([ax + (bx - ax) * t0, ay + (by - ay) * t0, ax + (bx - ax) * t1, ay + (by - ay) * t1]);
-  }
-  return out;
-}
+const ROAD_WIDTH = 1.85;
 
-function Strip({ ax, ay, bx, by }: { ax: number; ay: number; bx: number; by: number }) {
-  const a = to3(ax, ay, 0);
-  const b = to3(bx, by, 0);
-  const len = Math.hypot(b[0] - a[0], b[2] - a[2]);
-  if (len < 0.02) return null;
-  const y = groundY((ax + bx) / 2, (ay + by) / 2) + 0.05;
-  return (
-    <mesh
-      position={[(a[0] + b[0]) / 2, y, (a[2] + b[2]) / 2]}
-      rotation={[0, Math.atan2(b[0] - a[0], b[2] - a[2]), 0]}
-      receiveShadow
-    >
-      <boxGeometry args={[0.62, 0.045, len + 0.04]} />
-      <meshStandardMaterial color="#c4b49a" roughness={0.92} />
-    </mesh>
-  );
+function roadGeometry() {
+  const positions: number[] = [];
+  const push = (ax: number, ay: number, bx: number, by: number) => {
+    const a = to3(ax, ay, 0);
+    const b = to3(bx, by, 0);
+    const dx = b[0] - a[0];
+    const dz = b[2] - a[2];
+    const len = Math.hypot(dx, dz);
+    if (len < 0.02) return;
+    const px = (-dz / len) * (ROAD_WIDTH / 2);
+    const pz = (dx / len) * (ROAD_WIDTH / 2);
+    const y = groundY((ax + bx) / 2, (ay + by) / 2) + 0.06;
+    const x1 = a[0] + px;
+    const z1 = a[2] + pz;
+    const x2 = a[0] - px;
+    const z2 = a[2] - pz;
+    const x3 = b[0] + px;
+    const z3 = b[2] + pz;
+    const x4 = b[0] - px;
+    const z4 = b[2] - pz;
+    positions.push(x1, y, z1, x2, y, z2, x3, y, z3, x2, y, z2, x4, y, z4, x3, y, z3);
+  };
+  for (const road of ROADS) {
+    for (let i = 1; i < road.points.length; i++) {
+      const [ax, ay] = road.points[i - 1]!;
+      const [bx, by] = road.points[i]!;
+      const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 48));
+      for (let k = 0; k < n; k++) {
+        const t0 = k / n;
+        const t1 = (k + 1) / n;
+        push(ax + (bx - ax) * t0, ay + (by - ay) * t0, ax + (bx - ax) * t1, ay + (by - ay) * t1);
+      }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geo.computeVertexNormals();
+  return geo;
 }
 
 export function CountryRoads() {
+  const geo = useMemo(() => roadGeometry(), []);
   return (
-    <group>
-      {ROADS.flatMap((road) =>
-        road.points.slice(1).flatMap(([bx, by], i) => {
-          const [ax, ay] = road.points[i]!;
-          return steps(ax, ay, bx, by).map(([x0, y0, x1, y1], k) => (
-            <Strip key={`${road.id}-${i}-${k}`} ax={x0} ay={y0} bx={x1} by={y1} />
-          ));
-        }),
-      )}
-    </group>
+    <mesh geometry={geo} receiveShadow>
+      <meshStandardMaterial color="#c4b49a" roughness={0.94} />
+    </mesh>
   );
 }
 

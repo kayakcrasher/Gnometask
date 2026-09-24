@@ -147,102 +147,25 @@ function Pond() {
   );
 }
 
-function TownRoad() {
-  const a = to3(200, 380, 0.1);
-  const b = to3(200, 780, 0.1);
-  const len = Math.abs(b[2] - a[2]);
-  return (
-    <group>
-      <mesh position={[(a[0] + b[0]) / 2, 0.1, (a[2] + b[2]) / 2]} receiveShadow>
-        <boxGeometry args={[1.15, 0.05, len]} />
-        <meshStandardMaterial color="#c9b79a" roughness={0.9} />
-      </mesh>
-      <mesh position={[(a[0] + b[0]) / 2, 0.12, (a[2] + b[2]) / 2]}>
-        <boxGeometry args={[0.08, 0.02, len * 0.92]} />
-        <meshStandardMaterial color="#efe4cf" />
-      </mesh>
-    </group>
-  );
-}
-
-function Path() {
-  const spots: [number, number][] = [
-    [140, 520],
-    [220, 540],
-    [320, 560],
-    [500, 600],
-    [700, 640],
-    [860, 680],
-    [980, 720],
-  ];
-  return (
-    <group>
-      {spots.map(([x, y], i) => (
-        <Kenney key={i} name="path_stoneCircle" position={to3(x, y, 0.09)} scale={1.15} rotation={[0, i * 0.4, 0]} />
-      ))}
-    </group>
-  );
-}
-
 export function Terrain({ onWalk }: { onWalk: (x: number, y: number) => void }) {
   return (
     <group>
       <Water />
       <IslandMesh onWalk={onWalk} />
       <Pond />
-      <Path />
-      <TownRoad />
       <Kenney name="cliff_large_rock" position={to3(1760, 300, 0.12)} scale={1.35} />
       <Kenney name="cliff_cave_rock" position={to3(1380, 1220, 0.1)} scale={1.5} rotation={[0, 0.6, 0]} />
       <Kenney name="cliff_large_rock" position={to3(2360, 220, 0.12)} scale={1.25} />
       <Kenney name="rock_largeA" position={to3(1680, 480, 0.08)} scale={1.05} />
       <Kenney name="rock_largeB" position={to3(1900, 560, 0.08)} scale={0.95} />
       <Kenney name="rock_tallA" position={to3(2280, 180, 0.08)} scale={1.0} />
-      <Kenney name="rock_smallA" position={to3(400, 500, 0.08)} scale={0.9} />
       <Kenney name="rock_smallB" position={to3(90, 520, 0.04)} scale={0.85} />
       <Kenney name="bridge_wood" position={to3(140, 470, 0.04)} scale={1.15} rotation={[0, 1.1, 0]} />
-      <Kenney name="path_stoneCircle" position={to3(824, 530, 0.1)} scale={1.6} />
       <Kenney name="campfire_stones" position={to3(1680, 400, 0.08)} scale={1.0} />
       <Kenney name="statue_obelisk" position={to3(2360, 300, 0.08)} scale={1.05} />
       <Kenney name="tent_smallOpen" position={to3(1600, 620, 0.08)} scale={1.05} />
-      {[
-        [220, 640],
-        [300, 700],
-        [480, 680],
-        [600, 740],
-        [200, 800],
-        [1100, 580],
-        [1260, 640],
-        [90, 300],
-        [200, 200],
-        [400, 560],
-        [700, 600],
-        [1500, 500],
-      ].map(([x, y], i) => (
-        <Kenney
-          key={i}
-          name={i % 2 ? "grass_large" : "grass"}
-          position={to3(x!, y!, 0.08)}
-          scale={1.05 + (i % 3) * 0.12}
-          rotation={[0, i, 0]}
-        />
-      ))}
-      {[
-        [260, 660, "flower_redA"],
-        [340, 720, "flower_yellowA"],
-        [500, 700, "flower_purpleA"],
-        [180, 240, "flower_yellowB"],
-        [1180, 500, "flower_redB"],
-        [700, 640, "flower_purpleA"],
-      ].map(([x, y, n], i) => (
-        <Kenney key={`f${i}`} name={n as "flower_redA"} position={to3(Number(x), Number(y), 0.08)} scale={1.15} />
-      ))}
       <Kenney name="plant_bushLarge" position={to3(160, 280, 0.08)} scale={1.2} />
       <Kenney name="plant_bush" position={to3(240, 200, 0.08)} scale={1.05} />
-      <Kenney name="plant_bushSmall" position={to3(1080, 480, 0.08)} scale={1.0} />
-      <Kenney name="crops_wheatStageB" position={to3(240, 760, 0.08)} scale={1.15} />
-      <Kenney name="crop_carrot" position={to3(300, 780, 0.08)} scale={1.05} />
-      <Kenney name="crop_turnip" position={to3(360, 760, 0.08)} scale={1.05} />
     </group>
   );
 }

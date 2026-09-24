@@ -78,11 +78,14 @@ export const DESERT_POLY: [number, number][] = [
   [2700, 260],
   [2640, 500],
   [2420, 700],
-  [2680, 980],
-  [3120, 1140],
-  [3480, 880],
-  [3460, 560],
-  [3180, 320],
+  [2140, 860],
+  [1900, 1120],
+  [2300, 1280],
+  [3000, 1220],
+  [3480, 1040],
+  [3580, 760],
+  [3480, 460],
+  [3160, 280],
 ];
 
 export const DESERT_BEACH: [number, number][] = expandPoly(DESERT_POLY, 48);
@@ -91,7 +94,7 @@ export const MOUNT_NOBLE = { x: 1540, y: 190, name: "Mount Noble" };
 /** Map-space radius of the cone. The mesh uses the same number, so feet meet rock. */
 export const NOBLE_RADIUS = 460;
 /** World-unit height of the cone above the grass. */
-export const NOBLE_HEIGHT = 5.6;
+export const NOBLE_HEIGHT = 6.5;
 export const NOBLE_BASE = 0.08;
 
 /** Height of the cone above the grass. Linear, so it matches ConeGeometry. */

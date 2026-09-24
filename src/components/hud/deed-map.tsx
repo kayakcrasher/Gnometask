@@ -29,7 +29,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       <p className="mb-2 text-xs font-semibold text-parchment/80">
-        Gold is yours. Cream is a gnome's, and that deed does not sell. Pale hollow and the tan desert can be bought. Five villages. The gold pin is the Capitol.
+        Gold is yours. Cream is a gnome's. The tan strip is the capitol road, and it does not sell. Pale hollow and the desert can be bought.
       </p>
       <svg viewBox={`0 0 ${VW} ${VH}`} className="min-h-0 flex-1 rounded-[18px] bg-[#1e4d5a]">
         <polygon points={poly(BEACH_POLY)} fill="#e7d7a2" />
@@ -41,7 +41,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
             points={road.points.map(([x, y]) => `${x},${y}`).join(" ")}
             fill="none"
             stroke="#c4b49a"
-            strokeWidth={10}
+            strokeWidth={22}
             strokeLinejoin="round"
             strokeLinecap="round"
           />
@@ -74,7 +74,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
               width={p.w - 8}
               height={p.h - 8}
               rx={10}
-              fill={mine ? "#d6a84c" : p.owner ? "#efe4cf" : "#c9d6c2"}
+              fill={mine ? "#d6a84c" : p.owner === "capitol" ? "#c4b49a" : p.owner ? "#efe4cf" : "#c9d6c2"}
               fillOpacity={0.72}
               stroke={picked === p.id ? "#24402f" : "transparent"}
               strokeWidth={8}

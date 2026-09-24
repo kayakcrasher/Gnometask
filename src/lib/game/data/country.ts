@@ -70,45 +70,61 @@ export const ROADS: { id: string; points: [number, number][] }[] = [
   {
     id: "tideham",
     points: [
-      [130, 680],
-      [200, 640],
-      [260, 590],
-      [320, 550],
+      [145, 760],
+      [145, 940],
+      [520, 1000],
+      [860, 980],
+      [860, 680],
+      [540, 500],
     ],
   },
   {
     id: "greenlane",
     points: [
-      [320, 550],
-      [520, 530],
-      [760, 520],
-      [980, 530],
-      [1210, 540],
+      [860, 680],
+      [1100, 820],
+      [1420, 860],
+      [1700, 900],
     ],
   },
   {
     id: "haven",
     points: [
-      [1210, 540],
-      [1380, 640],
-      [1560, 720],
-      [1720, 760],
-      [1860, 760],
+      [1700, 900],
+      [1860, 940],
+      [2080, 920],
     ],
   },
   {
     id: "sunstep",
     points: [
-      [1860, 760],
-      [2100, 800],
-      [2340, 840],
-      [2580, 880],
-      [2860, 860],
-      [3100, 800],
-      [3320, 760],
+      [2080, 920],
+      [2300, 980],
+      [2620, 1020],
+      [3000, 1040],
+      [3240, 1000],
+      [3360, 960],
     ],
   },
 ];
+
+/** True when a point sits on the capitol's road. That ground is not for sale. */
+export function onCapitolRoad(x: number, y: number, reach = 70) {
+  for (const road of ROADS) {
+    for (let i = 1; i < road.points.length; i++) {
+      const [ax, ay] = road.points[i - 1]!;
+      const [bx, by] = road.points[i]!;
+      const dx = bx - ax;
+      const dy = by - ay;
+      const len2 = dx * dx + dy * dy || 1;
+      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2));
+      const px = ax + dx * t;
+      const py = ay + dy * t;
+      if (Math.hypot(x - px, y - py) <= reach) return true;
+    }
+  }
+  return false;
+}
 
 function roadById(id: string) {
   return ROADS.find((r) => r.id === id)?.points ?? [];
@@ -116,18 +132,19 @@ function roadById(id: string) {
 
 /** Waypoints from a town's gate to the capitol steps. */
 export function pathToCapitol(townId: string): [number, number][] {
+  const gate: [number, number] = [540, 500];
   if (townId === "tideham") return roadById("tideham");
-  if (townId === "greenlane") return [...roadById("greenlane")].reverse();
+  if (townId === "greenlane") return [...[...roadById("greenlane")].reverse(), gate];
   if (townId === "haven") {
     const haven = [...roadById("haven")].reverse();
     const lane = [...roadById("greenlane")].reverse().slice(1);
-    return [...haven, ...lane];
+    return [...haven, ...lane, gate];
   }
   if (townId === "sunstep") {
     const sun = [...roadById("sunstep")].reverse();
     const haven = [...roadById("haven")].reverse().slice(1);
     const lane = [...roadById("greenlane")].reverse().slice(1);
-    return [...sun, ...haven, ...lane];
+    return [...sun, ...haven, ...lane, gate];
   }
   return [];
 }

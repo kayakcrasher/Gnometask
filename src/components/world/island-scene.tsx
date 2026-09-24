@@ -524,13 +524,13 @@ export function IslandCanvas({
       <CanvasGate onFail={() => failRef.current?.()}>
         <Canvas
           key={epoch}
-          dpr={[1, 1.25]}
+          dpr={[1, 1]}
           camera={{ position: [-6, 16, -2], fov: 42, near: 0.1, far: 160 }}
           gl={{
-            antialias: true,
+            antialias: false,
             alpha: false,
-            powerPreference: "default",
-            preserveDrawingBuffer: true,
+            powerPreference: "high-performance",
+            preserveDrawingBuffer: false,
             failIfMajorPerformanceCaveat: false,
           }}
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}

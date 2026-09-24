@@ -73,7 +73,7 @@ export function Minimap({
             points={road.points.map(([x, y]) => `${x},${y}`).join(" ")}
             fill="none"
             stroke="#efe4cf"
-            strokeWidth={8}
+            strokeWidth={16}
             strokeLinejoin="round"
           />
         ))}

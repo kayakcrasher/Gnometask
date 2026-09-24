@@ -99,8 +99,8 @@ export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number 
 
   const walkTo = useCallback(
     (x: number, y: number, arrive?: () => void) => {
-      const nx = clamp(x, 20, 2760);
-      const ny = clamp(y, 20, 1460);
+      const nx = clamp(x, 20, 3640);
+      const ny = clamp(y, 20, 1480);
       if (!onIsland(nx, ny)) {
         arrive?.();
         return;
