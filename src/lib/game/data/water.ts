@@ -1,7 +1,8 @@
 import { onDesert, onGrass, onIsland } from "../world3";
 
-/** World Y of the sea surface. Land sits above this. Hulls float on it. */
-export const SEA_LEVEL = -0.16;
+/** World Y of the sea surface. Land sits above this. Hulls float on it.
+ *  Shore waves stay under 0.05 so they cannot climb the grass. Swells start past the island. */
+export const SEA_LEVEL = -0.22;
 
 /**
  * Water rules, same as most shore games:

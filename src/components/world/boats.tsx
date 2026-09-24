@@ -320,7 +320,7 @@ function Dockhouse({ onEnter }: { onEnter: () => void }) {
 
 function SupplyHull() {
   return (
-    <group scale={2.35}>
+    <group scale={3.2}>
       <mesh position={[0, 0.22, 0]} castShadow>
         <boxGeometry args={[0.95, 0.28, 3.6]} />
         <meshStandardMaterial color="#a86b3c" roughness={0.8} />
@@ -509,7 +509,9 @@ export function Harbor3({
             }}
           >
             <Bob speed={0.7 + boat.need * 0.05}>
-              <BoatMesh kind={boat.id} />
+              <group scale={2.4}>
+                <BoatMesh kind={boat.id} />
+              </group>
             </Bob>
           </group>
         );

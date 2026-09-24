@@ -515,7 +515,7 @@ export function Landing3({
   const boat = to3(landing.boatX, landing.boatY, -0.05);
   return (
     <group>
-      <group position={boat} rotation={[0, -0.6, 0]}>
+      <group position={boat} rotation={[0, -0.6, 0]} scale={2.3}>
         <BoatMesh kind="goblin" />
         {landing.flagDown ? (
           <mesh position={[0.25, 0.08, 0.05]} rotation={[0, 0, Math.PI / 2.4]} castShadow>

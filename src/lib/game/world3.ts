@@ -136,7 +136,7 @@ export function shapePts(poly: [number, number][]): [number, number][] {
 }
 
 export function groundY(x: number, y: number) {
-  if (!onIsland(x, y)) return -0.02;
+  if (!onIsland(x, y)) return 0.12;
   const pond = Math.hypot(x - 520, y - 190);
   if (pond < 90 && nobleRise(x, y) === 0) return -0.08;
   let h = onDesert(x, y)

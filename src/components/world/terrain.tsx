@@ -86,11 +86,12 @@ const waterVert = `
   void main() {
     vec3 p = position;
     float dist = length(p.xy);
-    float far = smoothstep(18.0, 70.0, dist);
-    float amp = mix(0.03, 0.42, far);
-    float swell = sin(p.x * 0.22 + uTime * 0.7) * amp + cos(p.y * 0.16 + uTime * 0.45) * amp * 0.8;
-    float chop = sin(p.x * 0.9 + p.y * 0.4 + uTime * 1.4) * amp * 0.25;
-    float w = swell + chop;
+    // The island shore sits about 70 units out. Keep that band flat so the sea cannot climb the town.
+    float offshore = smoothstep(82.0, 130.0, dist);
+    float amp = mix(0.025, 0.16, offshore);
+    float swell = sin(p.x * 0.18 + uTime * 0.55) * amp + cos(p.y * 0.14 + uTime * 0.38) * amp * 0.65;
+    float chop = sin(p.x * 0.7 + p.y * 0.35 + uTime * 1.1) * amp * 0.2;
+    float w = clamp(swell + chop, -0.04, mix(0.045, 0.16, offshore));
     p.z += w;
     vWave = w;
     vDist = dist;
@@ -109,17 +110,16 @@ const waterFrag = `
   varying float vDist;
   varying vec2 vUv;
   void main() {
-    float deep = smoothstep(36.0, 88.0, vDist);
-    float shore = 1.0 - smoothstep(18.0, 48.0, vDist);
+    float deep = smoothstep(70.0, 120.0, vDist);
+    float shore = 1.0 - smoothstep(48.0, 82.0, vDist);
     vec3 col = mix(uShallow, uDeep, deep);
-    col = mix(col, uSand, shore * 0.55);
-    float crest = smoothstep(0.08, 0.22, vWave) * (0.35 + deep);
-    float wash = smoothstep(0.42, 0.7, shore) * (1.0 - shore);
-    float glint = pow(max(0.0, sin(vUv.x * 80.0 + uTime * 2.2) * sin(vUv.y * 54.0 - uTime * 1.5)), 12.0);
-    col = mix(col, uFoam, max(crest, wash));
-    col += vec3(glint) * (0.35 + shore);
-    float alpha = mix(0.62, 0.9, deep);
-    gl_FragColor = vec4(col, alpha);
+    col = mix(col, uSand, shore * 0.42);
+    float crest = smoothstep(0.05, 0.14, vWave) * deep;
+    float wash = smoothstep(0.35, 0.75, shore) * (1.0 - shore);
+    float glint = pow(max(0.0, sin(vUv.x * 90.0 + uTime * 1.8) * sin(vUv.y * 60.0 - uTime * 1.3)), 14.0);
+    col = mix(col, uFoam, max(crest, wash * 0.65));
+    col += vec3(glint) * 0.28;
+    gl_FragColor = vec4(col, mix(0.78, 0.92, deep));
   }
 `;
 
@@ -137,7 +137,7 @@ function Water() {
         vertexShader: waterVert,
         fragmentShader: waterFrag,
         transparent: true,
-        depthWrite: false,
+        depthWrite: true,
       }),
     [],
   );
@@ -145,8 +145,8 @@ function Water() {
     mat.uniforms.uTime!.value = clock.elapsedTime;
   });
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, SEA_LEVEL, 0]} material={mat} receiveShadow>
-      <planeGeometry args={[240, 170, 90, 60]} />
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, SEA_LEVEL, 0]} material={mat} renderOrder={-1}>
+      <planeGeometry args={[360, 260, 80, 50]} />
     </mesh>
   );
 }
