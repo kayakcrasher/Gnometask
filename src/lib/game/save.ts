@@ -463,7 +463,7 @@ export function applyDailyRollover(save: GameSave): GameSave {
   ),
   );
   const grown = growFolk(rolled, true);
-  return { ...rolled, settlers: grown.settlers, placed: grown.placed };
+  return { ...rolled, coins: rolled.coins + grown.wage, settlers: grown.settlers, placed: grown.placed };
 }
 
 export function loadSave(): GameSave {

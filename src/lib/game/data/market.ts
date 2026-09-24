@@ -16,6 +16,10 @@ export const STOCKS: Stock[] = [
   { id: "salt", name: "Saltglass", start: 16, blurb: "Salt pans and bottles. A sharp stock." },
   { id: "moss", name: "Moss Hat Co", start: 7, blurb: "Hats. Some seasons everyone buys. Some seasons they don't." },
   { id: "lantern", name: "Lantern Ferry", start: 12, blurb: "Night boats. Pretty, and easily spooked." },
+  { id: "keen", name: "Keen Edge", start: 18, blurb: "Weapons. When this climbs, the armory hangs meaner steel." },
+  { id: "mail", name: "Mail & Plate", start: 15, blurb: "Armour. A nervous stock, and a useful one." },
+  { id: "oar", name: "Oar & Yard", start: 20, blurb: "Boats. Hulls for the ferry folk. Wim keeps a share under the bed." },
+  { id: "wall", name: "Watch & Wall", start: 13, blurb: "Town defense. Palisades, towers, and the night shift." },
 ];
 
 export function isWeekend(days: number) {
@@ -38,3 +42,26 @@ export function nextGnomeRise(days: number) {
   const quarters = Math.floor(Math.max(0, days - 1) / QUARTER_DAYS);
   return (quarters + 1) * QUARTER_DAYS + 1;
 }
+
+/** Coins plus the days the hollow has been earning. Shops and the strip read this. */
+export function hollowWorth(coins: number, days: number) {
+  return Math.max(0, coins) + Math.max(0, days) * 3;
+}
+
+/** 0 sawdust pit, 1 motel, 2 strip resort, 3 fountain house, 4 glass tower. */
+export function prosperity(coins: number, days: number) {
+  const worth = hollowWorth(coins, days);
+  if (worth >= 900) return 4;
+  if (worth >= 420) return 3;
+  if (worth >= 180) return 2;
+  if (worth >= 70) return 1;
+  return 0;
+}
+
+export const CASINO_STAGE = [
+  "Sawdust pit",
+  "Motel casino",
+  "Strip resort",
+  "Fountain house",
+  "Glass tower",
+] as const;

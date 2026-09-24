@@ -1,6 +1,7 @@
 import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
 import { cellsOf, filledCount, townGate, townGrid } from "@/lib/game/data/grids";
+import { CASINO_STAGE, prosperity } from "@/lib/game/data/market";
 import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_RADIUS, SCALE, groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
@@ -30,43 +31,57 @@ const HOUSES = [
   { name: "Mirage", accent: "#c084fc" },
 ];
 
-function Casino({ name, accent, tall }: { name: string; accent: string; tall: boolean }) {
-  const h = tall ? 2.7 : 1.85;
+function Casino({ name, accent, stage }: { name: string; accent: string; stage: number }) {
+  const floors = [1, 2, 3, 4, 6][stage] ?? 1;
+  const h = 0.72 * floors;
+  const w = 1.15 + stage * 0.16;
+  const glass = stage >= 3;
+  const body = stage === 0 ? "#c4894a" : glass ? "#1a2433" : "#241820";
   return (
     <group>
       <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.35, h, 1.05]} />
-        <meshStandardMaterial color="#161c28" metalness={0.55} roughness={0.28} />
+        <boxGeometry args={[w, h, w * 0.78]} />
+        <meshStandardMaterial color={body} metalness={glass ? 0.62 : 0.2} roughness={glass ? 0.22 : 0.7} />
       </mesh>
-      <mesh position={[0, h * 0.55, 0.54]}>
-        <boxGeometry args={[0.7, h * 0.45, 0.04]} />
-        <meshStandardMaterial color="#9fd8ff" emissive="#7ec8ff" emissiveIntensity={0.35} />
+      <mesh position={[0, h * 0.62, w * 0.4]}>
+        <boxGeometry args={[w * 0.55, Math.max(0.28, h * 0.28), 0.04]} />
+        <meshStandardMaterial color="#b9e6ff" emissive="#8fd4ff" emissiveIntensity={stage >= 2 ? 0.45 : 0.15} />
       </mesh>
-      <mesh position={[0, h / 2, 0]}>
-        <boxGeometry args={[1.42, 0.06, 1.12]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.1} />
+      <mesh position={[0, 0.22, w * 0.4]}>
+        <boxGeometry args={[0.28, 0.4, 0.04]} />
+        <meshStandardMaterial color="#5b4230" />
       </mesh>
-      <mesh position={[0, h + 0.22, 0]} castShadow>
-        <boxGeometry args={[1.5, 0.28, 0.28]} />
-        <meshStandardMaterial color="#241c28" />
+      <mesh position={[w * 0.28, h - 0.22, w * 0.4]}>
+        <boxGeometry args={[0.22, 0.16, 0.04]} />
+        <meshStandardMaterial color="#f2d7a2" emissive="#e2b84a" emissiveIntensity={0.4} />
       </mesh>
-      <mesh position={[0, h + 0.22, 0.15]}>
-        <boxGeometry args={[1.2, 0.1, 0.04]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.4} />
+      <mesh position={[0, h + 0.16, 0]} castShadow>
+        <boxGeometry args={[w + 0.2, 0.22, 0.24]} />
+        <meshStandardMaterial color="#1a1218" />
       </mesh>
-      {[-0.42, -0.14, 0.14, 0.42].map((x) => (
-        <mesh key={x} position={[x, h + 0.46, 0.12]}>
-          <sphereGeometry args={[0.055, 8, 8]} />
-          <meshStandardMaterial color="#fff6d0" emissive="#ffe08a" emissiveIntensity={1.2} />
-        </mesh>
-      ))}
-      {tall ? (
-        <mesh position={[0.34, h + 0.85, 0]} castShadow>
-          <boxGeometry args={[0.28, 1.15, 0.28]} />
-          <meshStandardMaterial color="#10141c" metalness={0.6} roughness={0.25} />
+      <mesh position={[0, h + 0.16, 0.13]}>
+        <boxGeometry args={[w * 0.8, 0.08, 0.04]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.7 + stage * 0.2} />
+      </mesh>
+      {stage >= 2 ? (
+        <mesh position={[0, 0.9, w * 0.55]} castShadow>
+          <boxGeometry args={[w * 0.7, 0.08, 0.45]} />
+          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.5} />
         </mesh>
       ) : null}
-      <Html position={[0, h + 0.7, 0.2]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+      {stage >= 3 ? (
+        <mesh position={[0, 0.08, w * 0.85]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.38, 16]} />
+          <meshStandardMaterial color="#7eb0c8" emissive="#3de2ff" emissiveIntensity={0.35} />
+        </mesh>
+      ) : null}
+      {stage >= 4 ? (
+        <mesh position={[0, h + 0.7, 0]} castShadow>
+          <boxGeometry args={[0.28, 0.9, 0.28]} />
+          <meshStandardMaterial color="#10141c" metalness={0.7} roughness={0.2} />
+        </mesh>
+      ) : null}
+      <Html position={[0, h + (stage >= 4 ? 1.3 : 0.55), 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full px-2 py-0.5 font-display text-[10px] font-semibold" style={{ background: "#140e18", color: accent }}>
           {name}
         </p>
@@ -101,8 +116,10 @@ export function MountNoble() {
 export function Sunstep() {
   const days = useGame((s) => s.daysPlayed);
   const deeds = useGame((s) => s.deeds);
-  const wager = useGame((s) => s.wager);
+  const coins = useGame((s) => s.coins);
+  const enter = useGame((s) => s.enterInterior);
   const { count } = sunstepSize(days, deeds);
+  const stage = prosperity(coins, days);
   const gate = townGate("sunstep");
   return (
     <group>
@@ -132,10 +149,10 @@ export function Sunstep() {
             position={to3(lot.x, lot.y, groundY(lot.x, lot.y))}
             onClick={(e) => {
               e.stopPropagation();
-              wager();
+              enter("casino");
             }}
           >
-            <Casino name={house.name} accent={house.accent} tall={i % 3 === 0} />
+            <Casino name={house.name} accent={house.accent} stage={stage} />
             <group position={[0.85, 0, 0.35]}>
               <GnomeRig hat={i % 2 ? "hat-straw" : "hat-night"} scale={0.72} coat="#8a6238" beard={i % 2 === 0} />
             </group>
@@ -144,7 +161,7 @@ export function Sunstep() {
       })}
       <Html position={to3(LOTS[0]!.x, LOTS[0]!.y, groundY(LOTS[0]!.x, LOTS[0]!.y) + 3.2)} center distanceFactor={18} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
-          Sunstep
+          Sunstep · {CASINO_STAGE[stage]}
         </p>
       </Html>
     </group>

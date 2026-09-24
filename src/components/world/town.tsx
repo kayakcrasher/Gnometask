@@ -6,7 +6,35 @@ import { TOWN_SHOPS } from "@/lib/game/world";
 import { EMPTY_LOTS, PLACE_ANCHORS, VILLAGE_SLOTS } from "@/lib/game/data/layout";
 import { CAPITOL_FOUNTAIN, CAPITOL_HALL, CAPITOL_LAWN, cellsOf, filledCount, townGrid } from "@/lib/game/data/grids";
 import { folkLine, settlerRank } from "@/lib/game/data/folk";
-import { isWeekend } from "@/lib/game/data/market";
+import { isWeekend, prosperity, sharePrice } from "@/lib/game/data/market";
+const OFFICES: { lot: string; stock: string; name: string; x: number; y: number }[] = [
+  { lot: "lot-inn", stock: "keen", name: "Keen Edge", x: 790, y: 280 },
+  { lot: "lot-chapel", stock: "mail", name: "Mail & Plate", x: 878, y: 280 },
+  { lot: "lot-market", stock: "oar", name: "Oar & Yard", x: 790, y: 390 },
+  { lot: "lot-school", stock: "wall", name: "Watch & Wall", x: 878, y: 390 },
+];
+
+function OfficeBlock({ name, floors }: { name: string; floors: number }) {
+  const h = 0.48 * floors;
+  const glass = floors >= 4;
+  return (
+    <group>
+      <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[1.15, h, 0.9]} />
+        <meshStandardMaterial color={glass ? "#243044" : "#d9d3c6"} metalness={glass ? 0.45 : 0.05} roughness={glass ? 0.3 : 0.8} />
+      </mesh>
+      {Array.from({ length: floors }, (_, i) => (
+        <mesh key={i} position={[0, 0.28 + i * 0.48, 0.46]}>
+          <boxGeometry args={[0.7, 0.16, 0.04]} />
+          <meshStandardMaterial color="#cfe4ef" emissive="#9ec3d4" emissiveIntensity={0.15} />
+        </mesh>
+      ))}
+      <Html position={[0, h + 0.35, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+        <span className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">{name}</span>
+      </Html>
+    </group>
+  );
+}
 import { useGame } from "@/lib/game/store";
 import type { InteriorId } from "@/lib/game/types";
 
@@ -334,6 +362,8 @@ export function Town3({
 }) {
   const claimed = useGame((s) => s.claimed);
   const days = useGame((s) => s.daysPlayed);
+  const coins = useGame((s) => s.coins);
+  const stage = prosperity(coins, days);
   const havenN = filledCount("haven", days);
   const tideN = filledCount("tideham", days);
   return (
@@ -364,7 +394,10 @@ export function Town3({
         );
         return faceWest;
       })}
-      {EMPTY_LOTS.map((lot) => (
+      {EMPTY_LOTS.map((lot) => {
+        const office = OFFICES.find((o) => o.lot === lot.id);
+        if (office && stage >= 1) return null;
+        return (
         <group key={lot.id} position={to3(lot.x, lot.y, groundY(lot.x, lot.y))}>
           <mesh position={[0, 0.05, 0]} receiveShadow>
             <boxGeometry args={[1.45, 0.08, 1.15]} />
@@ -394,7 +427,18 @@ export function Town3({
             </mesh>
           ) : null}
         </group>
-      ))}
+        );
+      })}
+      {OFFICES.map((office) => {
+        if (stage < 1) return null;
+        const price = sharePrice(office.stock, days);
+        const floors = Math.max(2, Math.min(7, 1 + Math.round(price / 8)));
+        return (
+          <group key={office.stock} position={to3(office.x, office.y, groundY(office.x, office.y))}>
+            <OfficeBlock name={office.name} floors={floors} />
+          </group>
+        );
+      })}
       <mesh
         position={to3(CAPITOL_LAWN.x + CAPITOL_LAWN.w / 2, CAPITOL_LAWN.y + CAPITOL_LAWN.h / 2, 0.3)}
         rotation={[-Math.PI / 2, 0, 0]}

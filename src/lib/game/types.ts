@@ -46,7 +46,8 @@ export type InteriorId =
   | "townhall"
   | "watch"
   | "bank"
-  | "dockhouse";
+  | "dockhouse"
+  | "casino";
 
 export type DragonLook = "ember" | "moss" | "night" | "gold";
 export type DragonHorn = "short" | "long" | "crown";
@@ -166,6 +167,7 @@ export type CatalogItem = {
   reqSkill?: SkillId;
   reqLevel?: number;
   reqHall?: number;
+  reqWealth?: number;
 };
 
 export type TreeSave = {

@@ -29,6 +29,8 @@ export const NPCS: {
   x: number;
   y: number;
   hat: string;
+  job: string;
+  org: string;
   place: PlaceId;
   lines: string[];
   tradeInterior?: InteriorId;
@@ -42,10 +44,13 @@ export const NPCS: {
     x: 96,
     y: 555,
     hat: "hat-straw",
+    job: "elder",
+    org: "Hollow Trust",
     place: "dock",
     stay: true,
     lines: [
       "We were a boat-ferrying folk before we were a town. Wild water, short tempers, long oars.",
+      "Island gnomes invest. A purse that only sits is a purse that rusts.",
       "The old law is short. What a gnome stands on is sacred. You do not buy another gnome's floor.",
       "The trouble is the capital. The old one is a story. This hollow has to become the new one, or the boat-folk thin out.",
       "Thrive means walls, bread, and a hall that can say no to goblins. That's the work.",
@@ -59,6 +64,8 @@ export const NPCS: {
     x: 420,
     y: 270,
     hat: "hat-night",
+    job: "investor",
+    org: "Hollow Trust",
     place: "village",
     lines: [
       "A deed is a promise you do not shop. That is older than the hall.",
@@ -74,6 +81,8 @@ export const NPCS: {
     x: 300,
     y: 505,
     hat: "hat-flower",
+    job: "hatter",
+    org: "Moss Hat Co",
     place: "village",
     tradeInterior: "hatshop",
     lines: [
@@ -89,6 +98,8 @@ export const NPCS: {
     x: 168,
     y: 248,
     hat: "hat-moss",
+    job: "forager",
+    org: "Lane Co-op",
     place: "woods",
     lines: [
       "The woods were wild before the boats, and the boats were wild before the town.",
@@ -104,6 +115,8 @@ export const NPCS: {
     x: 140,
     y: 380,
     hat: "hat-night",
+    job: "watch captain",
+    org: "Watch & Wall",
     place: "dock",
     stay: true,
     tradeInterior: "watch",
@@ -121,6 +134,8 @@ export const NPCS: {
     x: 150,
     y: 660,
     hat: "hat-straw",
+    job: "pier clerk",
+    org: "Pie & Tide",
     place: "dock",
     tradeInterior: "bakery",
     lines: [
@@ -137,6 +152,8 @@ export const NPCS: {
     x: 118,
     y: 500,
     hat: "hat-straw",
+    job: "dockmaster",
+    org: "Oar & Yard",
     place: "dock",
     stay: true,
     tradeInterior: "dockhouse",
@@ -153,6 +170,8 @@ export const NPCS: {
     x: 652,
     y: 505,
     hat: "hat-berry",
+    job: "farmer",
+    org: "Lane Co-op",
     place: "garden",
     tradeInterior: "general",
     lines: [
@@ -168,6 +187,8 @@ export const NPCS: {
     x: 476,
     y: 505,
     hat: "hat-straw",
+    job: "baker",
+    org: "Pie & Tide",
     place: "shop",
     tradeInterior: "bakery",
     lines: [

@@ -5,6 +5,7 @@ import { sfx } from "../juice";
 import { BUILDING_MAX, type BuildingId, type EquipSlot } from "../types";
 import { havenLevel, HALL_COST, hallUnlocks } from "../world";
 import { applyXp, levelsOf, SKILL_LABEL, totalLevel } from "../xp";
+import { hollowWorth } from "../data/market";
 import { scheduleWrite, markPappyExpand } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -45,6 +46,13 @@ export function economySlice(
         sfx("error");
         set({
           speech: `Need Town Hall ${item.reqHall}. The hall is rank ${s.townHallLevel}. Upgrade it on the square.`,
+        });
+        return false;
+      }
+      if (item.reqWealth && hollowWorth(s.coins, s.daysPlayed) < item.reqWealth) {
+        sfx("error");
+        set({
+          speech: `The hollow is not rich enough for ${item.name}. Keen Edge wants the purse fatter.`,
         });
         return false;
       }
@@ -399,32 +407,33 @@ export function economySlice(
       markPappyExpand(get, set);
     },
 
-    wager: () => {
+    wager: (stake = 5) => {
       const s = get();
-      const stake = 5;
-      if (s.coins < stake) {
-        set({ speech: "The pit wants five coins. Your purse is short." });
+      const bet = stake >= 20 ? 20 : 5;
+      if (s.coins < bet) {
+        set({ speech: `The pit wants ${bet} coins. Your purse is short.` });
         return;
       }
       const roll = Math.random();
+      const mult = bet / 5;
       let pay = 0;
-      let speech = "The wheel takes the five. The lights stay on.";
+      let speech = `The wheel takes the ${bet}. The lights stay on.`;
       if (roll < 0.04) {
-        pay = 50;
-        speech = "Jackpot on the strip. Fifty coins.";
+        pay = 50 * mult;
+        speech = `Jackpot on the strip. ${pay} coins.`;
       } else if (roll < 0.16) {
-        pay = 15;
-        speech = "The dune pays fifteen.";
+        pay = 15 * mult;
+        speech = `The dune pays ${pay}.`;
       } else if (roll < 0.4) {
-        pay = 8;
-        speech = "A small light. Eight comes back.";
+        pay = 8 * mult;
+        speech = `A small light. ${pay} comes back.`;
       }
       set({
-        coins: s.coins - stake + pay,
+        coins: s.coins - bet + pay,
         coinPopKey: s.coinPopKey + 1,
         speech,
       });
-      sfx(pay > stake ? "buy" : "error");
+      sfx(pay > bet ? "buy" : "error");
       scheduleWrite(get);
     },
   };

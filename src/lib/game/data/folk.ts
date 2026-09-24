@@ -81,7 +81,7 @@ export function folkLine(n: Settler, days: number) {
   if (rank === "plot") return `${n.name} paid for this plot and is pacing the corners. The house is next. Private ground, already.`;
   if (rank === "house") return `${n.name}'s roof is up. They nod, and not much else yet.`;
   if (rank === "trade") {
-    return `${n.name} buys and sells ${n.stall ?? "small goods"}. Purse ${n.purse}. When the island earns, they earn.`;
+    return `${n.name} runs ${n.stall ?? "a stall"} from the ground floor and sleeps above it. Purse ${n.purse}. The Lane Co-op splits what the island earns.`;
   }
   return `${n.name} keeps a ${n.weapon} by the door and volunteered the ${n.shift} watch. Purse ${n.purse}. The army is one gnome longer.`;
 }
@@ -115,9 +115,10 @@ export function growFolk<T extends Placed>(
     placed: T[];
   },
   pay: boolean,
-): { settlers: Settler[]; placed: T[] } {
+): { settlers: Settler[]; placed: T[]; wage: number } {
   let placed = save.placed;
   const purseCut = Math.max(1, Math.round(economyOf(save) / 40));
+  let wage = 0;
   const settlers = save.settlers.map((n, i) => {
     const age = Math.max(0, save.daysPlayed - n.arrived);
     const next: Settler = { ...n };
@@ -125,7 +126,14 @@ export function growFolk<T extends Placed>(
       placed = [...placed, { id: `ship-${n.name}`, catalogId: "village-cottage", slotId: n.slotId } as T];
     }
     if (age >= 2 && !next.stall) next.stall = STALLS[i % STALLS.length]!;
-    if (age >= 2 && pay) next.purse += purseCut;
+    if (age >= 2 && pay) {
+      next.purse += purseCut;
+      wage += 1;
+    }
+    if (age >= 3 && pay && next.purse >= 12 && i % 2 === 0) {
+      next.purse -= 4;
+      wage += 4;
+    }
     if (age >= 4 && !next.weapon && next.purse >= 8) {
       next.weapon = WEAPONS[i % WEAPONS.length]!;
       next.shift = SHIFTS[i % SHIFTS.length]!;
@@ -133,5 +141,8 @@ export function growFolk<T extends Placed>(
     }
     return next;
   });
-  return { settlers, placed };
+  const trading = settlers.filter((n) => n.stall).length;
+  if (pay && trading >= 3) wage += 3;
+  if (pay) wage += 8;
+  return { settlers, placed, wage };
 }

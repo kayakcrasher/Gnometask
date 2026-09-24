@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import type { ShopKind } from "@/lib/game/types";
 import { SKILL_LABEL, levelsOf } from "@/lib/game/xp";
+import { hollowWorth } from "@/lib/game/data/market";
 
 const ALL_KINDS: { id: ShopKind; label: string }[] = [
   { id: "hat", label: "Hats" },
@@ -42,7 +43,9 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
   const dragonState = useGame((s) => s.lifeDragon.state);
   const skills = useGame((s) => s.skills);
   const townHallLevel = useGame((s) => s.townHallLevel);
+  const days = useGame((s) => s.daysPlayed);
   const lv = levelsOf(skills);
+  const worth = hollowWorth(coins, days);
 
   const tabs = ALL_KINDS.filter((k) => allowed.includes(k.id));
   const active = allowed.includes(kind) ? kind : allowed[0]!;
@@ -91,7 +94,8 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
           const skillLocked =
             Boolean(item.reqSkill && item.reqLevel) && lv[item.reqSkill!] < item.reqLevel!;
           const hallLocked = Boolean(item.reqHall && townHallLevel < item.reqHall);
-          const locked = skillLocked || hallLocked;
+          const wealthLocked = Boolean(item.reqWealth && worth < item.reqWealth);
+          const locked = skillLocked || hallLocked || wealthLocked;
           const canAfford = coins >= item.price;
           return (
             <li
@@ -118,7 +122,9 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
                   <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-berry">
                     {hallLocked
                       ? `Need Town Hall ${item.reqHall}`
-                      : `Need ${SKILL_LABEL[item.reqSkill!]} ${item.reqLevel}`}
+                      : wealthLocked
+                        ? `Needs a richer hollow (${item.reqWealth})`
+                        : `Need ${SKILL_LABEL[item.reqSkill!]} ${item.reqLevel}`}
                   </p>
                 ) : null}
               </div>

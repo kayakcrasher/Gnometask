@@ -6,6 +6,7 @@ import { Welcome } from "@/components/hud/welcome";
 import { ClickPopup } from "@/components/hud/click-popup";
 import { InteriorView } from "@/components/hud/interior-view";
 import { BankRoom } from "@/components/world/bank-room";
+import { CasinoRoom } from "@/components/world/casino-room";
 import { FarIsle } from "@/components/world/far-isle";
 import { GoblinIsle } from "@/components/world/goblin-isle";
 import { InventoryView } from "@/components/hud/inventory-view";
@@ -44,6 +45,7 @@ export function AppShell() {
             <MenuView />
             <InteriorView />
             {interior === "bank" ? <BankRoom /> : null}
+            {interior === "casino" ? <CasinoRoom /> : null}
             <GoblinIsle />
             <FarIsle />
           </>

@@ -118,6 +118,15 @@ export function Rocks3() {
   );
 }
 
+const TALKS: { a: string; b: string; line: string }[] = [
+  { a: "nettie", b: "miller", line: "Nettie: The hats sold. Miller: Then the pies can wait on the same purse." },
+  { a: "wim", b: "brine", line: "Wim: Another hull for Oar & Yard. Brine: I'll take the rope money upstairs." },
+  { a: "pipkin", b: "pappy", line: "Pipkin: The co-op wants the south rows. Pappy: Write it down and split the purse." },
+  { a: "greg", b: "stoic", line: "Greg: The wall fund is thin. Stoic: Watch & Wall dipped. Buy it." },
+  { a: "miller", b: "pipkin", line: "Miller: Flour's short. Pipkin: The co-op has a sack if the oven pays." },
+  { a: "bramble", b: "nettie", line: "Bramble: Pine is not for sale. Nettie: Then the co-op buys the hats, not the trees." },
+];
+
 export function Npcs3({
   poses,
   onNpc,
@@ -165,7 +174,7 @@ export function Npcs3({
             {showLabels ? (
             <Html zIndexRange={[8, 0]} position={[0, n.id === "pappy" ? 1.7 : 1.5, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
-                {n.shortName ?? n.name}
+                {n.shortName ?? n.name} · {n.job}
                 {onWatch ? " · watch" : ""}
               </p>
             </Html>
@@ -173,7 +182,26 @@ export function Npcs3({
           </group>
         );
       })}
+      <NpcTalk poses={poses} days={days} />
     </group>
+  );
+}
+
+function NpcTalk({ poses, days }: { poses: Record<string, NpcPose>; days: number }) {
+  const talk = TALKS[Math.abs(days) % TALKS.length]!;
+  const A = NPCS.find((n) => n.id === talk.a);
+  const B = NPCS.find((n) => n.id === talk.b);
+  if (!A || !B) return null;
+  const ax = poses[A.id]?.x ?? A.x;
+  const ay = poses[A.id]?.y ?? A.y;
+  const bx = poses[B.id]?.x ?? B.x;
+  const by = poses[B.id]?.y ?? B.y;
+  return (
+    <Html position={to3((ax + bx) / 2, (ay + by) / 2, groundY((ax + bx) / 2, (ay + by) / 2) + 2.2)} center distanceFactor={22} style={{ pointerEvents: "none" }}>
+      <p className="max-w-[220px] rounded-2xl bg-parchment/95 px-2 py-1 text-center font-display text-[10px] font-semibold leading-snug text-ink shadow-panel">
+        {talk.line}
+      </p>
+    </Html>
   );
 }
 

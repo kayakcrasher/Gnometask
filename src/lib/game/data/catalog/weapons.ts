@@ -9,19 +9,59 @@ const SWORD: Record<GearTier, { id: string; name: string; blurb: string; req?: n
   adamant: { id: "weapon-adamant", name: "Adamant sword", blurb: "Green steel. Haven-forged. Attack 20.", req: 20 },
 };
 
-export const WEAPONS: CatalogItem[] = TIERS.map((tier) => {
-  const t = TIER_META[tier];
-  const s = SWORD[tier];
-  return {
-    id: s.id,
-    name: s.name,
-    blurb: s.blurb,
-    price: t.price,
-    kind: tier === "adamant" ? "haven" : "weapon",
+const GROWTH: CatalogItem[] = [
+  {
+    id: "weapon-rapier",
+    name: "Keen rapier",
+    blurb: "Keen Edge's first extra. Light, rude, and not for sale in a poor hollow. Attack 8.",
+    price: 32,
+    kind: "weapon",
     slot: "weapon",
-    atk: t.atk,
-    reqHall: t.hall,
-    reqSkill: s.req ? "attack" : undefined,
-    reqLevel: s.req,
-  };
-});
+    atk: 8,
+    reqWealth: 80,
+  },
+  {
+    id: "weapon-halberd",
+    name: "Wall halberd",
+    blurb: "Watch & Wall ordered a longer reach. Attack 14.",
+    price: 74,
+    kind: "weapon",
+    slot: "weapon",
+    atk: 14,
+    reqWealth: 200,
+    reqSkill: "attack",
+    reqLevel: 8,
+  },
+  {
+    id: "weapon-rune",
+    name: "Rune blade",
+    blurb: "The strip funded the forge. A dark edge that only a rich hollow can hang. Attack 24.",
+    price: 150,
+    kind: "weapon",
+    slot: "weapon",
+    atk: 24,
+    reqWealth: 480,
+    reqSkill: "attack",
+    reqLevel: 16,
+  },
+];
+
+export const WEAPONS: CatalogItem[] = [
+  ...TIERS.map((tier) => {
+    const t = TIER_META[tier];
+    const s = SWORD[tier];
+    return {
+      id: s.id,
+      name: s.name,
+      blurb: s.blurb,
+      price: t.price,
+      kind: (tier === "adamant" ? "haven" : "weapon") as CatalogItem["kind"],
+      slot: "weapon" as const,
+      atk: t.atk,
+      reqHall: t.hall,
+      reqSkill: s.req ? ("attack" as const) : undefined,
+      reqLevel: s.req,
+    };
+  }),
+  ...GROWTH,
+];
