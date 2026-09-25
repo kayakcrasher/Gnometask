@@ -9,6 +9,7 @@ import { nextNewcomer, supplyDue } from "./data/supply";
 import { growFolk, type Settler } from "./data/folk";
 import { coerceCivic, seedCivic, stepCivic } from "./data/civic";
 import { dailyRoadTax } from "./data/country";
+import { totalDividend } from "./data/market";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
@@ -475,7 +476,8 @@ export function applyDailyRollover(save: GameSave): GameSave {
   let civic = stepCivic(rolled.civic, rolled.daysPlayed);
   const extra = Math.min(2, Math.max(0, missed - 1));
   for (let i = 0; i < extra; i++) civic = stepCivic(civic, rolled.daysPlayed);
-  return { ...rolled, coins: rolled.coins + grown.wage, settlers: grown.settlers, placed: grown.placed, civic };
+  const dividend = totalDividend(rolled.daysPlayed, rolled.shares);
+    return { ...rolled, coins: rolled.coins + grown.wage + dividend, settlers: grown.settlers, placed: grown.placed, civic };
 }
 
 export function loadSave(): GameSave {

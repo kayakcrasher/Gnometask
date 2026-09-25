@@ -1,10 +1,22 @@
 import { Canvas } from "@react-three/fiber";
 import { GnomeRig } from "./gnome-rig";
 import { useGame } from "@/lib/game/store";
-import { priceSeries, sharePrice, STOCKS } from "@/lib/game/data/market";
+import { priceSeries, sharePrice, latestEvent, STOCKS, type Sector } from "@/lib/game/data/market";
 import { CROPS } from "@/lib/game/data/crops";
 import { GOODS } from "@/lib/game/data/trade";
 import { FISH } from "@/lib/game/data/fish";
+
+const SECTOR_LABEL: Record<Sector, string> = {
+  broad: "The Hollow",
+  defense: "Defense",
+  shipping: "Shipping",
+  food: "Food & Salt",
+  leisure: "Leisure",
+  media: "Media",
+  luxury: "Luxury",
+};
+
+const SECTOR_ORDER: Sector[] = ["broad", "defense", "shipping", "food", "leisure", "media", "luxury"];
 
 function Hall() {
   return (
@@ -60,6 +72,58 @@ function Spark({ id, days }: { id: string; days: number }) {
   );
 }
 
+function StockRow({
+  stockId,
+  days,
+  shares,
+  onBuy,
+  onSell,
+}: {
+  stockId: string;
+  days: number;
+  shares: Record<string, number>;
+  onBuy: (id: string) => void;
+  onSell: (id: string) => void;
+}) {
+  const stock = STOCKS.find((s) => s.id === stockId);
+  if (!stock) return null;
+  const price = sharePrice(stock.id, days);
+  const held = shares[stock.id] ?? 0;
+  const yieldPct = stock.yield ? `${(stock.yield * 100).toFixed(1)}%/wk` : "—";
+  return (
+    <li className="rounded-[14px] bg-parchment-dark/60 px-3 py-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="min-w-0 flex-1 truncate font-display text-sm font-semibold text-ink">
+          {stock.name}
+        </p>
+        <p className="shrink-0 text-xs font-bold tabular-nums text-ink">{price}</p>
+      </div>
+      <p className="mt-0.5 text-[11px] font-semibold text-bark/70">
+        held {held} · div {yieldPct}
+      </p>
+      <p className="mt-0.5 text-[11px] font-semibold text-bark/60">{stock.blurb}</p>
+      <Spark id={stock.id} days={days} />
+      <div className="mt-1 flex gap-2">
+        <button
+          type="button"
+          onClick={() => onBuy(stock.id)}
+          className="h-8 rounded-full bg-gold px-3 text-[11px] font-semibold text-ink"
+        >
+          Buy {price}
+        </button>
+        <button
+          type="button"
+          onClick={() => onSell(stock.id)}
+          disabled={held < 1}
+          className="h-8 rounded-full bg-ink px-3 text-[11px] font-semibold text-parchment disabled:opacity-40"
+        >
+          Sell {price}
+        </button>
+      </div>
+    </li>
+  );
+}
+
 export function ExchangeRoom() {
   const leave = useGame((s) => s.leaveInterior);
   const days = useGame((s) => s.daysPlayed);
@@ -75,6 +139,10 @@ export function ExchangeRoom() {
   const fishN = FISH.reduce((n, f) => n + (fishBag[f.id] ?? 0), 0);
   const cropN = CROPS.reduce((n, c) => n + (produce[c.id] ?? 0), 0);
   const goodN = GOODS.reduce((n, g) => n + (goods[g.id] ?? 0), 0);
+  const held = Object.values(shares).reduce((n, v) => n + v, 0);
+  const event = latestEvent(days);
+  const nextDivIn = 7 - (days % 7 || 7);
+  const nextDivDay = days + (nextDivIn === 0 ? 7 : nextDivIn);
   return (
     <div className="fixed inset-0 z-30 bg-[#2a2118]">
       <Canvas camera={{ position: [0, 4.6, 7.2], fov: 42 }}>
@@ -84,46 +152,70 @@ export function ExchangeRoom() {
         <div className="pointer-events-auto max-w-sm rounded-[16px] bg-parchment/95 px-3 py-2 shadow-panel">
           <p className="font-display text-lg font-semibold text-ink">Gnome Exchange</p>
           <p className="text-xs font-semibold text-bark/70">
-            Runners drop orders here and pick up the next load. The floor buys bulk. The board trades shares. Purse {coins}.
+            Purse {coins}. Holding {held} shares.
           </p>
         </div>
-        <button type="button" onClick={leave} className="pointer-events-auto rounded-full bg-parchment px-3 py-2 text-xs font-semibold text-ink">
+        <button
+          type="button"
+          onClick={leave}
+          className="pointer-events-auto rounded-full bg-parchment px-3 py-2 text-xs font-semibold text-ink"
+        >
           Leave
         </button>
       </div>
-      <div className="absolute inset-x-0 bottom-0 z-10 max-h-[58dvh] overflow-y-auto p-3">
+      <div className="absolute inset-x-0 bottom-0 z-10 max-h-[62dvh] overflow-y-auto p-3">
         <div className="mx-auto max-w-lg rounded-[20px] bg-parchment p-4 shadow-panel">
+          {event ? (
+            <div className="mb-3 rounded-[14px] bg-gold/25 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/60">
+                Market news · Day {event.day}
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-ink">{event.headline}</p>
+            </div>
+          ) : null}
+
+          {held > 0 ? (
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-wide text-moss">
+              Next dividend paid on day {nextDivDay}
+            </p>
+          ) : null}
+
           <p className="font-display text-base font-semibold text-ink">Bulk floor</p>
           <p className="mt-1 text-xs font-semibold text-bark/70">
             Logs {logs}. Fish {fishN}. Crops {cropN}. Goods {goodN}.
           </p>
-          <button type="button" onClick={bulk} className="mt-2 h-11 w-full rounded-[14px] bg-pine font-display text-sm font-semibold text-parchment">
+          <button
+            type="button"
+            onClick={bulk}
+            className="mt-2 h-11 w-full rounded-[14px] bg-pine font-display text-sm font-semibold text-parchment"
+          >
             Sell the bulk
           </button>
+
           <p className="mt-4 font-display text-base font-semibold text-ink">The board</p>
-          <ul className="mt-2 flex flex-col gap-2">
-            {STOCKS.map((stock) => {
-              const price = sharePrice(stock.id, days);
-              const held = shares[stock.id] ?? 0;
-              return (
-                <li key={stock.id} className="rounded-[14px] bg-parchment-dark/60 px-3 py-2">
-                  <p className="font-display text-sm font-semibold text-ink">
-                    {stock.name} · {price} · held {held}
-                  </p>
-                  <p className="text-[11px] font-semibold text-bark/70">{stock.blurb}</p>
-                  <Spark id={stock.id} days={days} />
-                  <div className="mt-1 flex gap-2">
-                    <button type="button" onClick={() => buy(stock.id)} className="h-8 rounded-full bg-gold px-3 text-[11px] font-semibold text-ink">
-                      Buy
-                    </button>
-                    <button type="button" onClick={() => sell(stock.id)} className="h-8 rounded-full bg-ink px-3 text-[11px] font-semibold text-parchment">
-                      Sell
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          {SECTOR_ORDER.map((sector) => {
+            const inSector = STOCKS.filter((s) => s.sector === sector);
+            if (!inSector.length) return null;
+            return (
+              <div key={sector} className="mt-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">
+                  {SECTOR_LABEL[sector]}
+                </p>
+                <ul className="mt-1.5 flex flex-col gap-2">
+                  {inSector.map((stock) => (
+                    <StockRow
+                      key={stock.id}
+                      stockId={stock.id}
+                      days={days}
+                      shares={shares}
+                      onBuy={buy}
+                      onSell={sell}
+                    />
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -1,27 +1,33 @@
+export type Sector = "broad" | "defense" | "shipping" | "food" | "leisure" | "media" | "luxury";
+
 export type Stock = {
   id: string;
   name: string;
   start: number;
   blurb: string;
+  sector: Sector;
+  /** Coins per share per week, as a fraction of current price. 0 = no dividend. */
+  yield?: number;
   sure?: boolean;
   /** Most days rise. A few red days, never a long slide. */
   climb?: boolean;
 };
 
-/** A quarter is 90 in-game days. The Gnome500 rises 15% each quarter. */
 export const QUARTER_DAYS = 90;
 
 export const STOCKS: Stock[] = [
-  { id: "g500", name: "Gnome500 ETF", start: 8, sure: true, climb: true, blurb: "The whole hollow, in one share. It has red days. The year still climbs." },
-  { id: "hull", name: "Hull & Keel", start: 14, blurb: "Shipwrights. Feast and famine with the tide." },
-  { id: "pie", name: "Pie & Tide", start: 9, blurb: "Bakeries on three islands. Smells better than it balances." },
-  { id: "salt", name: "Saltglass", start: 16, blurb: "Salt pans and bottles. A sharp stock." },
-  { id: "moss", name: "Moss Hat Co", start: 7, blurb: "Hats. Some seasons everyone buys. Some seasons they don't." },
-  { id: "lantern", name: "Lantern Ferry", start: 12, blurb: "Night boats. Pretty, and easily spooked." },
-  { id: "keen", name: "Keen Edge", start: 18, climb: true, blurb: "Weapons. A few soft days. The rest of the year it bites upward." },
-  { id: "mail", name: "Mail & Plate", start: 15, blurb: "Armour. A nervous stock, and a useful one." },
-  { id: "oar", name: "Oar & Yard", start: 20, climb: true, blurb: "Boats. Wim keeps a share under the bed. The line climbs." },
-  { id: "wall", name: "Watch & Wall", start: 13, climb: true, blurb: "Town defense. Palisades, towers, and a price that likes the long watch." },
+  { id: "g500", name: "Gnome500 ETF", start: 8, sector: "broad", yield: 0.015, sure: true, climb: true, blurb: "The whole hollow, in one share. It has red days. The year still climbs." },
+  { id: "hull", name: "Hull & Keel", start: 14, sector: "shipping", yield: 0.02, blurb: "Shipwrights. Feast and famine with the tide." },
+  { id: "pie", name: "Pie & Tide", start: 9, sector: "food", yield: 0.025, blurb: "Bakeries on three islands. Smells better than it balances." },
+  { id: "salt", name: "Saltglass", start: 16, sector: "food", yield: 0.02, blurb: "Salt pans and bottles. A sharp stock." },
+  { id: "moss", name: "Moss Hat Co", start: 7, sector: "luxury", blurb: "Hats. Some seasons everyone buys. Some seasons they don't." },
+  { id: "lantern", name: "Lantern Ferry", start: 12, sector: "shipping", yield: 0.018, blurb: "Night boats. Pretty, and easily spooked." },
+  { id: "keen", name: "Keen Edge", start: 18, sector: "defense", climb: true, blurb: "Weapons. A few soft days. The rest of the year it bites upward." },
+  { id: "mail", name: "Mail & Plate", start: 15, sector: "defense", yield: 0.012, blurb: "Armour. A nervous stock, and a useful one." },
+  { id: "oar", name: "Oar & Yard", start: 20, sector: "shipping", yield: 0.022, climb: true, blurb: "Boats. Wim keeps a share under the bed. The line climbs." },
+  { id: "wall", name: "Watch & Wall", start: 13, sector: "defense", yield: 0.02, climb: true, blurb: "Town defense. Palisades, towers, and a price that likes the long watch." },
+  { id: "clarion", name: "The Clarion", start: 10, sector: "media", yield: 0.015, blurb: "The paper. Two gold a copy. Slower than the news it prints." },
+  { id: "gilded", name: "Gilded Cactus", start: 11, sector: "leisure", yield: 0.03, blurb: "Sunstep's strip. Loud, high, and occasionally on fire." },
 ];
 
 export function isWeekend(days: number) {
@@ -34,7 +40,73 @@ function unit(n: number) {
   return x - Math.floor(x);
 }
 
-/** Each day is its own coin. Climbers rise more often than they fall. The rest wander. */
+/** A small, deterministic weekly bias by sector. */
+function sectorBias(sector: Sector, day: number): number {
+  const weekend = isWeekend(day);
+  switch (sector) {
+    case "broad":    return 0;
+    case "shipping": return weekend ? -1 : 0;
+    case "leisure":  return weekend ? 1 : 0;
+    case "defense":  return day % 5 === 0 ? 1 : 0;
+    case "food":     return day % 4 === 0 ? 1 : 0;
+    case "media":    return day % 6 === 0 ? 1 : 0;
+    case "luxury":   return weekend ? 0 : day % 3 === 0 ? 1 : 0;
+  }
+}
+
+// --- Market events -------------------------------------------------------
+// One event fires every 12 days. Deterministic by day, so the chart history
+// is identical for every player. NPCs read these from the same source.
+
+export type MarketEvent = {
+  id: string;
+  day: number;
+  sector: Sector | "all";
+  delta: number;
+  headline: string;
+};
+
+const EVENT_POOL: Omit<MarketEvent, "day">[] = [
+  { id: "harvest", sector: "food",    delta: 3,  headline: "A bumper harvest. Pie & Tide climbs." },
+  { id: "raid",    sector: "defense", delta: 4,  headline: "Goblins probe the shore. Wall & Watch gains." },
+  { id: "storm",   sector: "shipping", delta: -3, headline: "A storm off the coast. Hulls sit idle." },
+  { id: "cruise",  sector: "leisure", delta: 3,  headline: "A cruise ship books the strip. Sunstep celebrates." },
+  { id: "scoop",   sector: "media",   delta: 2,  headline: "The Clarion breaks the dock case wide open." },
+  { id: "tariff",  sector: "shipping", delta: -2, headline: "A tariff on mainland crates. Shippers grumble." },
+  { id: "rally",   sector: "all",     delta: 1,  headline: "The hollow trades up on a quiet week." },
+  { id: "panic",   sector: "all",     delta: -1, headline: "A nervous week on the Exchange floor." },
+  { id: "drought", sector: "food",    delta: -2, headline: "Rain stayed away. The co-op eyes the sky." },
+  { id: "parade",  sector: "luxury",  delta: 2,  headline: "Hats in fashion after a festival. Moss Hat Co rallies." },
+];
+
+export function eventsThrough(day: number): MarketEvent[] {
+  const d = Math.max(0, Math.floor(day));
+  const out: MarketEvent[] = [];
+  for (let i = 12; i <= d; i += 12) {
+    const idx = (Math.floor(i / 12) - 1) % EVENT_POOL.length;
+    out.push({ ...EVENT_POOL[idx]!, day: i });
+  }
+  return out;
+}
+
+export function eventsOn(day: number): MarketEvent[] {
+  const d = Math.floor(day);
+  return eventsThrough(d).filter((e) => e.day === d);
+}
+
+export function latestEvent(day: number): MarketEvent | null {
+  const list = eventsThrough(day);
+  return list.length ? list[list.length - 1]! : null;
+}
+
+function eventBias(sector: Sector, day: number): number {
+  return eventsOn(day)
+    .filter((e) => e.sector === sector || e.sector === "all")
+    .reduce((sum, e) => sum + e.delta, 0);
+}
+
+// --- Pricing -------------------------------------------------------------
+
 export function sharePrice(id: string, days: number) {
   const stock = STOCKS.find((s) => s.id === id);
   if (!stock) return 1;
@@ -43,8 +115,10 @@ export function sharePrice(id: string, days: number) {
   const climber = Boolean(stock.sure || stock.climb);
   for (let i = 1; i <= d; i++) {
     const u = unit(i * 12.9898 + stock.start * 78.233);
-    const delta = climber ? (u < 0.22 ? -1 : 1) : u < 0.46 ? -1 : u < 0.9 ? 1 : 0;
-    price = Math.max(1, price + delta);
+    const walk = climber ? (u < 0.22 ? -1 : 1) : u < 0.46 ? -1 : u < 0.9 ? 1 : 0;
+    const bias = sectorBias(stock.sector, i);
+    const ev = eventBias(stock.sector, i);
+    price = Math.max(1, price + walk + bias + ev);
   }
   return price;
 }
@@ -84,3 +158,21 @@ export const CASINO_STAGE = [
   "Fountain house",
   "Glass tower",
 ] as const;
+
+/** Weekly dividend on a holding. Pays on days divisible by 7. */
+export function dividendOn(id: string, days: number, shares: number): number {
+  if (days < 7 || days % 7 !== 0 || shares < 1) return 0;
+  const stock = STOCKS.find((s) => s.id === id);
+  if (!stock || !stock.yield) return 0;
+  const price = sharePrice(id, days);
+  return Math.max(1, Math.floor(price * stock.yield * shares));
+}
+
+/** Total dividend across every holding for a given day. */
+export function totalDividend(days: number, shares: Record<string, number>): number {
+  let total = 0;
+  for (const [id, count] of Object.entries(shares)) {
+    total += dividendOn(id, days, count);
+  }
+  return total;
+}
