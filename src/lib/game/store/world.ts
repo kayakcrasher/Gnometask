@@ -301,7 +301,8 @@ export function worldSlice(
 
     sipTea: () => {
       const s = get();
-      const max = maxHitpoints(s.skills);
+      const cottageBonus = [0, 2, 4, 6][s.cottageLevel ?? 0] ?? 0;
+      const max = maxHitpoints(s.skills) + cottageBonus;
       if (s.hp >= max) {
         set({ selectedPlace: "cottage", speech: "Already full of tea." });
         return;

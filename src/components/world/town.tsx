@@ -337,6 +337,10 @@ export function Cottage3({
   upgrades: string[];
   onEnter: () => void;
 }) {
+  const cottageLevel = useGame((s) => s.cottageLevel ?? 0);
+  const COTTAGE_ROOFS = ["berry", "gold", "moss", "night"] as const;
+  const roof = COTTAGE_ROOFS[cottageLevel] ?? "berry";
+  const scale = 1 + cottageLevel * 0.06;
   const spot = PLACE_ANCHORS.cottage;
   const p = to3(spot.x, spot.y, groundY(spot.x, spot.y));
   return (
@@ -347,7 +351,37 @@ export function Cottage3({
         onEnter();
       }}
     >
-      <TimberHouse position={[0, 0, 0]} roof="berry" sign="Home" onEnter={onEnter} />
+      <group scale={scale}>
+          <TimberHouse position={[0, 0, 0]} roof={roof} sign="Home" onEnter={onEnter} />
+          {cottageLevel >= 1 ? (
+            <mesh position={[0.55, 1.75, 0]} castShadow>
+              <boxGeometry args={[0.18, 0.34, 0.18]} />
+              <meshStandardMaterial color="#5b4230" />
+            </mesh>
+          ) : null}
+          {cottageLevel >= 2 ? (
+            <mesh position={[0, 0.05, 0]} receiveShadow>
+              <boxGeometry args={[2.35, 0.08, 1.95]} />
+              <meshStandardMaterial color="#c9c3b4" />
+            </mesh>
+          ) : null}
+          {cottageLevel >= 3 ? (
+            <group position={[0, 1.35, 0.85]}>
+              <mesh rotation={[0.35, 0, 0]} castShadow>
+                <boxGeometry args={[1.5, 0.06, 0.7]} />
+                <meshStandardMaterial color="#6b5340" />
+              </mesh>
+              <mesh position={[-0.65, -0.4, 0.3]} castShadow>
+                <boxGeometry args={[0.1, 0.8, 0.1]} />
+                <meshStandardMaterial color="#5b4230" />
+              </mesh>
+              <mesh position={[0.65, -0.4, 0.3]} castShadow>
+                <boxGeometry args={[0.1, 0.8, 0.1]} />
+                <meshStandardMaterial color="#5b4230" />
+              </mesh>
+            </group>
+          ) : null}
+        </group>
       {upgrades.includes("house-fence") ? (
         <>
           <Kenney name="fence_simpleLow" position={[-1.6, 0, 1.4]} scale={1.2} />

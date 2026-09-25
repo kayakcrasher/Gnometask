@@ -89,6 +89,7 @@ export type GameState = GameSave &
     repairBuilding: (id: BuildingId) => void;
     upgradeGuard: () => void;
     upgradeHall: () => void;
+    upgradeCottage: () => void;
     upgradeTower: (slotId: string) => void;
     wager: (stake?: number) => void;
     rallyWalls: () => void;

@@ -415,6 +415,8 @@ export function InteriorView() {
   const sipTea = useGame((s) => s.sipTea);
   const repair = useGame((s) => s.repairBuilding);
   const cottageHp = useGame((s) => s.buildingHp.cottage);
+  const cottageLevel = useGame((s) => s.cottageLevel ?? 0);
+  const upgradeCottage = useGame((s) => s.upgradeCottage);
   if (!interior || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
   const meta = COPY[interior];
   const cottageHurt = cottageHp < BUILDING_MAX.cottage;
@@ -447,6 +449,19 @@ export function InteriorView() {
             >
               Have a cup of tea — restore heart
             </button>
+            {cottageLevel < 3 ? (
+              <button
+                type="button"
+                onClick={upgradeCottage}
+                className="h-11 rounded-[14px] bg-gold font-display text-sm font-semibold text-ink"
+              >
+                {["", "Stone cottage · 120", "Gardener's cottage · 260", "Manor · 520"][cottageLevel + 1]}
+              </button>
+            ) : (
+              <p className="text-center font-display text-xs font-semibold text-bark/55">
+                The cottage is a manor. Nothing left to build.
+              </p>
+            )}
             {cottageHurt ? (
               <button
                 type="button"

@@ -202,6 +202,7 @@ export type GameSave = {
   tasks: Task[];
   ownedHats: string[];
   houseUpgrades: string[];
+  cottageLevel: number;
   inventory: string[];
   placed: PlacedItem[];
   milestonesReached: number[];

@@ -30,6 +30,7 @@ export function economySlice(
   | "wager"
   | "sellBulk"
   | "liftFence"
+  | "upgradeCottage"
 > {
   return {
     buy: (catalogId) => {
@@ -479,6 +480,32 @@ export function economySlice(
         coins: s.coins + pay,
         coinPopKey: s.coinPopKey + 1,
         speech: `The exchange takes the bulk. ${bits.join(", ")}. +${pay} coins.`,
+      });
+      sfx("buy");
+      scheduleWrite(get);
+    },
+    upgradeCottage: () => {
+      const s = get();
+      const level = s.cottageLevel ?? 0;
+      if (level >= 3) {
+        set({ speech: "The cottage is a manor. It cannot get more manor." });
+        return;
+      }
+      const COSTS = [0, 120, 260, 520];
+      const next = level + 1;
+      const cost = COSTS[next] ?? 0;
+      if (s.coins < cost) {
+        sfx("error");
+        set({ speech: "Cottage " + next + " wants " + cost + " coins. The mason taps the ledger." });
+        return;
+      }
+      const names = ["", "Stone cottage", "Gardener's cottage", "Manor"];
+      set({
+        coins: s.coins - cost,
+        cottageLevel: next,
+        coinPopKey: s.coinPopKey + 1,
+        bounceKey: s.bounceKey + 1,
+        speech: names[next] + ". The masons are already loading their cart.",
       });
       sfx("buy");
       scheduleWrite(get);
