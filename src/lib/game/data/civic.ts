@@ -16,6 +16,8 @@ export type CivicGnome = {
   x: number;
   y: number;
   line: string;
+  departsAt?: number;
+  archetype?: string;
 };
 
 export type CivicPlot = {
@@ -118,6 +120,59 @@ const HOUSE = 14;
 const STORY = 8;
 const LAMP = 4;
 
+// --- Newcomers -----------------------------------------------------------
+
+/** Beats between cruise ships. With 3 civic steps per 9-sec tick, ~12 minutes. */
+export const CRUISE_EVERY = 240;
+/** Beats between individual newcomer actions. With batch=3, ~21 seconds. */
+export const NEWCOMER_ACT_EVERY = 7;
+/** Max visitors present at once. */
+export const CRUISE_CAP = 3;
+
+export const NEWCOMER_KINDS = [
+  "vacationer",
+  "middle",
+  "vagrant",
+  "hopeful",
+  "builder",
+  "criminal",
+] as const;
+export type NewcomerKind = (typeof NEWCOMER_KINDS)[number];
+
+/** How long a visitor stays, in beats. ~3 sec per beat with batch=3. */
+export const LIFETIME: Record<NewcomerKind, number> = {
+  vacationer: 400,
+  middle: 300,
+  vagrant: 150,
+  hopeful: 500,
+  builder: 200,
+  criminal: 350,
+};
+
+/** Which town they land in. Tourists to Sunstep, workers to the others. */
+export const NEWCOMER_TOWN: Record<NewcomerKind, CivicTown> = {
+  vacationer: "sunstep",
+  middle: "capitol",
+  vagrant: "tideham",
+  hopeful: "greenlane",
+  builder: "haven",
+  criminal: "tideham",
+};
+
+/** Names cycle per kind, so cruise #1 and cruise #5 don't both send "Gorse." */
+export const NEWCOMER_NAMES: Record<NewcomerKind, string[]> = {
+  vacationer: ["Tansy", "Bly", "Marlow", "Cricket"],
+  middle: ["Aldo", "Vere", "Hollis", "Prue"],
+  vagrant: ["Gorse", "Tuck", "Bindle", "Wisp"],
+  hopeful: ["Cora", "Felix", "Wren", "Osier"],
+  builder: ["Rook", "Handy", "Tore", "Nib"],
+  criminal: ["Vance", "Ratty", "Kestrel", "Bones"],
+};
+
+let newcomerCounter = 0;
+
+// --- Roster --------------------------------------------------------------
+
 const ROSTER: Omit<CivicGnome, "x" | "y" | "line" | "moonshine">[] = [
   { id: "lark", name: "Lark", town: "capitol", job: "mason", hat: "hat-straw", coat: "#8a6238", good: true, purse: 42, family: 1 },
   { id: "hana", name: "Hana", town: "capitol", job: "clerk", hat: "hat-flower", coat: "#6a3d58", good: true, purse: 40, family: 1 },
@@ -188,6 +243,9 @@ function placeGnome(g: CivicGnome, plots: CivicPlot[]) {
 }
 
 function compose(actor: CivicGnome, gnomes: CivicGnome[], plots: CivicPlot[], word: string) {
+  if (actor.archetype) {
+    return `${actor.name}: Just off the cruise ship. ${TOWN_LABEL[actor.town]} for a spell.`;
+  }
   const others = gnomes.filter((g) => g.id !== actor.id);
   const pal = others[hash(actor.name) % others.length]!;
   const gossip = others[hash(actor.name + word) % others.length]!;
@@ -313,11 +371,110 @@ function tryStill(actor: CivicGnome, gnomes: CivicGnome[], beat: number): { news
   return { news: null, sold: false };
 }
 
+// --- Newcomer behaviour --------------------------------------------------
+
+/**
+ * Six kinds, six tiny branches. Each returns a line for the ticker, or null.
+ * They spend their own purses. They do not take the roster's turn.
+ */
+function tryNewcomer(g: CivicGnome, state: CivicState, beat: number): string | null {
+  switch (g.archetype) {
+    case "vacationer": {
+      const pub = state.pubs.find((p) => p.town === g.town);
+      if (pub && g.purse >= 5) {
+        g.purse -= 5;
+        pub.bank += 5;
+        return `${g.name} took a pint at ${pub.name}. On holiday, and spending like it.`;
+      }
+      return `${g.name} is on holiday. Says the tide is prettier here than on the boat.`;
+    }
+    case "middle": {
+      const lot = state.plots.find(
+        (p) => p.town === g.town && p.shares.length > 0 && p.shares.length < 4 && !p.shares.includes(g.id),
+      );
+      if (lot && g.purse >= SHARE) {
+        g.purse -= SHARE;
+        lot.shares.push(g.id);
+        return `${g.name} put money down on a plot. Four names to a roof is the law.`;
+      }
+      return `${g.name} is looking at plots. Says the shore is worth the walk.`;
+    }
+    case "vagrant": {
+      const pub = state.pubs.find((p) => p.town === g.town);
+      if (pub && g.purse >= 3) {
+        g.purse -= 3;
+        pub.bank += 3;
+        return `${g.name} nursed a mild at ${pub.name}. Paid in small coins.`;
+      }
+      return `${g.name} is sleeping by the harbour. Says the wind is warm enough.`;
+    }
+    case "hopeful": {
+      const ownsHouse = state.plots.some((p) => p.owner === g.id);
+      if (ownsHouse && g.departsAt && g.departsAt - beat < 60) {
+        g.departsAt = undefined;
+        return `${g.name} signed the lease. Stays in ${TOWN_LABEL[g.town]}.`;
+      }
+      return `${g.name} is saving. Asked what a company share costs.`;
+    }
+    case "builder": {
+      const lot = state.plots.find(
+        (p) => p.town === g.town && p.stories > 0 && p.stories < 3 && (p.trim?.length ?? 0) < 3,
+      );
+      if (lot && g.purse >= 8) {
+        g.purse -= 8;
+        if (!lot.trim) lot.trim = [];
+        if (!lot.trim.includes("bench")) lot.trim.push("bench");
+        return `${g.name} fitted a bench on the corner. Contract paid, timber cut.`;
+      }
+      return `${g.name} is on a contract. Two hands, one week, then the boat.`;
+    }
+    case "criminal": {
+      const still = state.gnomes.find((n) => !n.good);
+      if (still) {
+        still.moonshine += 1;
+        g.purse += 3;
+        return `${g.name} met ${still.name} in the alley. A jar changed hands.`;
+      }
+      return `${g.name} came off the cruise with a coat too heavy for the weather.`;
+    }
+    default:
+      return null;
+  }
+}
+
+/** Called when a cruise ship docks. Kind rotates through the six, in order. */
+function spawnCruiseNewcomer(beat: number): CivicGnome {
+  const slot = Math.floor(beat / CRUISE_EVERY) % NEWCOMER_KINDS.length;
+  const kind = NEWCOMER_KINDS[slot]!;
+  const names = NEWCOMER_NAMES[kind];
+  newcomerCounter += 1;
+  return {
+    id: `visitor-${kind}-${newcomerCounter}`,
+    name: names[newcomerCounter % names.length]!,
+    town: NEWCOMER_TOWN[kind],
+    job: kind,
+    hat: "hat-straw",
+    coat: "#8a7a68",
+    good: kind !== "criminal",
+    purse: kind === "hopeful" ? 100 : 20 + Math.floor(Math.random() * 20),
+    family: 1,
+    moonshine: 0,
+    x: 0,
+    y: 0,
+    line: "",
+    departsAt: beat + LIFETIME[kind],
+    archetype: kind,
+  };
+}
+
+// --- The civic beat ------------------------------------------------------
+
 export function stepCivic(state: CivicState, days: number): CivicState {
   const gnomes = state.gnomes.map((g) => ({ ...g }));
   const plots = state.plots.map((p) => ({ ...p, shares: [...p.shares], trim: [...(p.trim ?? [])] }));
   const beat = state.beat + 1;
-  const actor = gnomes[beat % gnomes.length];
+  const regulars = gnomes.filter((g) => !g.archetype);
+  const actor = regulars[beat % regulars.length];
   if (!actor) return state;
   const word = wordFor(days, beat);
   let news: string | null = null;
@@ -389,6 +546,41 @@ export function stepCivic(state: CivicState, days: number): CivicState {
       }
     }
   }
+
+  // --- Newcomers ---------------------------------------------------------
+
+  // 1. Departures. Remove visitors whose beat has come.
+  const leaving = gnomes.filter((g) => g.archetype && g.departsAt && g.departsAt <= beat);
+  if (leaving.length) {
+    const who = leaving[0]!;
+    news = news ?? `${who.name} took the afternoon boat out. ${TOWN_LABEL[who.town]} keeps the plot.`;
+    for (let i = gnomes.length - 1; i >= 0; i--) {
+      const g = gnomes[i]!;
+      if (g.archetype && g.departsAt && g.departsAt <= beat) gnomes.splice(i, 1);
+    }
+  }
+
+  // 2. One visitor acts every NEWCOMER_ACT_EVERY beats.
+  const visitors = gnomes.filter((g) => g.archetype);
+  if (visitors.length && beat % NEWCOMER_ACT_EVERY === 0) {
+    const idx = Math.floor(beat / NEWCOMER_ACT_EVERY) % visitors.length;
+    const visitor = visitors[idx]!;
+    const line = tryNewcomer(visitor, { ...state, gnomes, plots }, beat);
+    if (line) {
+      news = news ?? line;
+      visitor.line = line;
+    }
+  }
+
+  // 3. A cruise ship docks every CRUISE_EVERY beats, if the island has room.
+  if (beat > 0 && beat % CRUISE_EVERY === 0 && visitors.length < CRUISE_CAP) {
+    const g = spawnCruiseNewcomer(beat);
+    placeGnome(g, plots);
+    gnomes.push(g);
+    news = news ?? `A cruise ship tied up at ${TOWN_LABEL[g.town]}. One passenger came ashore.`;
+  }
+
+  // --- End newcomers -----------------------------------------------------
 
   return {
     ...state,
@@ -493,6 +685,8 @@ export function coerceCivic(raw: unknown, days: number): CivicState {
         x: typeof g.x === "number" ? g.x : 0,
         y: typeof g.y === "number" ? g.y : 0,
         line: typeof g.line === "string" ? g.line : "",
+        departsAt: typeof g.departsAt === "number" ? g.departsAt : undefined,
+        archetype: typeof g.archetype === "string" ? g.archetype : undefined,
       },
     ];
   });
@@ -559,4 +753,4 @@ function coercePubs(raw: unknown): PubBook[] {
     const bank = typeof saved?.bank === "number" ? Math.max(5000, Math.floor(saved.bank)) : base.bank;
     return { ...base, bank };
   });
-}
+                               }
