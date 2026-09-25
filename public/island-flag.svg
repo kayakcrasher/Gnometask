@@ -1,0 +1,19 @@
+<svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="flag">
+      <rect width="500" height="300"/>
+    </clipPath>
+  </defs>
+  <rect width="500" height="300" fill="#0065BD"/>
+  <g clip-path="url(#flag)" stroke="#FFFFFF" stroke-width="60">
+    <line x1="0" y1="0" x2="500" y2="300"/>
+    <line x1="0" y1="300" x2="500" y2="0"/>
+  </g>
+  <path d="M 200 150 A 50 34 0 0 1 300 150 Z" fill="#C8102E"/>
+  <path d="M 240 150 L 240 190 Q 250 200 260 190 L 260 150 Z" fill="#F5F0E6"/>
+  <circle cx="222" cy="132" r="7" fill="#FFFFFF"/>
+  <circle cx="275" cy="128" r="6" fill="#FFFFFF"/>
+  <circle cx="250" cy="141" r="5.5" fill="#FFFFFF"/>
+  <circle cx="292" cy="143" r="5" fill="#FFFFFF"/>
+  <circle cx="208" cy="143" r="5" fill="#FFFFFF"/>
+</svg>

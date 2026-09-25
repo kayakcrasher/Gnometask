@@ -1,0 +1,25 @@
+<svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="300" fill="#F2C230"/>
+  <path d="M 250 60 
+           Q 220 75 210 110
+           Q 195 150 215 180
+           Q 235 205 255 200
+           Q 240 190 235 170
+           Q 230 145 245 125
+           Q 260 108 275 122
+           Q 288 135 280 158
+           Q 275 175 265 185
+           Q 285 190 300 175
+           Q 320 150 310 115
+           Q 300 80 275 65 Z" 
+        fill="#1C1A17"/>
+  <circle cx="238" cy="118" r="4" fill="#F2C230"/>
+  <path d="M 225 200 L 235 195 L 240 205 L 230 210 Z" fill="#1C1A17"/>
+  <text x="250" y="265" 
+        text-anchor="middle" 
+        font-family="Georgia, serif" 
+        font-size="26" 
+        font-weight="bold" 
+        letter-spacing="4"
+        fill="#1C1A17">DON'T TREAD ON ME</text>
+</svg>
