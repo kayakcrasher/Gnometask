@@ -45,29 +45,85 @@ function Hall() {
   );
 }
 
-function Spark({ id, days }: { id: string; days: number }) {
-  const pts = priceSeries(id, days, 16);
+function Chart({ id, days }: { id: string; days: number }) {
+  const pts = priceSeries(id, days, 20);
+  if (pts.length < 2) {
+    return <div className="mt-2 h-16 rounded-[10px] bg-parchment-dark/40" />;
+  }
   const min = Math.min(...pts);
   const max = Math.max(...pts);
-  const span = max - min || 1;
-  const d = pts
-    .map((p, i) => {
-      const x = (i / Math.max(1, pts.length - 1)) * 76;
-      const y = 22 - ((p - min) / span) * 18;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
+  const span = Math.max(1, max - min);
+  const W = 200;
+  const H = 60;
+  const PAD = 4;
+  const plotW = W - PAD * 2;
+  const plotH = H - PAD * 2;
+
+  const xy = pts.map((p, i) => ({
+    x: PAD + (i / (pts.length - 1)) * plotW,
+    y: PAD + (1 - (p - min) / span) * plotH,
+  }));
+
+  const line = xy
+    .map((pt, i) => `${i === 0 ? "M" : "L"}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`)
     .join(" ");
-  const up = pts[pts.length - 1]! >= pts[0]!;
-  const last = pts[pts.length - 1] ?? 0;
-  const prev = pts[pts.length - 2] ?? last;
+  const area = `${line} L${(PAD + plotW).toFixed(1)},${(PAD + plotH).toFixed(1)} L${PAD},${(PAD + plotH).toFixed(1)} Z`;
+
+  const last = pts[pts.length - 1]!;
+  const first = pts[0]!;
+  const up = last >= first;
+  const changePct = ((last - first) / Math.max(1, first)) * 100;
+  const lineColor = up ? "#4c6b47" : "#a8433b";
+
   return (
-    <div className="flex items-center gap-2">
-      <svg width="76" height="24" aria-hidden>
-        <path d={d} fill="none" stroke={up ? "#2f6b4a" : "#a33b32"} strokeWidth="1.6" />
+    <div className="mt-2">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[9px] font-bold uppercase tracking-wider text-bark/50">
+          {pts.length}-day chart
+        </span>
+        <span className="text-[10px] font-semibold tabular-nums text-bark/60">
+          {min}–{max}
+        </span>
+      </div>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="mt-1 w-full"
+        style={{ height: 60 }}
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        {[0.25, 0.5, 0.75].map((f, i) => (
+          <line
+            key={i}
+            x1={PAD}
+            y1={PAD + f * plotH}
+            x2={PAD + plotW}
+            y2={PAD + f * plotH}
+            stroke="#5b4230"
+            strokeWidth="0.5"
+            opacity="0.22"
+            strokeDasharray="2 2"
+          />
+        ))}
+        <path d={area} fill={lineColor} opacity="0.15" />
+        <path
+          d={line}
+          fill="none"
+          stroke={lineColor}
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        <circle cx={xy[xy.length - 1]!.x} cy={xy[xy.length - 1]!.y} r="2" fill={lineColor} />
       </svg>
-      <span className={`text-[10px] font-bold ${last >= prev ? "text-moss" : "text-berry"}`}>
-        {last >= prev ? "up" : "down"} today
-      </span>
+      <div className="mt-0.5 flex items-center justify-between">
+        <span className="text-[9px] font-semibold text-bark/50">d{Math.max(1, days - pts.length + 1)}</span>
+        <span className={`text-[11px] font-bold tabular-nums ${up ? "text-moss" : "text-berry"}`}>
+          {up ? "+" : ""}
+          {changePct.toFixed(1)}%
+        </span>
+        <span className="text-[9px] font-semibold text-bark/50">d{days}</span>
+      </div>
     </div>
   );
 }
@@ -102,8 +158,8 @@ function StockRow({
         held {held} · div {yieldPct}
       </p>
       <p className="mt-0.5 text-[11px] font-semibold text-bark/60">{stock.blurb}</p>
-      <Spark id={stock.id} days={days} />
-      <div className="mt-1 flex gap-2">
+      <Chart id={stock.id} days={days} />
+      <div className="mt-2 flex gap-2">
         <button
           type="button"
           onClick={() => onBuy(stock.id)}
@@ -143,6 +199,7 @@ export function ExchangeRoom() {
   const event = latestEvent(days);
   const nextDivIn = 7 - (days % 7 || 7);
   const nextDivDay = days + (nextDivIn === 0 ? 7 : nextDivIn);
+
   return (
     <div className="fixed inset-0 z-30 bg-[#2a2118]">
       <Canvas camera={{ position: [0, 4.6, 7.2], fov: 42 }}>
