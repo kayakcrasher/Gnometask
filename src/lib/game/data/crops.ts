@@ -50,8 +50,7 @@ export function pailBonusMs(owned: string[]) {
 }
 
 export function plotStage(plot: PlotSave | undefined, now: number, _bonusMs?: number): PlotStage {
-  // Crops grow on their own schedule. Watering is optional flavor.
-  // No wilt, no grace timer. Once ready, they wait for harvest.
+  // Crops grow on their own. Watering is flavor. No wilt, no grace timer.
   if (!plot) return "empty";
   const def = CROP_BY_ID[plot.crop];
   if (!def) return "empty";

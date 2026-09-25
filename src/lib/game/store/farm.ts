@@ -37,7 +37,7 @@ export function farmSlice(
         seeds: takeOne(s.seeds, cropId),
         plots: { ...s.plots, [plotId]: { crop: cropId as CropId, plantedAt: Date.now(), wateredAt: null } },
         popup: null,
-        speech: `${crop.name} is in. Water it with the pail before it gives up.`,
+        speech: `${crop.name} is in. Come back when it's ripe.`,
       });
       sfx("place");
       scheduleWrite(get);

@@ -2,6 +2,7 @@ import { NPCS } from "../world";
 import { QUEST_BY_ID } from "../quests";
 import { randOf } from "../quotes";
 import { lineForBond } from "../data/bonds";
+import { barkFor, type BarkContext } from "../data/barks";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
 import { landingAlive, landingCleared } from "../data/landing";
@@ -19,8 +20,15 @@ export function questsSlice(
       const s = get();
       const bonds = { ...(s.bonds ?? {}) };
       const bond = bonds[npcId] ?? 0;
+      const ctx: BarkContext = {
+        raid: Boolean(s.landing && !s.landing.flagDown) || s.raids.length > 0,
+        hurt: s.hp < maxHitpoints(s.skills) * 0.4,
+        rich: s.coins > 200,
+        broke: s.coins < 15,
+      };
+      const contextLine = barkFor(npcId, ctx);
       const bondLine = lineForBond(npcId, bond);
-      let speech = bondLine ?? randOf(npc.lines);
+      let speech = contextLine ?? bondLine ?? randOf(npc.lines);
       let quests = s.quests.map((q) => ({ ...q }));
       let coins = s.coins;
       let skills = s.skills;

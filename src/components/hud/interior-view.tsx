@@ -31,7 +31,7 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
     kinds: ["food"],
   },
   general: {
-    title: "Builder's yard",
+    title: "Farm Supply",
     blurb: "Seeds, fences, livestock, and the only counter that turns goods into coins.",
     kinds: ["house", "garden", "village", "fort"],
   },
