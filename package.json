@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 8080",
-    "build": "tsc && vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 8080"
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",
