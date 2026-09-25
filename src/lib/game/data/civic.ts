@@ -50,6 +50,8 @@ export type CivicState = {
   pint: { a: string; b: string; town: CivicTown } | null;
   party: { town: CivicTown; host: string; left: number } | null;
   atPub: CivicTown | null;
+  /** Ruling of the Sunstep dock case. Null until the bench has spoken. */
+  courtVerdict: "crown" | "sunstep" | null;
 };
 
 export type PubBook = {
@@ -623,6 +625,7 @@ export function seedCivic(days = 1): CivicState {
     pint: null,
     party: null,
     atPub: null,
+    courtVerdict: null,
   };
   for (const g of state.gnomes) {
     g.line = compose(g, state.gnomes, state.plots, state.word);
@@ -737,6 +740,8 @@ export function coerceCivic(raw: unknown, days: number): CivicState {
         ? { town: r.party.town as CivicTown, host: r.party.host, left: typeof r.party.left === "number" ? r.party.left : 0 }
         : null,
     atPub: TOWNS.has(r.atPub as CivicTown) ? (r.atPub as CivicTown) : null,
+    courtVerdict:
+      r.courtVerdict === "crown" || r.courtVerdict === "sunstep" ? r.courtVerdict : null,
   };
 }
 

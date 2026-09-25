@@ -206,6 +206,8 @@ export type GameSave = {
   cottageLevel: number;
   /** Number of enemy flags planted across all islands. */
   flagsPlanted: number;
+  /** How many times the player has opened the Clarion. Feeds the court case. */
+  clarionReads: number;
   /** Per-isle: how many times cleared, and the day of the last raid. */
   isles: Record<string, { cleared: number; lastRaidedDay: number }>;
   inventory: string[];

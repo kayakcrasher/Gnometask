@@ -176,6 +176,26 @@ export const ARGUMENTS: CourtArgument[] = [
   },
 ];
 
+/**
+ * Build a CourtContext from the pieces the store actually has.
+ * Pass in whatever the caller has handy — this stays pure.
+ */
+export function contextFromSave(input: {
+  bonds: Record<string, number> | undefined;
+  clarionReads: number | undefined;
+  caseStage: number;
+  daysPlayed: number;
+  isles: Record<string, { cleared: number }> | undefined;
+}): CourtContext {
+  return {
+    bonds: input.bonds ?? {},
+    clarionReads: input.clarionReads ?? 0,
+    visitedCourt: (input.caseStage ?? 0) >= 1,
+    daysPlayed: input.daysPlayed ?? 1,
+    isles: input.isles ?? {},
+  };
+}
+
 export function unlockedArguments(ctx: CourtContext): CourtArgument[] {
   return ARGUMENTS.filter((a) => (a.when ?? noUnlock)(ctx));
 }
