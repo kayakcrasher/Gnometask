@@ -25,6 +25,7 @@ export function AppShell() {
   const atHome = useGame((s) => s.atHome);
   const interior = useGame((s) => s.interior);
   const tickWorld = useGame((s) => s.tickWorld);
+  const tickClock = useGame((s) => s.tickClock);
 
   useLayoutEffect(() => {
     hydrate();
@@ -35,6 +36,12 @@ export function AppShell() {
     const id = window.setInterval(() => tickWorld(), 9000);
     return () => window.clearInterval(id);
   }, [named, atHome, tickWorld]);
+
+  useEffect(() => {
+    if (!named || atHome) return;
+    const id = window.setInterval(() => tickClock(250), 250);
+    return () => window.clearInterval(id);
+  }, [named, atHome, tickClock]);
 
   useEffect(() => {
     if (!named || atHome) {

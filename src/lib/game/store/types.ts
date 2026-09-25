@@ -90,6 +90,7 @@ export type GameState = GameSave &
     upgradeGuard: () => void;
     upgradeHall: () => void;
     upgradeCottage: () => void;
+    tickClock: (dtMs: number) => void;
     upgradeTower: (slotId: string) => void;
     wager: (stake?: number) => void;
     rallyWalls: () => void;

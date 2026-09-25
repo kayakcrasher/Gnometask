@@ -31,7 +31,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...farmSlice(set, get),
   ...honourSlice(set, get),
   ...yardSlice(set, get),
-  ...clockSlice(),
+  ...clockSlice(set, get),
 }));
 
 if (typeof window !== "undefined") {
