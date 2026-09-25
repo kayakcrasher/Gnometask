@@ -191,6 +191,14 @@ export const ISLE_BY_ID: Record<string, IsleDef> = Object.fromEntries(
   ISLES.map((i) => [i.id, i]),
 );
 
+/**
+ * Is the ransom mechanic live for this player? Gated behind cottage
+ * level 2 so a fresh gnome with a stick does not go broke in two days.
+ */
+export function ransomActive(cottageLevel: number | undefined): boolean {
+  return (cottageLevel ?? 0) >= 2;
+}
+
 /** True while the island is uncleared and its ransom applies. */
 export function isleStands(
   id: string,

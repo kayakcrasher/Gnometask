@@ -295,6 +295,10 @@ export function ClickPopup() {
             </>
           ) : null}
 
+          {popup.npcId === "wim" ? (
+            <Action label="The chart" tone="gold" onClick={() => enter("chart")} />
+          ) : null}
+
           {popup.npcId === "greg" ? (
             <Action
               label={chart ? "Follow the goblin map" : "No goblin map yet"}

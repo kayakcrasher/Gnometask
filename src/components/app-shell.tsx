@@ -11,6 +11,7 @@ import { ExchangeRoom } from "@/components/world/exchange-room";
 import { CourtRoom } from "@/components/world/court-room";
 import { PubRoom } from "@/components/world/pub-room";
 import { FarIsle } from "@/components/world/far-isle";
+import { RaidChart } from "@/components/hud/raid-chart";
 import { GoblinIsle } from "@/components/world/goblin-isle";
 import { InventoryView } from "@/components/hud/inventory-view";
 import { MenuView } from "@/components/hud/menu-view";
@@ -74,6 +75,7 @@ export function AppShell() {
             {interior === "exchange" ? <ExchangeRoom /> : null}
             {interior === "court" ? <CourtRoom /> : null}
             {interior === "pub" ? <PubRoom /> : null}
+            <RaidChart />
             <GoblinIsle />
             <FarIsle />
           </>
