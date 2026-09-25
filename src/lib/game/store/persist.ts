@@ -49,6 +49,8 @@ export function snap(s: GameSave): GameSave {
     ownedHats: s.ownedHats,
     houseUpgrades: s.houseUpgrades,
     cottageLevel: s.cottageLevel ?? 0,
+    flagsPlanted: s.flagsPlanted ?? 0,
+    isles: s.isles ?? {},
     inventory: s.inventory,
     placed: s.placed,
     milestonesReached: s.milestonesReached,

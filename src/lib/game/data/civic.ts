@@ -17,6 +17,8 @@ export type CivicGnome = {
   y: number;
   line: string;
   departsAt?: number;
+  /** Day this gnome fainted on a raid. Half HP, and grumpy, until the next rollover. */
+  fainted?: number;
   archetype?: string;
 };
 

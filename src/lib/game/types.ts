@@ -203,6 +203,10 @@ export type GameSave = {
   ownedHats: string[];
   houseUpgrades: string[];
   cottageLevel: number;
+  /** Number of enemy flags planted across all islands. */
+  flagsPlanted: number;
+  /** Per-isle: how many times cleared, and the day of the last raid. */
+  isles: Record<string, { cleared: number; lastRaidedDay: number }>;
   inventory: string[];
   placed: PlacedItem[];
   milestonesReached: number[];
