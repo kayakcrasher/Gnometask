@@ -90,12 +90,12 @@ export function setAmbience(state: { active: boolean; empty: number; danger: num
     return;
   }
   ensureWind(ac);
-  armWatch();
+  // armWatch(); // watch tick muted
   const empty = Math.max(0, Math.min(1, state.empty));
   const danger = Math.max(0, Math.min(1, state.danger));
   windGain?.gain.setTargetAtTime(0.01 + empty * 0.04, ac.currentTime, 0.45);
   windFilter?.frequency.setTargetAtTime(240 + empty * 520, ac.currentTime, 0.5);
-  watchGain = 0.016 + danger * 0.055;
+  watchGain = 0;
 }
 
 export function sfx(kind: "done" | "buy" | "place" | "error" | "open" | "hit" | "win") {

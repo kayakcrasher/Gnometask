@@ -9,6 +9,7 @@ import { tideShift, WATCH_POSTS } from "@/lib/game/data/folk";
 import { ROCKS } from "@/lib/game/data/scenery";
 import { Ember } from "./ember";
 import { NPCS } from "@/lib/game/world";
+import { TALKS, type TalkContext } from "@/lib/game/data/talks";
 import { WORLD_PACK, ABSENCE_SPOT, DRAGON_RIDGE, TOWER_SLOTS, CATALOG_BY_ID } from "@/lib/game/catalog";
 import { to3, groundY } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
@@ -121,14 +122,6 @@ export function Rocks3() {
   );
 }
 
-const TALKS: { a: string; b: string; line: string }[] = [
-  { a: "nettie", b: "miller", line: "Nettie: The hats sold. Miller: Then the pies can wait on the same purse." },
-  { a: "wim", b: "brine", line: "Wim: Another hull for Oar & Yard. Brine: I'll take the rope money upstairs." },
-  { a: "pipkin", b: "pappy", line: "Pipkin: The garden tiles are his. Pappy: His great-grandpa left them. Empty pockets, and a hoe." },
-  { a: "greg", b: "stoic", line: "Greg: Goblins steal. Dark elves hate a rival. Stoic: Then we get rich on purpose, and we post a watch." },
-  { a: "miller", b: "pipkin", line: "Miller: Flour's short. Pipkin: The co-op has a sack if the oven pays." },
-  { a: "bramble", b: "nettie", line: "Bramble: Pine is not for sale. Nettie: Then the co-op buys the hats, not the trees." },
-];
 
 export function Npcs3({
   poses,
@@ -194,7 +187,17 @@ export function Npcs3({
 
 function NpcTalk({ poses, days }: { poses: Record<string, NpcPose>; days: number }) {
   const civic = useGame((s) => s.civic);
-  const talk = TALKS[Math.abs(days) % TALKS.length]!;
+  const ctx: TalkContext = {
+    word: civic?.word ?? "",
+    news: civic?.news ?? "",
+    party: civic?.party?.town ?? null,
+    jars: civic?.jarsSold ?? 0,
+    days,
+    dock: Boolean(civic?.dock),
+  };
+  const pool = TALKS.filter((t) => !t.when || t.when(ctx));
+  if (!pool.length) return null;
+  const talk = pool[Math.abs(days + Math.floor((civic?.beat ?? 0) / 40)) % pool.length]!;
   const A = NPCS.find((n) => n.id === talk.a);
   const B = NPCS.find((n) => n.id === talk.b);
   if (!A || !B) return null;
@@ -204,12 +207,12 @@ function NpcTalk({ poses, days }: { poses: Record<string, NpcPose>; days: number
   const by = poses[B.id]?.y ?? B.y;
   const who = civic?.gnomes?.length ? civic.gnomes[Math.abs(days + (civic.beat || 0)) % civic.gnomes.length] : null;
   const word = civic?.word || "honest";
-  const line = who
+  const line = who && Math.abs(days) % 3 === 0
     ? `${A.shortName ?? A.name}: ${word} is the word. ${who.name} was on about ${who.job} work in ${who.town === "capitol" ? "Port Victoria" : who.town}. ${B.shortName ?? B.name} heard it too.`
     : talk.line;
   return (
     <Html position={to3((ax + bx) / 2, (ay + by) / 2, groundY((ax + bx) / 2, (ay + by) / 2) + 2.2)} center distanceFactor={22} style={{ pointerEvents: "none" }}>
-      <p className="max-w-[220px] rounded-2xl bg-parchment/95 px-2 py-1 text-center font-display text-[10px] font-semibold leading-snug text-ink shadow-panel">
+      <p className="max-w-[240px] rounded-2xl bg-parchment/95 px-2 py-1 text-center font-display text-[10px] font-semibold leading-snug text-ink shadow-panel">
         {line}
       </p>
     </Html>

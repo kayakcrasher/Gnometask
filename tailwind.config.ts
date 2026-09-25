@@ -12,6 +12,7 @@ export default {
         pine: "#24402f",
         moss: "#4c6b47",
         gold: "#d6a84c",
+        berry: "#a8433b",
       },
       fontFamily: {
         display: ["Georgia", "serif"],

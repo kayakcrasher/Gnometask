@@ -35,7 +35,10 @@ export function TopBar() {
       <div className="pointer-events-auto mx-auto flex max-w-[1600px] items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-[20px] bg-pine/92 px-2.5 py-2 text-parchment shadow-panel md:gap-3 md:px-4">
           <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-base font-semibold leading-none tracking-tight md:text-xl">Hollow Watch</p>
+            <p className="truncate font-display text-sm font-semibold leading-none tracking-tight sm:text-base md:text-xl">
+              <span className="hidden sm:inline">Hollow Watch</span>
+              <span className="sm:hidden">{gnomeName || "Hollow Watch"}</span>
+            </p>
             <p className="hidden truncate text-xs font-semibold text-parchment-dark sm:block">
               {gnomeName ? gnomeName : "An unnamed gnome"} · the island grows
             </p>
