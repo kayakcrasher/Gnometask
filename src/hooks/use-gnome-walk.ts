@@ -11,6 +11,24 @@ function facingOf(dx: number, dy: number): GnomeFacing {
   return dx < 0 ? "left" : "right";
 }
 
+function legalAt(sea: boolean, x: number, y: number) {
+  return sea ? !onGrass(x, y) && !onDesert(x, y) : onIsland(x, y);
+}
+
+/** Spiral out from (x, y) to find the nearest walkable tile. */
+function nearestLegal(sea: boolean, x: number, y: number) {
+  if (legalAt(sea, x, y)) return { x, y };
+  for (let r = 8; r <= 120; r += 8) {
+    for (let a = 0; a < 16; a++) {
+      const ang = (a / 16) * Math.PI * 2;
+      const sx = x + Math.cos(ang) * r;
+      const sy = y + Math.sin(ang) * r;
+      if (legalAt(sea, sx, sy)) return { x: sx, y: sy };
+    }
+  }
+  return null;
+}
+
 export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number }>) {
   const savedX = useGame((s) => s.gnomeX);
   const savedY = useGame((s) => s.gnomeY);
@@ -83,10 +101,14 @@ export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number 
       setYaw(nextYaw);
       const step = Math.min(dist, SPEED * dt);
       speedRef.current = SPEED;
-      const next = { x: cur.x + (dx / dist) * step, y: cur.y + (dy / dist) * step };
       const sea = Boolean(afloatRef.current);
-      const legal = sea ? !onGrass(next.x, next.y) && !onDesert(next.x, next.y) : onIsland(next.x, next.y);
-      if (!legal) {
+      const tx = cur.x + (dx / dist) * step;
+      const ty = cur.y + (dy / dist) * step;
+      let next: { x: number; y: number } | null = null;
+      if (legalAt(sea, tx, ty)) next = { x: tx, y: ty };
+      else if (legalAt(sea, tx, cur.y)) next = { x: tx, y: cur.y };
+      else if (legalAt(sea, cur.x, ty)) next = { x: cur.x, y: ty };
+      if (!next) {
         targetRef.current = null;
         setMarker(null);
         setWalking(false);
@@ -107,13 +129,13 @@ export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number 
       const sea = Boolean(afloatRef.current);
       const nx = clamp(x, sea ? -520 : 20, 3800);
       const ny = clamp(y, sea ? -280 : -220, 1560);
-      const legal = sea ? !onGrass(nx, ny) && !onDesert(nx, ny) : onIsland(nx, ny);
-      if (!legal) {
+      const spot = nearestLegal(sea, nx, ny);
+      if (!spot) {
         arrive?.();
         return;
       }
-      const dx = nx - posRef.current.x;
-      const dy = ny - posRef.current.y;
+      const dx = spot.x - posRef.current.x;
+      const dy = spot.y - posRef.current.y;
       if (Math.hypot(dx, dy) < 6) {
         arrive?.();
         return;
@@ -122,8 +144,8 @@ export function useGnomeWalk(followRef: MutableRefObject<{ x: number; y: number 
       const nextYaw = Math.atan2(dx, dy);
       yawRef.current = nextYaw;
       setYaw(nextYaw);
-      targetRef.current = { x: nx, y: ny, arrive };
-      setMarker({ x: nx, y: ny });
+      targetRef.current = { x: spot.x, y: spot.y, arrive };
+      setMarker({ x: spot.x, y: spot.y });
       setFollowWalk(true);
       setWalking(true);
     },

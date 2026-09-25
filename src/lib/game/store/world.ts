@@ -218,8 +218,9 @@ export function worldSlice(
         interior: null,
         panel: "place",
         selectedPlace: "dock",
-        gnomeX: g.x - 42,
-        gnomeY: g.y,
+        // LANDING_NO_JUMP
+        gnomeX: Math.hypot(s.gnomeX - g.x, s.gnomeY - g.y) > 100 ? g.x - 42 : s.gnomeX,
+        gnomeY: Math.hypot(s.gnomeX - g.x, s.gnomeY - g.y) > 100 ? g.y : s.gnomeY,
         speech: `A green Mucktooth runt from the ${s.landing.tribe} boat.`,
       });
       armAutoAttack(get, 800);

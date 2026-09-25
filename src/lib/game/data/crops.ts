@@ -49,14 +49,12 @@ export function pailBonusMs(owned: string[]) {
   return null;
 }
 
-export function plotStage(plot: PlotSave | undefined, now: number, bonusMs: number): PlotStage {
+export function plotStage(plot: PlotSave | undefined, now: number, _bonusMs?: number): PlotStage {
+  // Crops grow on their own schedule. Watering is optional flavor.
+  // No wilt, no grace timer. Once ready, they wait for harvest.
   if (!plot) return "empty";
   const def = CROP_BY_ID[plot.crop];
   if (!def) return "empty";
-  if (plot.wateredAt == null) {
-    return now - plot.plantedAt > PLANT_GRACE_MS ? "dead" : "thirsty";
-  }
-  if (now - plot.wateredAt > def.wiltMs + bonusMs) return "dead";
   const grown = now - plot.plantedAt;
   if (grown >= def.growMs) return "ready";
   if (grown >= def.growMs * 0.45) return "sprout";
