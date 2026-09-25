@@ -262,6 +262,7 @@ export type GameSave = {
   emberGifts: number;
   skills: Skills;
   quests: QuestSave[];
+  bonds: Record<string, number>;
   chicken: { x: number; y: number } | null;
   chickenHeld: boolean;
   pieHeld: boolean;

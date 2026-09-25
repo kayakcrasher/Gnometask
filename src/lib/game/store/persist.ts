@@ -70,6 +70,7 @@ export function snap(s: GameSave): GameSave {
     emberGifts: s.emberGifts,
     skills: s.skills,
     quests: s.quests,
+    bonds: s.bonds ?? {},
     chicken: s.chicken,
     chickenHeld: s.chickenHeld,
     pieHeld: s.pieHeld,

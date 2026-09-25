@@ -1,6 +1,7 @@
 import { NPCS } from "../world";
 import { QUEST_BY_ID } from "../quests";
 import { randOf } from "../quotes";
+import { lineForBond } from "../data/bonds";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
 import { landingAlive, landingCleared } from "../data/landing";
@@ -16,7 +17,10 @@ export function questsSlice(
       const npc = NPCS.find((n) => n.id === npcId);
       if (!npc) return;
       const s = get();
-      let speech = randOf(npc.lines);
+      const bonds = { ...(s.bonds ?? {}) };
+      const bond = bonds[npcId] ?? 0;
+      const bondLine = lineForBond(npcId, bond);
+      let speech = bondLine ?? randOf(npc.lines);
       let quests = s.quests.map((q) => ({ ...q }));
       let coins = s.coins;
       let skills = s.skills;
@@ -39,6 +43,7 @@ export function questsSlice(
         bounce = true;
         speech = def.done;
         quests = quests.map((q) => (q.id === id ? { ...q, stage: "done" as const } : q));
+        bonds[def.giver] = (bonds[def.giver] ?? 0) + 5;
         sfx("win");
       };
 
@@ -113,6 +118,8 @@ export function questsSlice(
         }
       }
 
+      bonds[npcId] = (bonds[npcId] ?? 0) + 1;
+
       if (ding) speech = `${speech} ${ding}`;
       const grown = maxHitpoints(skills) - maxHitpoints(s.skills);
       set({
@@ -124,6 +131,7 @@ export function questsSlice(
         chicken,
         pieHeld,
         landing,
+        bonds,
         hp: s.hp + grown,
         bounceKey: bounce ? s.bounceKey + 1 : s.bounceKey,
         coinPopKey: coinPop ? s.coinPopKey + 1 : s.coinPopKey,
