@@ -504,7 +504,9 @@ export function worldSlice(
       const hp = s.hp < max ? Math.min(max, s.hp + 1) : s.hp;
       if (hp !== s.hp) changed = true;
 
-      const civic = stepCivic(s.civic, s.daysPlayed);
+      let civic = s.civic;
+      const CIVIC_BATCH = 3;
+      for (let i = 0; i < CIVIC_BATCH; i++) civic = stepCivic(civic, s.daysPlayed);
       const loud = /timber|story|lantern|jar|rental|still|household|cruise|back room/;
       const newsChanged = civic.news !== s.civic.news && loud.test(civic.news);
       if (newsChanged) speech = civic.news;
