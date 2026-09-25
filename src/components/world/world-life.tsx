@@ -6,6 +6,7 @@ import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS } from "@/lib/game/data/trees
 import { inTownPlot } from "@/lib/game/data/grids";
 import { deckY } from "@/lib/game/data/country";
 import { tideShift, WATCH_POSTS } from "@/lib/game/data/folk";
+import { LANDING_FLAG } from "@/lib/game/data/landing";
 import { ROCKS } from "@/lib/game/data/scenery";
 import { Ember } from "./ember";
 import { NPCS } from "@/lib/game/world";
@@ -523,13 +524,27 @@ export function Landing3({
   const gx = useGame((s) => s.gnomeX);
   const gy = useGame((s) => s.gnomeY);
   if (!landing) return null;
+
   const boat = to3(landing.boatX, landing.boatY, -0.05);
+  const fp = to3(LANDING_FLAG.x, LANDING_FLAG.y, groundY(LANDING_FLAG.x, LANDING_FLAG.y));
+
+  // The boat lingers until the shore is quiet and the player has walked off.
+  const anyAlive = landing.goblins.some((g) => g.alive);
+  const quiet = !anyAlive && landing.flagDown;
+  const away = Math.hypot(gx - landing.boatX, gy - landing.boatY) > 520;
+  const boatVisible = !quiet || !away;
+
   return (
     <group>
-      <group position={boat} rotation={[0, -0.6, 0]} scale={2.3}>
-        <BoatMesh kind="goblin" />
+      {boatVisible ? (
+        <group position={boat} rotation={[0, -0.6, 0]} scale={2.3}>
+          <BoatMesh kind="goblin" />
+        </group>
+      ) : null}
+
+      <group position={fp}>
         {landing.flagDown ? (
-          <mesh position={[0.25, 0.08, 0.05]} rotation={[0, 0, Math.PI / 2.4]} castShadow>
+          <mesh position={[0, 0.08, 0]} rotation={[0, 0, Math.PI / 2.4]} castShadow>
             <boxGeometry args={[0.04, 0.7, 0.04]} />
             <meshStandardMaterial color="#5b4230" />
           </mesh>
@@ -540,17 +555,17 @@ export function Landing3({
               onFlag();
             }}
           >
-            <mesh position={[0, 0.85, 0]}>
-              <boxGeometry args={[0.04, 0.9, 0.04]} />
+            <mesh position={[0, 0.95, 0]} castShadow>
+              <boxGeometry args={[0.05, 1.9, 0.05]} />
               <meshStandardMaterial color="#5b4230" />
             </mesh>
-            <mesh position={[0.02, 1.15, 0.02]} rotation={[0, 0.2, 0.15]}>
-              <boxGeometry args={[0.02, 0.5, 0.38]} />
+            <mesh position={[0.02, 1.55, 0.02]} rotation={[0, 0.2, 0.15]}>
+              <boxGeometry args={[0.02, 0.75, 0.6]} />
               <meshStandardMaterial color="#4c7a3a" />
             </mesh>
-            <HpPlate hp={landing.flagHp ?? 10} max={10} y={1.85} />
+            <HpPlate hp={landing.flagHp ?? 10} max={10} y={2.25} />
             {showLabels ? (
-              <Html zIndexRange={[8, 0]} position={[0, 2.35, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
+              <Html zIndexRange={[8, 0]} position={[0, 2.75, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
                 <p className="whitespace-nowrap rounded-full bg-moss px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
                   {landing.tribe}
                 </p>
@@ -559,6 +574,7 @@ export function Landing3({
           </group>
         )}
       </group>
+
       {landing.goblins.map((g) => {
         if (!g.alive) return null;
         const fighting = combat?.packId === g.id;

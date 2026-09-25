@@ -3,6 +3,7 @@ import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
 import { rolledChart } from "../data/honour";
 import { BEERS, caseBrief, stepCivic, type CivicTown } from "../data/civic";
 import { pickStriker, tideShift, watchNames } from "../data/folk";
+import { LANDING_FLAG } from "../data/landing";
 import { ENEMIES, makeCombat, patrolEnemy } from "../combat";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
@@ -250,8 +251,8 @@ export function worldSlice(
         landing: { ...landing, flagHp, flagDown },
         quests,
         popup: null,
-        gnomeX: landing.boatX + 26,
-        gnomeY: landing.boatY,
+        gnomeX: LANDING_FLAG.x + 26,
+        gnomeY: LANDING_FLAG.y + 4,
         speech: flagDown
           ? shoreClear
             ? "The banner is down and the shore is clear. Bones and 6 coins. Tell Ol Pappy."
