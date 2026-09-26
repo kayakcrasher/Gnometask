@@ -2,6 +2,7 @@ import { clamp, uid } from "@/lib/utils";
 import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
 import { rolledChart } from "../data/honour";
 import { BEERS, caseBrief, stepCivic, type CivicTown } from "../data/civic";
+import { ARBUTHNOT, contextFromSave, rule, rulingText } from "../data/court";
 import { pickStriker, tideShift, watchNames } from "../data/folk";
 import { LANDING_FLAG } from "../data/landing";
 import { ENEMIES, makeCombat, patrolEnemy } from "../combat";
@@ -355,18 +356,28 @@ export function worldSlice(
         set({ speech: "This bench keeps the lane. The dock case is at the Supreme Court in Port Victoria." });
         return;
       }
-      const stage = s.civic.caseStage;
-      if (stage >= 3) {
-        set({ speech: "The bargain stands. Cruise ships pay Port Victoria. Sunstep has its dock." });
+      if (s.civic.caseStage >= 3) {
+        set({ speech: rulingText({
+          side: s.civic.courtVerdict ?? "crown",
+          crownScore: 0, sunstepScore: 0, margin: 0,
+          crownArgs: [], sunstepArgs: [], leanedOn: [],
+        }) });
         return;
       }
-      const next = (stage + 1) as 1 | 2 | 3;
-      const dock = next >= 3;
-      set({
-        civic: { ...s.civic, caseStage: next, dock },
-        speech: caseBrief(next, "capitol"),
+      const ctx = contextFromSave({
+        bonds: s.bonds,
+        clarionReads: s.clarionReads,
+        caseStage: s.civic.caseStage,
+        daysPlayed: s.daysPlayed,
+        isles: s.isles,
       });
-      sfx(dock ? "win" : "open");
+      const v = rule(ctx, ARBUTHNOT);
+      const verdict = v.side;
+      set({
+        civic: { ...s.civic, caseStage: 3, dock: true, courtVerdict: verdict },
+        speech: rulingText(v),
+      });
+      sfx(verdict === "sunstep" ? "win" : "open");
       scheduleWrite(get);
     },
 

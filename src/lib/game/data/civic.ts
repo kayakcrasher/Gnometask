@@ -74,7 +74,7 @@ export const TOWN_LABEL: Record<CivicTown, string> = {
 };
 
 export const COURTS: { town: CivicTown; x: number; y: number; name: string }[] = [
-  { town: "capitol", x: 560, y: 250, name: "Supreme Court" },
+  { town: "capitol", x: 360, y: 350, name: "Supreme Court" },
   { town: "tideham", x: 360, y: 900, name: "Tideham Court" },
   { town: "greenlane", x: 1560, y: 960, name: "Greenlane Court" },
   { town: "haven", x: 1980, y: 880, name: "Haven Court" },

@@ -10,7 +10,7 @@ import { useGame } from "@/lib/game/store";
 
 const COUNTRY_WIDTH = 1.65;
 
-function cobbleTexture() {
+function cobbleTexture(tint = "#c4b49a") {
   const c = document.createElement("canvas");
   c.width = 512;
   c.height = 512;
@@ -21,7 +21,7 @@ function cobbleTexture() {
     seed = (seed * 16807) % 2147483647;
     return (seed & 2147483647) / 2147483647;
   };
-  g.fillStyle = "#c4b49a";
+  g.fillStyle = tint;
   g.fillRect(0, 0, 512, 512);
   const tones = ["#d9cbb6", "#b7a690", "#e6d8c4", "#a89480", "#cfc3ae", "#8f8170", "#efe4d4"];
   for (let i = 0; i < 90; i++) {
@@ -46,92 +46,240 @@ function cobbleTexture() {
   return tex;
 }
 
-function roadGeometry() {
-  const positions: number[] = [];
-  const uvs: number[] = [];
-  const up = (a: number[], b: number[], c: number[]) => {
-    const abx = b[0]! - a[0]!;
-    const abz = b[2]! - a[2]!;
-    const acx = c[0]! - a[0]!;
-    const acz = c[2]! - a[2]!;
-    return abz * acx - abx * acz;
-  };
-  const tri = (a: number[], b: number[], c: number[], ua: number[], ub: number[], uc: number[]) => {
-    const order = up(a, b, c) >= 0 ? [a, b, c, ua, ub, uc] : [a, c, b, ua, uc, ub];
-    for (let i = 0; i < 3; i++) {
-      positions.push(order[i]![0]!, order[i]![1]!, order[i]![2]!);
-      uvs.push(order[i + 3]![0]!, order[i + 3]![1]!);
-    }
-  };
-  const push = (ax: number, ay: number, bx: number, by: number, width: number) => {
-    const a = to3(ax, ay, 0);
-    const b = to3(bx, by, 0);
-    const dx = b[0] - a[0];
-    const dz = b[2] - a[2];
-    const len = Math.hypot(dx, dz);
-    if (len < 0.02) return;
-    const px = (-dz / len) * (width / 2);
-    const pz = (dx / len) * (width / 2);
-    const top = ROAD_TOP;
-    const bot = ROAD_TOP - 0.07;
-    const p1 = [a[0] + px, top, a[2] + pz];
-    const p2 = [a[0] - px, top, a[2] - pz];
-    const p3 = [b[0] + px, top, b[2] + pz];
-    const p4 = [b[0] - px, top, b[2] - pz];
-    const u1 = len / 1.6;
-    const v1 = width / 1.6;
-    tri(p1, p3, p4, [0, 0], [u1, 0], [u1, v1]);
-    tri(p1, p4, p2, [0, 0], [u1, v1], [0, v1]);
-    const s1 = [p1[0]!, bot, p1[2]!];
-    const s2 = [p2[0]!, bot, p2[2]!];
-    const s3 = [p3[0]!, bot, p3[2]!];
-    const s4 = [p4[0]!, bot, p4[2]!];
-    tri(p1, s1, s3, [0, 0], [0, 0.2], [u1, 0.2]);
-    tri(p1, s3, p3, [0, 0], [u1, 0.2], [u1, 0]);
-    tri(p2, p4, s4, [0, 0], [u1, 0], [u1, 0.2]);
-    tri(p2, s4, s2, [0, 0], [u1, 0.2], [0, 0.2]);
-  };
-  for (const road of ROADS) {
-    for (let i = 1; i < road.points.length; i++) {
-      const [ax, ay] = road.points[i - 1]!;
-      const [bx, by] = road.points[i]!;
-      push(ax, ay, bx, by, COUNTRY_WIDTH);
-    }
+type TriFn = (
+  buf: number[],
+  uvs: number[],
+  a: number[],
+  b: number[],
+  c: number[],
+  ua: number[],
+  ub: number[],
+  uc: number[],
+) => void;
+
+const up = (a: number[], b: number[], c: number[]) => {
+  const abx = b[0]! - a[0]!;
+  const abz = b[2]! - a[2]!;
+  const acx = c[0]! - a[0]!;
+  const acz = c[2]! - a[2]!;
+  return abz * acx - abx * acz;
+};
+
+const tri: TriFn = (buf, uvs, a, b, c, ua, ub, uc) => {
+  const order =
+    up(a, b, c) >= 0 ? [a, b, c, ua, ub, uc] : [a, c, b, ua, uc, ub];
+  for (let i = 0; i < 3; i++) {
+    buf.push(order[i]![0]!, order[i]![1]!, order[i]![2]!);
+    uvs.push(order[i + 3]![0]!, order[i + 3]![1]!);
   }
+};
+
+/** One straight segment of road at a given width and height. */
+function pushSegment(
+  roadBuf: number[],
+  roadUvs: number[],
+  shoulderBuf: number[],
+  shoulderUvs: number[],
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  roadWidth: number,
+) {
+  const a = to3(ax, ay, 0);
+  const b = to3(bx, by, 0);
+  const dx = b[0] - a[0];
+  const dz = b[2] - a[2];
+  const len = Math.hypot(dx, dz);
+  if (len < 0.02) return;
+  const ux = dx / len;
+  const uz = dz / len;
+  const px = -uz;
+  const pz = ux;
+
+  // Shoulder: wider, sits just below the road, darker, with a small drop.
+  const sw = roadWidth + 0.55;
+  const sTop = ROAD_TOP - 0.02;
+  const sBot = ROAD_TOP - 0.14;
+  const sp1 = [a[0] + px * (sw / 2), sTop, a[2] + pz * (sw / 2)];
+  const sp2 = [a[0] - px * (sw / 2), sTop, a[2] - pz * (sw / 2)];
+  const sp3 = [b[0] + px * (sw / 2), sTop, b[2] + pz * (sw / 2)];
+  const sp4 = [b[0] - px * (sw / 2), sTop, b[2] - pz * (sw / 2)];
+  const sb1 = [sp1[0]!, sBot, sp1[2]!];
+  const sb2 = [sp2[0]!, sBot, sp2[2]!];
+  const sb3 = [sp3[0]!, sBot, sp3[2]!];
+  const sb4 = [sp4[0]!, sBot, sp4[2]!];
+  const su1 = len / 1.6;
+  const sv1 = sw / 1.6;
+  tri(shoulderBuf, shoulderUvs, sp1, sp3, sp4, [0, 0], [su1, 0], [su1, sv1]);
+  tri(shoulderBuf, shoulderUvs, sp1, sp4, sp2, [0, 0], [su1, sv1], [0, sv1]);
+  tri(shoulderBuf, shoulderUvs, sp1, sb1, sb3, [0, 0], [0, 0.18], [su1, 0.18]);
+  tri(shoulderBuf, shoulderUvs, sp1, sb3, sp3, [0, 0], [su1, 0.18], [su1, 0]);
+  tri(shoulderBuf, shoulderUvs, sp2, sp4, sb4, [0, 0], [su1, 0], [su1, 0.18]);
+  tri(shoulderBuf, shoulderUvs, sp2, sb4, sb2, [0, 0], [su1, 0.18], [0, 0.18]);
+
+  // Road on top.
+  const rTop = ROAD_TOP;
+  const rp1 = [a[0] + px * (roadWidth / 2), rTop, a[2] + pz * (roadWidth / 2)];
+  const rp2 = [a[0] - px * (roadWidth / 2), rTop, a[2] - pz * (roadWidth / 2)];
+  const rp3 = [b[0] + px * (roadWidth / 2), rTop, b[2] + pz * (roadWidth / 2)];
+  const rp4 = [b[0] - px * (roadWidth / 2), rTop, b[2] - pz * (roadWidth / 2)];
+  const ru1 = len / 1.6;
+  const rv1 = roadWidth / 1.6;
+  tri(roadBuf, roadUvs, rp1, rp3, rp4, [0, 0], [ru1, 0], [ru1, rv1]);
+  tri(roadBuf, roadUvs, rp1, rp4, rp2, [0, 0], [ru1, rv1], [0, rv1]);
+}
+
+/**
+ * Corner patch: a small polygon disc at a waypoint that fills the wedge
+ * left behind when two straight segments meet at an angle. Sized a bit
+ * larger than the road so the seam is hidden.
+ */
+function pushFan(
+  buf: number[],
+  uvs: number[],
+  cx: number,
+  cy: number,
+  radius: number,
+  top: number,
+  segs = 12,
+) {
+  const p = to3(cx, cy, 0);
+  const center = [p[0], top, p[2]];
+  const inner: number[][] = [];
+  const innerUvs: number[][] = [];
+  for (let i = 0; i <= segs; i++) {
+    const a = (i / segs) * Math.PI * 2;
+    inner.push([p[0] + Math.cos(a) * radius, top, p[2] + Math.sin(a) * radius]);
+    innerUvs.push([(1 + Math.cos(a)) * radius / 1.6, (1 + Math.sin(a)) * radius / 1.6]);
+  }
+  for (let i = 0; i < segs; i++) {
+    tri(
+      buf,
+      uvs,
+      center,
+      inner[i]!,
+      inner[i + 1]!,
+      [radius / 1.6, radius / 1.6],
+      innerUvs[i]!,
+      innerUvs[i + 1]!,
+    );
+  }
+}
+
+function makeGeometries() {
+  const roadBuf: number[] = [];
+  const roadUvs: number[] = [];
+  const shoulderBuf: number[] = [];
+  const shoulderUvs: number[] = [];
+
+  const addLine = (points: [number, number][], width: number) => {
+    for (let i = 1; i < points.length; i++) {
+      const [ax, ay] = points[i - 1]!;
+      const [bx, by] = points[i]!;
+      pushSegment(roadBuf, roadUvs, shoulderBuf, shoulderUvs, ax, ay, bx, by, width);
+    }
+    // Corner fans at every interior waypoint, both layers.
+    for (let i = 1; i < points.length - 1; i++) {
+      const [cx, cy] = points[i]!;
+      pushFan(roadBuf, roadUvs, cx, cy, width / 2 + 0.08, ROAD_TOP);
+      pushFan(
+        shoulderBuf,
+        shoulderUvs,
+        cx,
+        cy,
+        (width + 0.55) / 2 + 0.08,
+        ROAD_TOP - 0.02,
+      );
+    }
+  };
+
+  for (const road of ROADS) addLine(road.points, COUNTRY_WIDTH);
+
   for (const town of TOWN_GRIDS) {
-    for (const seg of townStreets(town)) push(seg.ax, seg.ay, seg.bx, seg.by, seg.width ?? 1.8);
+    for (const seg of townStreets(town)) {
+      addLine(
+        [
+          [seg.ax, seg.ay],
+          [seg.bx, seg.by],
+        ],
+        seg.width ?? 1.8,
+      );
+    }
   }
-  for (const seg of capitolStreets()) push(seg.ax, seg.ay, seg.bx, seg.by, seg.width ?? 2.4);
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
-  geo.computeVertexNormals();
-  return geo;
+
+  for (const seg of capitolStreets()) {
+    addLine(
+      [
+        [seg.ax, seg.ay],
+        [seg.bx, seg.by],
+      ],
+      seg.width ?? 2.4,
+    );
+  }
+
+  const mk = (positions: number[], uvs: number[]) => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+    geo.computeVertexNormals();
+    return geo;
+  };
+
+  return {
+    road: mk(roadBuf, roadUvs),
+    shoulder: mk(shoulderBuf, shoulderUvs),
+  };
 }
 
 function ignoreRaycast() {}
 
 export function CountryRoads() {
-  const geo = useMemo(() => roadGeometry(), []);
-  const map = useMemo(() => cobbleTexture(), []);
+  const geos = useMemo(() => makeGeometries(), []);
+  const roadMap = useMemo(() => cobbleTexture("#c4b49a"), []);
+  const shoulderMap = useMemo(() => cobbleTexture("#8f8170"), []);
   return (
-    <mesh geometry={geo} receiveShadow renderOrder={2} raycast={ignoreRaycast}>
-      <meshStandardMaterial
-        map={map ?? undefined}
-        color={map ? "#ffffff" : "#d7c7a4"}
-        roughness={0.92}
-        side={THREE.DoubleSide}
-        polygonOffset
-        polygonOffsetFactor={-2}
-        polygonOffsetUnits={-2}
-      />
-    </mesh>
+    <group>
+      <mesh
+        geometry={geos.shoulder}
+        receiveShadow
+        renderOrder={1}
+        raycast={ignoreRaycast}
+      >
+        <meshStandardMaterial
+          map={shoulderMap ?? undefined}
+          color={shoulderMap ? "#b7a690" : "#8f8170"}
+          roughness={0.98}
+          side={THREE.DoubleSide}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
+        />
+      </mesh>
+      <mesh
+        geometry={geos.road}
+        receiveShadow
+        renderOrder={2}
+        raycast={ignoreRaycast}
+      >
+        <meshStandardMaterial
+          map={roadMap ?? undefined}
+          color={roadMap ? "#ffffff" : "#d7c7a4"}
+          roughness={0.9}
+          side={THREE.DoubleSide}
+          polygonOffset
+          polygonOffsetFactor={-3}
+          polygonOffsetUnits={-3}
+        />
+      </mesh>
+    </group>
   );
 }
 
 function lengthOf(pts: [number, number][]) {
   let n = 0;
-  for (let i = 1; i < pts.length; i++) n += Math.hypot(pts[i]![0] - pts[i - 1]![0], pts[i]![1] - pts[i - 1]![1]);
+  for (let i = 1; i < pts.length; i++)
+    n += Math.hypot(pts[i]![0] - pts[i - 1]![0], pts[i]![1] - pts[i - 1]![1]);
   return n;
 }
 
@@ -143,7 +291,12 @@ function at(pts: [number, number][], dist: number) {
     const seg = Math.hypot(b[0] - a[0], b[1] - a[1]) || 0.001;
     if (left <= seg) {
       const t = left / seg;
-      return { x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t, nx: b[0] - a[0], ny: b[1] - a[1] };
+      return {
+        x: a[0] + (b[0] - a[0]) * t,
+        y: a[1] + (b[1] - a[1]) * t,
+        nx: b[0] - a[0],
+        ny: b[1] - a[1],
+      };
     }
     left -= seg;
   }
@@ -309,8 +462,15 @@ function Runner({
       <group position={[0, 0.32, -0.72]}>
         <GnomeRig hat={hat} scale={1.15} coat={coat} beard />
       </group>
-      <Html position={[0, 1.85, -0.72]} center distanceFactor={20} style={{ pointerEvents: "none" }}>
-        <p className="whitespace-nowrap rounded-full bg-ink/75 px-2 py-0.5 text-[10px] font-semibold text-parchment">{name}</p>
+      <Html
+        position={[0, 1.85, -0.72]}
+        center
+        distanceFactor={20}
+        style={{ pointerEvents: "none" }}
+      >
+        <p className="whitespace-nowrap rounded-full bg-ink/75 px-2 py-0.5 text-[10px] font-semibold text-parchment">
+          {name}
+        </p>
       </Html>
     </group>
   );

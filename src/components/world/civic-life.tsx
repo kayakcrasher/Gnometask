@@ -73,37 +73,164 @@ function Lantern() {
 
 function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; onEnter: () => void }) {
   const big = town === "capitol";
-  const cols = (big ? 6 : 4) + Math.max(0, level - 1);
-  const w = big ? 2.6 : 1.7;
-  const span = w * 0.42;
+  const scale = big ? 1.0 : 0.62;
+  const W = 6.0;
+  const D = 4.6;
+  const colH = 2.0;
+  const colR = 0.14;
+  const baseY = 0.34;
+
+  const sideCols = big ? 5 : 4;
+  const frontCols = big ? 8 : 6;
+  const gapW = W / (frontCols + 1);
+  const gapD = D / (sideCols + 1);
+
+  const front = Array.from({ length: frontCols }, (_, i) => ({
+    x: -W / 2 + gapW * (i + 1),
+    z: D / 2,
+  }));
+  const back = Array.from({ length: frontCols }, (_, i) => ({
+    x: -W / 2 + gapW * (i + 1),
+    z: -D / 2,
+  }));
+  const left = Array.from({ length: sideCols }, (_, i) => ({
+    x: -W / 2,
+    z: -D / 2 + gapD * (i + 1),
+  }));
+  const right = Array.from({ length: sideCols }, (_, i) => ({
+    x: W / 2,
+    z: -D / 2 + gapD * (i + 1),
+  }));
+  const columns = [...front, ...back, ...left, ...right];
+
+  const drumR = 1.5;
+  const drumH = 0.9;
+  const drumBaseY = baseY + colH + 0.5;
+  const drumTopY = drumBaseY + drumH / 2;
+  const domeBaseY = drumTopY + 0.04;
+
+  const lanternCols = 8;
+  const lanternR = 0.55;
+  const lanternH = 0.5;
+  const surfaceY = domeBaseY + Math.sqrt(drumR * drumR - lanternR * lanternR);
+  const lanternCenterY = surfaceY + lanternH / 2;
+  const lanternTopY = surfaceY + lanternH;
+  const roofY = lanternTopY;
+  const finialY = roofY + 0.7 + 0.12;
+
   return (
-    <group onClick={(e) => { e.stopPropagation(); onEnter(); }}>
-      <mesh position={[0, 0.12, 0.35]} receiveShadow>
-        <boxGeometry args={[w + 0.4, 0.16, 1.5]} />
-        <meshStandardMaterial color="#d9d3c6" />
+    <group
+      onClick={(e) => {
+        e.stopPropagation();
+        onEnter();
+      }}
+      scale={scale}
+    >
+      <mesh position={[0, 0.12, 0]} receiveShadow castShadow>
+        <boxGeometry args={[W + 1.4, 0.24, D + 1.4]} />
+        <meshStandardMaterial color="#c9c3b4" roughness={0.95} />
       </mesh>
-      <mesh position={[0, 0.28, 0.7]} receiveShadow>
-        <boxGeometry args={[w + 0.15, 0.12, 0.7]} />
-        <meshStandardMaterial color="#cfc6b6" />
+      <mesh position={[0, 0.28, 0]} receiveShadow castShadow>
+        <boxGeometry args={[W + 0.8, 0.14, D + 0.8]} />
+        <meshStandardMaterial color="#d9d3c6" roughness={0.9} />
       </mesh>
-      {Array.from({ length: cols }, (_, i) => {
-        const x = -span + (i * (span * 2)) / Math.max(1, cols - 1);
+
+      <mesh position={[0, baseY + colH / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[W - 0.35, colH, D - 0.35]} />
+        <meshStandardMaterial color="#e2d9c4" roughness={0.92} />
+      </mesh>
+      {[0.25, 0.5, 0.75].map((f) => (
+        <mesh key={f} position={[0, baseY + colH * f, 0]}>
+          <boxGeometry args={[W - 0.3, 0.015, D - 0.3]} />
+          <meshStandardMaterial color="#b7b1a4" />
+        </mesh>
+      ))}
+
+      {columns.map((c, i) => (
+        <group key={i} position={[c.x, baseY, c.z]}>
+          <mesh position={[0, colH / 2, 0]} castShadow>
+            <cylinderGeometry args={[colR, colR + 0.02, colH, 12]} />
+            <meshStandardMaterial color="#f7f1e4" roughness={0.85} />
+          </mesh>
+          <mesh position={[0, 0.06, 0]}>
+            <cylinderGeometry args={[colR + 0.06, colR + 0.08, 0.12, 12]} />
+            <meshStandardMaterial color="#e7e1d4" roughness={0.9} />
+          </mesh>
+          <mesh position={[0, colH - 0.06, 0]} castShadow>
+            <boxGeometry args={[colR * 3, 0.12, colR * 3]} />
+            <meshStandardMaterial color="#f3ecdf" roughness={0.85} />
+          </mesh>
+        </group>
+      ))}
+
+      <mesh position={[0, baseY + colH + 0.14, 0]} castShadow receiveShadow>
+        <boxGeometry args={[W + 0.5, 0.28, D + 0.5]} />
+        <meshStandardMaterial color="#f3ecdf" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, baseY + colH + 0.36, 0]} castShadow>
+        <boxGeometry args={[W + 0.35, 0.14, D + 0.35]} />
+        <meshStandardMaterial color="#efe6d4" roughness={0.85} />
+      </mesh>
+
+
+      <mesh position={[0, drumBaseY, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[drumR, drumR + 0.05, drumH, 28]} />
+        <meshStandardMaterial color="#d9d3c6" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, drumTopY, 0]}>
+        <cylinderGeometry args={[drumR + 0.08, drumR + 0.08, 0.08, 28]} />
+        <meshStandardMaterial color="#b7b1a4" />
+      </mesh>
+
+      <mesh position={[0, domeBaseY, 0]} castShadow receiveShadow>
+        <sphereGeometry args={[drumR, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#e8dfc4" roughness={0.85} />
+      </mesh>
+
+      {Array.from({ length: lanternCols }).map((_, i) => {
+        const a = (i / lanternCols) * Math.PI * 2;
         return (
-          <mesh key={i} position={[x, 0.85, 0.55]} castShadow>
-            <cylinderGeometry args={[0.06, 0.07, 1.05, 8]} />
-            <meshStandardMaterial color="#f4efe4" />
+          <mesh
+            key={i}
+            position={[
+              Math.cos(a) * lanternR,
+              lanternCenterY,
+              Math.sin(a) * lanternR,
+            ]}
+            castShadow
+          >
+            <cylinderGeometry args={[0.05, 0.06, lanternH, 8]} />
+            <meshStandardMaterial color="#f7f1e4" />
           </mesh>
         );
       })}
-      <mesh position={[0, 1.42, 0.55]} castShadow>
-        <boxGeometry args={[w, 0.1, 0.42]} />
-        <meshStandardMaterial color="#efe6d4" />
+
+      <mesh position={[0, roofY, 0]} castShadow>
+        <sphereGeometry args={[0.7, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#d9d3c6" roughness={0.85} />
       </mesh>
-      <mesh position={[0, 1.72, 0.55]} castShadow>
-        <coneGeometry args={[w * 0.48, 0.46, 4]} />
-        <meshStandardMaterial color="#f7f1e4" />
+      <mesh position={[0, finialY, 0]} castShadow>
+        <sphereGeometry args={[0.12, 12, 10]} />
+        <meshStandardMaterial color="#d6a84c" metalness={0.4} roughness={0.4} />
       </mesh>
-      <Html position={[0, 2.15, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
+
+      {[0, 1, 2, 3].map((i) => (
+        <mesh
+          key={i}
+          position={[0, 0.06 + i * 0.07, D / 2 + 1.0 + i * 0.22]}
+          receiveShadow
+        >
+          <boxGeometry args={[W + 0.6, 0.14, 0.5]} />
+          <meshStandardMaterial color="#cfc6b4" roughness={0.95} />
+        </mesh>
+      ))}
+
+      <Html
+        position={[0, finialY + 0.6, 0]}
+        center
+        distanceFactor={big ? 28 : 20}
+        style={{ pointerEvents: "none" }}
+      >
         <span className="whitespace-nowrap rounded-full bg-ink/85 px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
           {big ? "Port Victoria · Supreme Court" : `${TOWN_LABEL[town]} court`}
         </span>
@@ -111,7 +238,6 @@ function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; 
     </group>
   );
 }
-
 export function CivicLife() {
   const civic = useGame((s) => s.civic);
   const enter = useGame((s) => s.enterCourt);
