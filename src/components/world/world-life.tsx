@@ -382,6 +382,10 @@ export function Fights3({
             </FighterMotion>
             {fighting && combat ? (
               <>
+                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>
+                  <ringGeometry args={[0.55, 0.65, 32]} />
+                  <meshBasicMaterial color={combat.enemyIntent.kind === "strike" ? "#d6a84c" : "#c24f45"} transparent opacity={0.7} depthWrite={false} />
+                </mesh>
                 <HpPlate hp={combat.enemyHp} max={combat.enemyMax} y={1.35} />
                 {combat.splatOnEnemy != null ? <FightSplat value={combat.splatOnEnemy} shake={combat.shake} /> : null}
               </>

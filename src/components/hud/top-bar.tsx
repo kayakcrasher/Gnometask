@@ -17,12 +17,10 @@ export function TopBar() {
   const equipment = useGame((s) => s.equipment);
   const skills = useGame((s) => s.skills);
   const combat = useGame((s) => s.combat);
-  const style = useGame((s) => s.combatStyle);
-  const setStyle = useGame((s) => s.setCombatStyle);
-  const eat = useGame((s) => s.combatEat);
-  const flee = useGame((s) => s.combatFlee);
   const food = honey + bread;
   const maxHp = maxHitpoints(skills);
+  const visibleHp = combat?.playerHp ?? hp;
+  const visibleMax = combat?.playerMax ?? maxHp;
   const cmb = combatLevel(skills);
   const slots = [
     { id: "weapon" as const, icon: Sword, empty: "Sword" },
@@ -53,13 +51,13 @@ export function TopBar() {
             <div
               className={cn(
                 "flex h-11 items-center gap-1 rounded-full px-3 font-display text-base font-semibold tabular-nums",
-                hp <= 8 ? "bg-berry text-parchment" : "bg-parchment/12 text-parchment",
+                visibleHp <= visibleMax * 0.35 ? "bg-berry text-parchment" : "bg-parchment/12 text-parchment",
               )}
               title="Heart"
             >
               <Heart className="size-4" strokeWidth={2.4} />
-              {hp}
-              <span className="hidden sm:inline">/{maxHp}</span>
+              {visibleHp}
+              <span className="hidden sm:inline">/{visibleMax}</span>
             </div>
             <div className="hidden h-11 items-center gap-1 rounded-full bg-gold/20 px-3 font-display text-base font-semibold text-gold tabular-nums sm:flex" title="Food">
               <span className="size-2.5 rounded-full bg-gold" aria-hidden />
@@ -87,6 +85,7 @@ export function TopBar() {
                   <button
                     key={slot.id}
                     type="button"
+                    disabled={Boolean(combat)}
                     title={item?.name ?? slot.empty}
                     onClick={() => setPanel(panel === "inventory" ? "place" : "inventory")}
                     className="flex size-11 flex-col items-center justify-center rounded-[12px] bg-parchment/12 text-parchment"
@@ -101,43 +100,7 @@ export function TopBar() {
             </div>
           </div>
         </div>
-        {combat && combat.phase !== "won" && combat.phase !== "lost" ? (
-          <div className="flex h-14 items-center gap-1 rounded-[20px] bg-pine/92 p-1.5 shadow-panel">
-            {(
-              [
-                ["attack", "Atk"],
-                ["strength", "Str"],
-                ["defence", "Def"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setStyle(id)}
-                className={cn(
-                  "h-11 rounded-[14px] px-2.5 font-display text-xs font-semibold",
-                  style === id ? "bg-parchment text-pine" : "text-parchment",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={eat}
-              className="h-11 rounded-[14px] px-2.5 font-display text-xs font-semibold text-parchment"
-            >
-              Eat
-            </button>
-            <button
-              type="button"
-              onClick={flee}
-              className="h-11 rounded-[14px] px-2.5 font-display text-xs font-semibold text-parchment"
-            >
-              Flee
-            </button>
-          </div>
-        ) : (
+        {!combat ? (
         <div className="flex h-14 items-center gap-1 rounded-[20px] bg-pine/92 p-1.5 shadow-panel">
           <button
             type="button"
@@ -162,7 +125,7 @@ export function TopBar() {
             <Settings2 className="size-5" strokeWidth={2.4} />
           </button>
         </div>
-        )}
+        ) : null}
       </div>
     </header>
   );

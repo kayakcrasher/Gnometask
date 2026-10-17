@@ -1,6 +1,6 @@
 import { localDate } from "@/lib/utils";
 import { gearStats } from "../catalog";
-import { ENEMIES, roll, type CombatState } from "../combat";
+import { ENEMIES, enemyIntentFor, roll, type CombatState } from "../combat";
 import type { CombatStyle } from "../types";
 import { sfx } from "../juice";
 import { PLAYER_START, type GameSave } from "../types";
@@ -18,129 +18,78 @@ function incoming(s: GameSave & { praying?: boolean }, raw: number, vsDragon = f
   let dmg = raw - defencePower(s) - Math.floor(levelsOf(s.skills).defence / 5);
   if (vsDragon) dmg -= s.fortLevel;
   if (s.praying) dmg = Math.floor(dmg * 0.5);
-  return Math.max(1, dmg);
+  return Math.max(0, dmg);
 }
 
-function windUpFoe(get: StoreGet, set: StoreSet, _next: CombatState) {
+function windUpFoe(get: StoreGet, set: StoreSet, next: CombatState) {
   setCombatTimer(() => {
     const live = get().combat;
-    if (!live || live.phase !== "enemy") return;
+    if (!live || live.id !== next.id || live.phase !== "enemy") return;
     set({ combat: { ...live, striking: false, foeSwing: true, splatOnEnemy: null } });
-    setCombatTimer(() => finishEnemyTurn(get, set, { ...live, striking: false, foeSwing: true }), 420);
-  }, 480);
+    setCombatTimer(() => finishEnemyTurn(get, set, next), 420);
+  }, next.enemyIntent.kind === "strike" ? 480 : 850);
 }
 
-export function finishEnemyTurn(get: StoreGet, set: StoreSet, combat: CombatState) {
-  if (combat.phase !== "enemy") return;
-  const live = get().combat;
-  if (!live || live.enemyId !== combat.enemyId || live.phase !== "enemy") return;
+export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatState) {
   const s = get();
-  const e = ENEMIES[combat.enemyId];
-  const miss = (combat.enemyId === "sprite" && Math.random() < 0.22) || (combat.enemyId === "runt" && Math.random() < 0.55);
-  if (miss) {
-    set({
-      combat: {
-        ...live,
-        phase: "player",
-        striking: false,
-        foeSwing: false,
-        splatOnPlayer: "miss",
-        splatOnEnemy: null,
-        log: combat.enemyId === "runt" ? "The runt swings at the air." : "The sprite misses. Leaves everywhere.",
-      },
-    });
-    armAutoAttack(get, 1500);
+  const live = s.combat;
+  if (!live || live.id !== expected.id || live.phase !== "enemy") return;
+  const e = ENEMIES[live.enemyId];
+  const who = live.enemyId === "dragon" ? s.lifeDragon.name : e.name;
+  const intent = live.enemyIntent;
+  const nextRound = live.round + 1;
+  const nextIntent = enemyIntentFor(live.enemyId, nextRound);
+  if (Math.random() > intent.accuracy) {
+    set({ combat: {
+      ...live, phase: "player", round: nextRound, enemyIntent: nextIntent,
+      guarding: false, striking: false, foeSwing: false,
+      splatOnPlayer: "miss", splatOnEnemy: null, lastXp: {}, shake: live.shake + 1,
+      log: `${who}'s ${intent.label.toLowerCase()} misses.`,
+    } });
+    armAutoAttack(get, 1600);
     return;
   }
-  const fire = (combat.enemyId === "dragon" || combat.enemyId === "absence") && Math.random() < 0.4;
-  const raw =
-    combat.enemyId === "runt" ? 1 : (combat.enemyDmg ?? e.dmg) + roll(0, 1) + (fire ? 2 : 0);
-  const dmg = incoming(s, raw, combat.enemyId === "dragon" || combat.enemyId === "absence");
-  const blocked = s.combatStyle === "defence" ? Math.max(0, dmg - 1) : dmg;
-  const taken = blocked;
-  const hp = Math.max(0, combat.playerHp - taken);
+  const vsDragon = live.enemyId === "dragon" || live.enemyId === "absence";
+  const raw = live.enemyDmg + roll(0, 1) + intent.bonus;
+  const damage = Math.max(0, incoming(s, raw, vsDragon) - (s.combatStyle === "defence" ? 1 : 0));
+  const taken = Math.min(live.playerHp, live.guarding ? Math.floor(damage * 0.45) : damage);
+  const hp = Math.max(0, live.playerHp - taken);
   if (taken > 0) sfx("hit");
-  if (fire && combat.enemyId === "dragon") {
+  if (intent.kind === "fire" && live.enemyId === "dragon") {
     const scorch = Math.max(1, 5 - s.fortLevel);
-    set({
-      buildingHp: {
-        cottage: Math.max(0, s.buildingHp.cottage - scorch),
-        village: Math.max(0, s.buildingHp.village - scorch - 1),
-        haven: s.buildingHp.haven,
-      },
-    });
+    set({ buildingHp: {
+      cottage: Math.max(0, s.buildingHp.cottage - scorch),
+      village: Math.max(0, s.buildingHp.village - scorch - 1), haven: s.buildingHp.haven,
+    } });
   }
-  const who = combat.enemyId === "dragon" ? s.lifeDragon.name : e.name;
   const defGain = 4 * Math.max(taken, 1);
-  const defXp = withXp(s.skills, { defence: defGain });
-  const oldMax = maxHitpoints(s.skills);
-  const newMax = maxHitpoints(defXp.skills);
-  const playerHp = Math.max(0, hp + (newMax - oldMax));
-  const dingBit = defXp.ding ? ` ${defXp.ding}` : "";
-  const sessionXp = {
-    ...live.sessionXp,
-    defence: live.sessionXp.defence + defGain,
-  };
-  if (playerHp <= 0) {
-    clearCombatTimer();
-    set({
-      combat: {
-        ...live,
-        playerHp: 0,
-        playerMax: newMax,
-        phase: "lost",
-        striking: false,
-        foeSwing: false,
-        splatOnPlayer: taken,
-        splatOnEnemy: null,
-        sessionXp,
-        lastXp: { defence: defGain },
-        shake: live.shake + 1,
-        log: fire
-          ? `${who} breathes fire. You drop. Back to the cottage.`
-          : `${who} wins this round. Back to the cottage.`,
-      },
-      hp: newMax,
-      skills: defXp.skills,
-      gnomeX: PLAYER_START.x,
-      gnomeY: PLAYER_START.y,
-      popup: null,
-      interior: null,
-    });
-    scheduleWrite(get);
-    setCombatTimer(() => {
-      const live = get().combat;
-      if (!live || live.phase !== "lost") return;
-      get().combatEnd();
-    }, 1400);
-    return;
-  }
+  const gained = withXp(s.skills, { defence: defGain });
+  const max = maxHitpoints(gained.skills);
+  const playerHp = hp <= 0 ? 0 : Math.min(max, hp + max - maxHitpoints(s.skills));
+  const lost = playerHp <= 0;
+  const sessionXp = { ...live.sessionXp, defence: live.sessionXp.defence + defGain };
+  const log = lost ? `${who} wins this round. Your cottage is a safe place to recover.`
+    : taken === 0 ? `You block ${who}'s ${intent.label.toLowerCase()}.`
+    : `${intent.label} hits for ${taken}.${live.guarding ? " Your guard softens the blow." : ""}${gained.ding ? ` ${gained.ding}` : ""}`;
   set({
     combat: {
-      ...live,
-      playerHp,
-      playerMax: newMax,
-      phase: "player",
-      striking: false,
-      foeSwing: false,
-      splatOnPlayer: taken,
-      splatOnEnemy: null,
-      sessionXp,
-      lastXp: { defence: defGain },
-      shake: live.shake + 1,
-      log:
-        taken === 0
-          ? `${who} swings. You block.`
-          : (fire ? `${who} breathes fire for ${taken}.` : `${who} hits ${taken}.`) + dingBit,
+      ...live, playerHp, playerMax: max, phase: lost ? "lost" : "player",
+      round: nextRound, enemyIntent: nextIntent, guarding: false, striking: false, foeSwing: false,
+      splatOnPlayer: taken, splatOnEnemy: null, sessionXp, lastXp: { defence: defGain },
+      shake: live.shake + 1, log,
     },
-    hp: playerHp,
-    skills: defXp.skills,
+    skills: gained.skills,
+    hp: lost ? max : playerHp,
+    ...(lost ? { gnomeX: PLAYER_START.x, gnomeY: PLAYER_START.y, afloat: null, sailHome: false,
+      abroad: null, popup: null, interior: null } : {}),
   });
-  armAutoAttack(get, 1600);
+  if (lost) { clearCombatTimer(); scheduleWrite(get); }
+  else armAutoAttack(get, 1600);
 }
 
 export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: string) {
   const s = get();
+  if (!s.combat || s.combat.id !== c.id || s.combat.phase === "won" || s.combat.phase === "lost") return;
   const e = ENEMIES[c.enemyId];
   const hats =
     (c.enemyId === "dragon" || c.enemyId === "absence") && !s.ownedHats.includes("hat-dragon")
@@ -171,7 +120,7 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
       speech = `A runt down. ${left} still green on the shore.`;
     }
   }
-  const lootLine = `Drops bones and ${e.coins} coins.`;
+  const lootLine = `Drops bones and ${c.rewardCoins} coins.`;
   const chart = rolledChart(c.enemyId, s.chart);
   let respect = s.respect;
   let muckRaiders = s.muckRaiders;
@@ -193,7 +142,7 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
   }
   speech = speech ? `${speech} ${lootLine}` : lootLine;
   if (chart) speech = `${speech} A hide map shows their island.`;
-  const loot = rememberLoot(get, set, c.atX, c.atY, 1, e.coins + bonusCoins);
+  const loot = rememberLoot(get, set, c.atX, c.atY, 1, c.rewardCoins + bonusCoins);
   let lifeDragon = s.lifeDragon;
   let absencePending = s.absencePending;
   if (c.enemyId === "dragon") {
@@ -205,7 +154,7 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
   clearCombatTimer();
   set({
     ...loot,
-    combat: { ...c, enemyHp: 0, phase: "won", shake: c.shake + 1, log },
+    combat: { ...c, enemyHp: 0, phase: "won", guarding: false, foeSwing: false, loot: { coins: c.rewardCoins + bonusCoins, bones: 1 }, shake: c.shake + 1, log },
     wildWins: s.wildWins + 1,
     lifeDragon,
     absencePending,
@@ -226,17 +175,12 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
   });
   sfx("win");
   scheduleWrite(get);
-  setCombatTimer(() => {
-    const live = get().combat;
-    if (!live || (live.phase !== "won" && live.phase !== "lost")) return;
-    get().combatEnd();
-  }, 1400);
 }
 
 export function combatSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "combatAttack" | "combatEat" | "combatFlee" | "combatEnd" | "setCombatStyle"> {
+): Pick<GameState, "combatAttack" | "combatGuard" | "setCombatAuto" | "combatEat" | "combatFlee" | "combatEnd" | "setCombatStyle"> {
   return {
     combatAttack: () => {
       const s = get();
@@ -271,8 +215,9 @@ export function combatSlice(
       const cap =
         Math.max(soft ? 2 : 1, maxHit(lv.strength + (style === "strength" ? 3 : 0), weaponAtk, vsDragon ? s.fortLevel : 0)) +
         (style === "strength" ? 1 : 0);
-      const dmg = Math.max(soft ? 2 : 1, roll(1, cap) + (vsDragon ? Math.floor(s.fortLevel / 2) : 0));
-      const crit = dmg >= cap && cap > 2;
+      const rolledDamage = Math.max(soft ? 2 : 1, roll(1, cap) + (vsDragon ? Math.floor(s.fortLevel / 2) : 0));
+      const dmg = Math.min(c.enemyHp, rolledDamage);
+      const crit = rolledDamage >= cap && cap > 2;
       const enemyHp = Math.max(0, c.enemyHp - dmg);
       sfx("hit");
       const hitXp = 4 * dmg;
@@ -317,7 +262,7 @@ export function combatSlice(
             sessionXp,
             lastXp,
           },
-          `${who} yields. Drops bones and ${e.coins} coins.${xpBit}${dingBit}`,
+          `${who} yields.${xpBit}${dingBit}`,
         );
         return;
       }
@@ -340,60 +285,62 @@ export function combatSlice(
       windUpFoe(get, set, next);
     },
 
+    combatGuard: () => {
+      const c = get().combat;
+      if (!c || c.phase !== "player") return;
+      clearCombatTimer();
+      const next: CombatState = { ...c, phase: "enemy", guarding: true, striking: false,
+        foeSwing: false, splatOnEnemy: null, splatOnPlayer: null, lastXp: {}, log: "You brace. The next hit deals 55% less damage." };
+      set({ combat: next });
+      windUpFoe(get, set, next);
+    },
+
+    setCombatAuto: (on) => {
+      const c = get().combat;
+      if (!c || (c.phase !== "player" && c.phase !== "enemy")) return;
+      set({ combat: { ...c, autoAttack: on } });
+      if (c.phase === "player") {
+        clearCombatTimer();
+        if (on) armAutoAttack(get, 1600);
+      }
+    },
+
     combatEat: () => {
       const s = get();
       const c = s.combat;
       if (!c || c.phase !== "player") return;
-      clearCombatTimer();
       if (foodCount(s) < 1) {
         sfx("error");
         set({ combat: { ...c, log: "Satchel empty. The bakery sells loaves." } });
-        armAutoAttack(get, 400);
         return;
       }
       if (c.enemyId === "dragon" && s.honey > 0) {
+        clearCombatTimer();
         set({
-          combat: {
-            ...c,
-            phase: "won",
-            striking: false,
-        foeSwing: false,
-            splatOnEnemy: "heal",
-            log: `${s.lifeDragon.name} eats the cake. The fire goes out of the day.`,
-          },
-          honey: s.honey - 1,
-          lifeDragon: { ...s.lifeDragon, state: "soothed" },
-          wildWins: s.wildWins + 1,
-          coins: s.coins + 20,
-          bounceKey: s.bounceKey + 1,
-          coinPopKey: s.coinPopKey + 1,
+          combat: { ...c, phase: "won", pacified: true, guarding: false, striking: false, foeSwing: false,
+            splatOnEnemy: "heal", loot: { coins: 20, bones: 0 },
+            log: `${s.lifeDragon.name} eats the cake. You settle this peacefully.` },
+          honey: s.honey - 1, lifeDragon: { ...s.lifeDragon, state: "soothed" },
+          wildWins: s.wildWins + 1, coins: s.coins + 20, bounceKey: s.bounceKey + 1, coinPopKey: s.coinPopKey + 1,
           speech: `${s.lifeDragon.name} is a neighbour today. A warm, slightly smoky neighbour.`,
         });
         sfx("win");
         scheduleWrite(get);
         return;
       }
-      const useHoney = s.honey > 0;
-      const healAmt = useHoney ? 10 : 8;
       const max = maxHitpoints(s.skills);
-      const heal = Math.min(max - c.playerHp, healAmt);
-      const next: CombatState = {
-        ...c,
-        playerHp: c.playerHp + heal,
-        playerMax: max,
-        phase: "enemy",
-        striking: false,
-        foeSwing: false,
-        splatOnPlayer: "heal",
-        splatOnEnemy: null,
-        log: heal ? `You eat. +${heal} heart.` : "Already stuffed.",
-      };
-      set({
-        combat: next,
-        honey: useHoney ? s.honey - 1 : s.honey,
-        bread: useHoney ? s.bread : Math.max(0, s.bread - 1),
-        hp: c.playerHp + heal,
-      });
+      if (c.playerHp >= max) {
+        set({ combat: { ...c, log: "Your heart is full. Save the food for when you need it." } });
+        return;
+      }
+      clearCombatTimer();
+      const useHoney = s.bread < 1;
+      const heal = Math.min(max - c.playerHp, useHoney ? 10 : 8);
+      const next: CombatState = { ...c, playerHp: c.playerHp + heal, playerMax: max, phase: "enemy",
+        guarding: false, striking: false, foeSwing: false, splatOnPlayer: "heal", splatOnEnemy: null,
+        lastXp: {}, log: `You eat ${useHoney ? "honey cake" : "bread"}. +${heal} heart.` };
+      set({ combat: next, honey: useHoney ? s.honey - 1 : s.honey,
+        bread: useHoney ? s.bread : s.bread - 1, hp: c.playerHp + heal });
       scheduleWrite(get);
       windUpFoe(get, set, next);
     },
@@ -401,11 +348,12 @@ export function combatSlice(
     combatFlee: () => {
       const s = get();
       const c = s.combat;
-      if (!c || (c.phase !== "player" && c.phase !== "lost")) return;
+      if (!c || c.phase !== "player") return;
       if (c.phase === "player" && Math.random() < 0.35) {
-        const next: CombatState = { ...c, phase: "enemy", striking: false, foeSwing: true, log: "The path is blocked. They noticed." };
+        clearCombatTimer();
+        const next: CombatState = { ...c, phase: "enemy", guarding: false, striking: false, foeSwing: false, lastXp: {}, log: "The path is blocked. They noticed." };
         set({ combat: next });
-        setCombatTimer(() => finishEnemyTurn(get, set, next), 420);
+        windUpFoe(get, set, next);
         return;
       }
       clearCombatTimer();
@@ -417,8 +365,9 @@ export function combatSlice(
         selectedPlace: "cottage",
         gnomeX: PLAYER_START.x,
         gnomeY: PLAYER_START.y,
-        speech: "A tactical cottage. Very brave.",
-        hp: Math.max(c.playerHp, 8),
+        speech: "You retreat to the cottage. Keep some food for the next trip.",
+        afloat: null, sailHome: false, abroad: null, popup: null,
+        hp: Math.max(1, c.playerHp),
       });
       scheduleWrite(get);
     },
@@ -426,24 +375,17 @@ export function combatSlice(
     combatEnd: () => {
       const s = get();
       const c = s.combat;
-      if (!c) return;
+      if (!c || (c.phase !== "won" && c.phase !== "lost")) return;
       clearCombatTimer();
       const won = c.phase === "won";
       const max = maxHitpoints(s.skills);
-      const isle = c.enemyId === "chief" || c.enemyId === "raider";
       set({
         combat: null,
         hp: won ? Math.min(max, c.playerHp + 4) : max,
         gnomeX: won ? s.gnomeX : PLAYER_START.x,
         gnomeY: won ? s.gnomeY : PLAYER_START.y,
         abroad: won ? s.abroad : null,
-        speech: won
-          ? isle
-            ? s.speech
-            : s.lifeDragon.state === "soothed" || s.lifeDragon.state === "defeated"
-              ? "The wildlands hum. The ridge is quieter."
-              : "The wildlands respect a sword."
-          : "Kettle on. Tomorrow we try again.",
+        speech: won ? s.speech : "Kettle on. Restocked food and better gear will help next time.",
         bounceKey: s.bounceKey + 1,
         popup: null,
       });

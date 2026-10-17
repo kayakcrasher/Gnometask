@@ -1,6 +1,6 @@
 import type { SkillId } from "./xp";
 import { combatLevel, type Skills } from "./xp";
-import { ENEMIES } from "./data/enemies";
+import { ENEMIES, ENEMY_BEHAVIOUR } from "./data/enemies";
 import { SKILL_IDS } from "./data/skills";
 
 export type EnemyId =
@@ -26,6 +26,14 @@ export type CombatPhase = "player" | "enemy" | "won" | "lost";
 export type Splat = number | "miss" | "heal";
 
 export type CombatState = {
+  id: number;
+  round: number;
+  autoAttack: boolean;
+  guarding: boolean;
+  enemyIntent: EnemyIntent;
+  rewardCoins: number;
+  loot: { coins: number; bones: number } | null;
+  pacified: boolean;
   enemyId: EnemyId;
   enemyHp: number;
   enemyMax: number;
@@ -50,12 +58,22 @@ export type CombatState = {
 
 export { ENEMIES };
 
+export type EnemyIntent = { label: string; kind: "strike" | "heavy" | "fire"; bonus: number; accuracy: number };
+
+export function enemyIntentFor(id: EnemyId, round: number): EnemyIntent {
+  const behaviour = ENEMY_BEHAVIOUR[id];
+  if (round % 3 === 0 && behaviour.special) return { ...behaviour.special, accuracy: 0.95 };
+  return { label: behaviour.attack, kind: "strike", bonus: 0, accuracy: behaviour.accuracy };
+}
+
+let encounterId = 0;
+
 export const PLAYER_MAX_HP = 10;
 
 export function scaleEnemy(id: EnemyId, skills: Skills) {
   const base = ENEMIES[id];
   const cmb = combatLevel(skills);
-  const grow = Math.max(0, cmb - base.area);
+  const grow = Math.min(12, Math.max(0, cmb - base.area));
   const f = 1 + grow * 0.08;
   return {
     hp: Math.max(3, Math.round(base.hp * f)),
@@ -110,6 +128,14 @@ export function makeCombat(
   const label = extra?.name ?? e.name;
   const playerMax = extra?.playerMax ?? Math.max(PLAYER_MAX_HP, playerHp);
   return {
+    id: ++encounterId,
+    round: 1,
+    autoAttack: true,
+    guarding: false,
+    enemyIntent: enemyIntentFor(enemyId, 1),
+    rewardCoins: scaled.coins,
+    loot: null,
+    pacified: false,
     enemyId,
     enemyHp: scaled.hp,
     enemyMax: scaled.hp,

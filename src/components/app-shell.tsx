@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect } from "react";
 import { LandMap } from "@/components/land/land-map";
+import { CombatView } from "@/components/hud/combat-view";
 import { TopBar } from "@/components/hud/top-bar";
 import { Speech } from "@/components/hud/speech";
 import { Welcome, Coach } from "@/components/hud/welcome";
@@ -85,6 +86,7 @@ export function AppShell() {
             <RaidChart />
             <GoblinIsle />
             <FarIsle />
+            <CombatView />
           </>
         ) : null}
       </div>

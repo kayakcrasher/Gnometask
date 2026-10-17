@@ -6,7 +6,7 @@ export function Speech() {
   const panel = useGame((s) => s.panel);
   const combat = useGame((s) => s.combat);
   const interior = useGame((s) => s.interior);
-  if (interior || panel !== "place") return null;
+  if (combat || interior || panel !== "place") return null;
   const line = combat ? combat.log : speech;
   return (
     <div className="pointer-events-none absolute left-3 top-[4.75rem] z-20 max-w-[min(100%-1.5rem,22rem)] md:top-[5.25rem]">

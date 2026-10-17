@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { CATALOG_BY_ID } from "@/lib/game/catalog";
 import { nextTowerId } from "@/lib/game/data/catalog/towers";
-import { ENEMIES } from "@/lib/game/combat";
+import { ENEMIES, scaleEnemy } from "@/lib/game/combat";
 import { SailingProgress } from "./sailing-progress";
 import { boatById } from "@/lib/game/data/boats";
 import { BOATS } from "@/lib/game/data/boats";
@@ -187,6 +187,7 @@ export function ClickPopup() {
   const repairCost = building
     ? Math.max(4, Math.ceil((BUILDING_MAX[building] - hp[building]) / 2))
     : 0;
+  const enemyStats = popup.enemyId ? popup.enemyId === "runt" ? { hp: 3, dmg: 1 } : scaleEnemy(popup.enemyId, skills) : null;
   const title = enemy && popup.kind !== "dragon" ? enemy.name : popup.title;
   const npc = popup.npcId ? NPCS.find((n) => n.id === popup.npcId) : null;
   const npcQuests = quests.filter((q) => {
@@ -246,7 +247,7 @@ export function ClickPopup() {
         ) : null}
         {enemy && popup.kind !== "npc" ? (
           <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-bark/55">
-            {enemy.hp} heart · hits around {enemy.dmg}
+            {enemyStats?.hp ?? enemy.hp} heart · hits around {enemyStats?.dmg ?? enemy.dmg}
           </p>
         ) : null}
         {building ? (

@@ -13,7 +13,8 @@ export function Coach() {
   const atHome = useGame((s) => s.atHome);
   const coach = useGame((s) => s.coach);
   const advance = useGame((s) => s.advanceCoach);
-  if (atHome || coach < 1 || coach > LESSONS.length) return null;
+  const combat = useGame(s => s.combat);
+  if (atHome || combat || coach < 1 || coach > LESSONS.length) return null;
   const last = coach === LESSONS.length;
   return (
     <div className="pointer-events-auto absolute inset-x-3 bottom-[5.5rem] z-30 mx-auto max-w-md rounded-[18px] bg-parchment p-3 shadow-panel">

@@ -131,3 +131,25 @@ export const ENEMIES: Record<
     area: 22,
   },
 };
+
+/** Special attacks are telegraphed every third round so the player can guard. */
+export const ENEMY_BEHAVIOUR: Record<EnemyId, {
+  attack: string;
+  accuracy: number;
+  special?: { label: string; kind: "heavy" | "fire"; bonus: number };
+}> = {
+  rat: { attack: "Bite", accuracy: 0.8 },
+  crab: { attack: "Pinch", accuracy: 0.8 },
+  runt: { attack: "Wild swing", accuracy: 0.45 },
+  sprite: { attack: "Leaf lash", accuracy: 0.78, special: { label: "Thorn burst", kind: "heavy", bonus: 2 } },
+  boar: { attack: "Tusk swipe", accuracy: 0.85, special: { label: "Boar charge", kind: "heavy", bonus: 3 } },
+  bat: { attack: "Wing strike", accuracy: 0.75, special: { label: "Diving lunge", kind: "heavy", bonus: 2 } },
+  raider: { attack: "Knife slash", accuracy: 0.8, special: { label: "Dirty strike", kind: "heavy", bonus: 2 } },
+  chief: { attack: "Cleaver swing", accuracy: 0.85, special: { label: "Chief's cleave", kind: "heavy", bonus: 3 } },
+  goblin: { attack: "Sword swing", accuracy: 0.85, special: { label: "Reckless rush", kind: "heavy", bonus: 2 } },
+  cobble: { attack: "Stone fist", accuracy: 0.85, special: { label: "Boulder slam", kind: "heavy", bonus: 3 } },
+  wyrmling: { attack: "Claw swipe", accuracy: 0.85, special: { label: "Ember breath", kind: "fire", bonus: 2 } },
+  darkelf: { attack: "Blade strike", accuracy: 0.9, special: { label: "Shadow lunge", kind: "heavy", bonus: 3 } },
+  dragon: { attack: "Dragon claw", accuracy: 0.9, special: { label: "Dragonfire", kind: "fire", bonus: 3 } },
+  absence: { attack: "Tail sweep", accuracy: 0.85, special: { label: "Blue flame", kind: "fire", bonus: 2 } },
+};

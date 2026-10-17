@@ -8,6 +8,7 @@
     "check:roads": "node scripts/check-roads.mjs",
     "check:market": "node scripts/check-market.mjs",
     "check:sailing": "node scripts/check-sailing.mjs",
+    "check:combat": "node scripts/check-combat.mjs",
     "dev": "node scripts/build.mjs && node scripts/serve.mjs",
     "serve": "node scripts/serve.mjs"
   },

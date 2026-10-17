@@ -63,7 +63,7 @@ export function worldSlice(
     startPatrol: (place?: PlaceId) => {
       const s = get();
       if (s.combat) return;
-      const pool = WORLD_PACK.filter((p) => (!place || p.place === place) && !s.clearedPack.includes(p.id));
+      const pool = WORLD_PACK.filter(p => (!place || p.place === place) && !s.clearedPack.includes(p.id) && Math.hypot(p.x - s.gnomeX, p.y - s.gnomeY) <= 200);
       const pick = pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
       const id = pick ? pick.enemy : patrolEnemy(s.wildWins);
       const at = place ?? pick?.place ?? "wildlands";
@@ -72,8 +72,8 @@ export function worldSlice(
         combat: makeCombat(id, s.hp, {
           packId: pick?.id,
           playerMax: maxHitpoints(s.skills),
-          atX: s.gnomeX + 48,
-          atY: s.gnomeY - 6,
+          atX: pick?.x ?? s.gnomeX + 48,
+          atY: pick?.y ?? s.gnomeY - 6,
           skills: s.skills,
         }),
         selectedPlace: at,
@@ -151,6 +151,11 @@ export function worldSlice(
       const s = get();
       if (s.combat) return;
       const pack = WORLD_PACK.find((p) => p.id === packId);
+      if (!pack || pack.enemy !== enemyId) return;
+      if (s.afloat || Math.hypot(s.gnomeX - pack.x, s.gnomeY - pack.y) > 110) {
+        set({ speech: s.afloat ? "Moor your boat before fighting on land." : "Move closer to the creature before attacking." });
+        return;
+      }
       if (s.clearedPack.includes(packId)) {
         set({
           speech: "Already scurried off. For now.",
@@ -182,6 +187,10 @@ export function worldSlice(
       if (s.combat) return;
       const raid = s.raids.find((r) => r.id === raidId);
       if (!raid) return;
+      if (s.afloat || Math.hypot(s.gnomeX - raid.x, s.gnomeY - raid.y) > 110) {
+        set({ speech: s.afloat ? "Use the cannon at sea, or moor before fighting on land." : "Move closer to the raider before attacking." });
+        return;
+      }
       set({
         combat: makeCombat(raid.kind, s.hp, {
           raidId,
@@ -207,6 +216,10 @@ export function worldSlice(
       if (s.combat) return;
       const g = s.landing?.goblins.find((x) => x.id === goblinId && x.alive);
       if (!g || !s.landing) return;
+      if (s.afloat || Math.hypot(s.gnomeX - g.x, s.gnomeY - g.y) > 110) {
+        set({ speech: s.afloat ? "Use the cannon at sea, or moor before fighting on land." : "Move closer to the goblin before attacking." });
+        return;
+      }
       set({
         combat: makeCombat("runt", s.hp, {
           packId: g.id,

@@ -28,9 +28,11 @@ export function setCombatTimer(fn: () => void, delay: number) {
 }
 
 export function armAutoAttack(get: StoreGet, delay: number) {
+  const encounter = get().combat;
+  if (!encounter || !encounter.autoAttack || encounter.phase !== "player") return;
   setCombatTimer(() => {
     const c = get().combat;
-    if (!c || c.phase !== "player") return;
+    if (!c || c.id !== encounter.id || !c.autoAttack || c.phase !== "player") return;
     get().combatAttack();
   }, delay);
 }
