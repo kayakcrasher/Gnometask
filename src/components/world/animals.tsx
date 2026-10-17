@@ -1,235 +1,216 @@
-import { useRef, type RefObject } from "react";
+import type { GameSave } from "@/lib/game/types";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
+import type { Group } from "three";
 import { to3, groundY } from "@/lib/game/world3";
-
-function wander(ref: RefObject<THREE.Group | null>, origin: [number, number, number], span: number, speed: number) {
-  const t = { n: Math.random() * 10 };
-  return (d: number) => {
-    if (!ref.current) return;
-    t.n += d * speed;
-    ref.current.position.x = origin[0] + Math.sin(t.n) * span;
-    ref.current.position.z = origin[2] + Math.cos(t.n * 0.8) * span;
-    ref.current.rotation.y = Math.atan2(
-      Math.cos(t.n) * span,
-      Math.sin(t.n * 0.8) * span * 0.8,
-    );
-  };
+import { useGame } from "@/lib/game/store";
+import {
+  ANIMAL_TRAITS,
+  wildlifeHome,
+  wildlifeGoal,
+  wildlifeSegment,
+  wildlifeSafe,
+  type AnimalKind,
+} from "@/lib/game/wildlife";
+import { AnimalModel } from "./animal-model";
+import type { NpcObstacle } from "@/lib/game/npc-brain";
+let cachedEstate: GameSave["estate"] | null = null,
+  cachedBuildings: GameSave["city"]["buildings"] | null = null,
+  cachedPlots: GameSave["civic"]["plots"] | null = null,
+  cachedObstacles: NpcObstacle[] = [];
+function animalObstacles(s: GameSave) {
+  if (
+    s.estate !== cachedEstate ||
+    s.city.buildings !== cachedBuildings ||
+    s.civic.plots !== cachedPlots
+  ) {
+    cachedEstate = s.estate;
+    cachedBuildings = s.city.buildings;
+    cachedPlots = s.civic.plots;
+    cachedObstacles = [
+      ...Object.values(s.estate),
+      ...s.city.buildings,
+      ...s.civic.plots.filter((p) => p.stories > 0),
+    ].map((b) => ({ ...b, w: 27, h: 25 }));
+  }
+  return cachedObstacles;
 }
-
-export function Chicken3({ x, y, onClick }: { x: number; y: number; onClick?: () => void }) {
-  const p = to3(x, y, groundY(x, y));
-  const ref = useRef<THREE.Group>(null);
-  const bob = useRef(0);
-  useFrame((_, d) => {
-    bob.current += d * 6;
-    if (ref.current) ref.current.position.y = p[1] + Math.abs(Math.sin(bob.current)) * 0.04;
+function Animal({
+  kind,
+  x,
+  y,
+  onClick,
+}: {
+  kind: AnimalKind;
+  x: number;
+  y: number;
+  onClick?: () => void;
+}) {
+  const root = useRef<Group>(null),
+    model = useRef<Group>(null),
+    current = useRef({ x, y }),
+    goal = useRef({ x, y }),
+    home = useRef({ x, y }),
+    seed = useRef(Math.abs(Math.floor(x * 3 + y * 7))),
+    wait = useRef(1 + (seed.current % 5)),
+    check = useRef(0),
+    time = useRef(0),
+    moving = useRef(false),
+    origin = useRef({ x, y }),
+    valid = useRef(false);
+  useFrame((_, delta) => {
+    if (!root.current || !model.current) return;
+    const s = useGame.getState(),
+      dt = Math.min(delta, 0.06);
+    time.current += dt;
+    const obstacles = animalObstacles(s);
+    check.current -= dt;
+    if (
+      check.current <= 0 ||
+      origin.current.x !== x ||
+      origin.current.y !== y
+    ) {
+      check.current = 0.7;
+      origin.current = { x, y };
+      const next = wildlifeHome(kind, x, y, obstacles);
+      valid.current = !!next;
+      if (!next) {
+        root.current.visible = false;
+        return;
+      }
+      home.current = next;
+      if (
+        !wildlifeSafe(kind, current.current.x, current.current.y, obstacles) ||
+        Math.hypot(current.current.x - next.x, current.current.y - next.y) >
+          ANIMAL_TRAITS[kind].radius * 2
+      ) {
+        current.current = { ...next };
+        goal.current = { ...next };
+      }
+      if (!wildlifeSegment(kind, current.current, goal.current, obstacles))
+        goal.current = { ...current.current };
+    }
+    root.current.visible = valid.current;
+    if (!valid.current) return;
+    const p = current.current,
+      near = Math.hypot(p.x - s.gnomeX, p.y - s.gnomeY) < 28,
+      paused = !!s.interior || s.atHome || !!s.combat || !!s.abroad;
+    moving.current = false;
+    if (!paused) {
+      wait.current -= dt;
+      if (wait.current <= 0) {
+        goal.current = wildlifeGoal(
+          kind,
+          home.current,
+          p,
+          seed.current++,
+          obstacles,
+        );
+        wait.current = 4 + (seed.current % 7);
+      }
+      const dx = goal.current.x - p.x,
+        dy = goal.current.y - p.y,
+        distance = Math.hypot(dx, dy);
+      if (distance > 1 && !near) {
+        const step = Math.min(distance, ANIMAL_TRAITS[kind].speed * dt),
+          q = {
+            x: p.x + (dx / distance) * step,
+            y: p.y + (dy / distance) * step,
+          };
+        if (wildlifeSegment(kind, p, q, obstacles)) {
+          Object.assign(p, q);
+          moving.current = true;
+          root.current.rotation.y = Math.atan2(dx, dy);
+        } else {
+          goal.current = { ...p };
+          wait.current = 1;
+        }
+      }
+      if (near && kind !== "duck")
+        root.current.rotation.y = Math.atan2(s.gnomeX - p.x, s.gnomeY - p.y);
+    }
+    const ground = kind === "duck" ? -0.02 : groundY(p.x, p.y),
+      hop =
+        moving.current && (kind === "rabbit" || kind === "frog")
+          ? Math.max(0, Math.sin(time.current * 9)) * 0.12
+          : 0;
+    root.current.position.set(...to3(p.x, p.y, ground + hop));
+    const legs = model.current.getObjectByName("animal-legs");
+    legs?.children.forEach((leg, i) => {
+      leg.rotation.x = moving.current
+        ? Math.sin(time.current * 9 + (i % 2) * Math.PI) * 0.42
+        : 0;
+    });
+    const head = model.current.getObjectByName("animal-head");
+    if (head)
+      head.rotation.x =
+        !moving.current &&
+        !near &&
+        (kind === "chicken" || kind === "sheep" || kind === "deer")
+          ? 0.18 + Math.sin(time.current * 2) * 0.18
+          : 0;
+    const tail = model.current.getObjectByName("animal-tail");
+    if (tail) tail.rotation.y = Math.sin(time.current * 2) * 0.2;
   });
   return (
-    <group ref={ref} position={p} onClick={(e) => { e.stopPropagation(); onClick?.(); }}>
-      <mesh position={[0, 0.18, 0]} castShadow>
-        <sphereGeometry args={[0.12, 10, 8]} />
-        <meshStandardMaterial color="#f2e8d5" />
-      </mesh>
-      <mesh position={[0.12, 0.22, 0]} castShadow>
-        <sphereGeometry args={[0.07, 8, 8]} />
-        <meshStandardMaterial color="#f2e8d5" />
-      </mesh>
-      <mesh position={[0.18, 0.22, 0]}>
-        <coneGeometry args={[0.03, 0.08, 6]} />
-        <meshStandardMaterial color="#d6a84c" />
-      </mesh>
-      <mesh position={[0, 0.28, -0.02]}>
-        <sphereGeometry args={[0.05, 8, 8]} />
-        <meshStandardMaterial color="#a8433b" />
-      </mesh>
+    <group
+      ref={root}
+      position={to3(x, y, groundY(x, y))}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (onClick) onClick();
+        else useGame.getState().speak(ANIMAL_TRAITS[kind].line);
+      }}
+    >
+      <group ref={model}>
+        <AnimalModel kind={kind} />
+      </group>
     </group>
   );
 }
-
-export function Rabbit({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, groundY(x, y));
-  const ref = useRef<THREE.Group>(null);
-  const fn = useRef(wander(ref, origin, 1.4, 0.6));
-  useFrame((_, d) => fn.current(d));
-  return (
-    <group ref={ref} position={origin}>
-      <mesh position={[0, 0.12, 0]} castShadow>
-        <sphereGeometry args={[0.1, 10, 8]} />
-        <meshStandardMaterial color="#e6d8bc" />
-      </mesh>
-      <mesh position={[-0.04, 0.26, -0.02]} castShadow>
-        <capsuleGeometry args={[0.02, 0.12, 3, 6]} />
-        <meshStandardMaterial color="#e6d8bc" />
-      </mesh>
-      <mesh position={[0.04, 0.26, -0.02]} castShadow>
-        <capsuleGeometry args={[0.02, 0.12, 3, 6]} />
-        <meshStandardMaterial color="#e6d8bc" />
-      </mesh>
-    </group>
-  );
-}
-
-export function Duck({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, -0.12);
-  const ref = useRef<THREE.Group>(null);
-  const t = useRef(Math.random() * 10);
-  useFrame((_, d) => {
-    t.current += d * 0.5;
-    if (!ref.current) return;
-    ref.current.position.x = origin[0] + Math.sin(t.current) * 1.6;
-    ref.current.position.z = origin[2] + Math.cos(t.current) * 1.1;
-    ref.current.position.y = -0.08 + Math.sin(t.current * 2) * 0.03;
-  });
-  return (
-    <group ref={ref} position={origin}>
-      <mesh position={[0, 0.08, 0]} castShadow>
-        <sphereGeometry args={[0.1, 10, 8]} />
-        <meshStandardMaterial color="#c4963d" />
-      </mesh>
-      <mesh position={[0.1, 0.14, 0]}>
-        <sphereGeometry args={[0.06, 8, 8]} />
-        <meshStandardMaterial color="#c4963d" />
-      </mesh>
-      <mesh position={[0.16, 0.13, 0]}>
-        <coneGeometry args={[0.025, 0.07, 6]} />
-        <meshStandardMaterial color="#a8433b" />
-      </mesh>
-    </group>
-  );
-}
-
-export function Sheep({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, groundY(x, y));
-  const ref = useRef<THREE.Group>(null);
-  const fn = useRef(wander(ref, origin, 2.2, 0.25));
-  useFrame((_, d) => fn.current(d));
-  return (
-    <group ref={ref} position={origin}>
-      <mesh position={[0, 0.22, 0]} castShadow>
-        <sphereGeometry args={[0.2, 10, 8]} />
-        <meshStandardMaterial color="#f4f1ea" />
-      </mesh>
-      <mesh position={[0.18, 0.2, 0]} castShadow>
-        <sphereGeometry args={[0.08, 8, 8]} />
-        <meshStandardMaterial color="#2a241c" />
-      </mesh>
-    </group>
-  );
-}
-
-export function Cat({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, groundY(x, y));
-  const ref = useRef<THREE.Group>(null);
-  const fn = useRef(wander(ref, origin, 1.1, 0.35));
-  useFrame((_, d) => fn.current(d));
-  return (
-    <group ref={ref} position={origin}>
-      <mesh position={[0, 0.1, 0]} castShadow>
-        <capsuleGeometry args={[0.07, 0.14, 4, 8]} />
-        <meshStandardMaterial color="#6b5340" />
-      </mesh>
-      <mesh position={[0.1, 0.16, 0]} castShadow>
-        <sphereGeometry args={[0.06, 8, 8]} />
-        <meshStandardMaterial color="#6b5340" />
-      </mesh>
-    </group>
-  );
-}
-
-export function Fox({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, groundY(x, y));
-  const ref = useRef<THREE.Group>(null);
-  const fn = useRef(wander(ref, origin, 1.8, 0.45));
-  useFrame((_, d) => fn.current(d));
-  return (
-    <group ref={ref} position={origin}>
-      <mesh position={[0, 0.16, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-        <capsuleGeometry args={[0.07, 0.22, 4, 6]} />
-        <meshStandardMaterial color="#c4553a" />
-      </mesh>
-      <mesh position={[0.16, 0.2, 0]} castShadow>
-        <sphereGeometry args={[0.07, 8, 8]} />
-        <meshStandardMaterial color="#c4553a" />
-      </mesh>
-      <mesh position={[-0.18, 0.2, 0]} rotation={[0, 0, 0.8]}>
-        <capsuleGeometry args={[0.02, 0.14, 3, 5]} />
-        <meshStandardMaterial color="#e7c39a" />
-      </mesh>
-    </group>
-  );
-}
-
-export function Deer({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, groundY(x, y));
-  const ref = useRef<THREE.Group>(null);
-  const fn = useRef(wander(ref, origin, 2.4, 0.22));
-  useFrame((_, d) => fn.current(d));
-  return (
-    <group ref={ref} position={origin}>
-      <mesh position={[0, 0.42, 0]} castShadow>
-        <capsuleGeometry args={[0.12, 0.28, 4, 6]} />
-        <meshStandardMaterial color="#8a6238" />
-      </mesh>
-      <mesh position={[0.18, 0.62, 0]} castShadow>
-        <sphereGeometry args={[0.08, 8, 8]} />
-        <meshStandardMaterial color="#8a6238" />
-      </mesh>
-      <mesh position={[0.14, 0.78, 0]} rotation={[0, 0, 0.4]}>
-        <coneGeometry args={[0.03, 0.16, 4]} />
-        <meshStandardMaterial color="#d8c49a" />
-      </mesh>
-      <mesh position={[0.22, 0.78, 0]} rotation={[0, 0, -0.4]}>
-        <coneGeometry args={[0.03, 0.16, 4]} />
-        <meshStandardMaterial color="#d8c49a" />
-      </mesh>
-    </group>
-  );
-}
-
-export function Frog({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, groundY(x, y) + 0.02);
-  const ref = useRef<THREE.Group>(null);
-  useFrame(({ clock }) => {
-    if (ref.current) ref.current.position.y = origin[1] + Math.abs(Math.sin(clock.elapsedTime * 3)) * 0.06;
-  });
-  return (
-    <group ref={ref} position={origin}>
-      <mesh castShadow>
-        <sphereGeometry args={[0.07, 8, 6]} />
-        <meshStandardMaterial color="#4c6b47" />
-      </mesh>
-      <mesh position={[0.04, 0.04, 0.04]}>
-        <sphereGeometry args={[0.02, 6, 6]} />
-        <meshStandardMaterial color="#f7f4ee" />
-      </mesh>
-    </group>
-  );
-}
-
-export function Hedgehog({ x, y }: { x: number; y: number }) {
-  const origin = to3(x, y, groundY(x, y));
-  const ref = useRef<THREE.Group>(null);
-  const fn = useRef(wander(ref, origin, 0.8, 0.3));
-  useFrame((_, d) => fn.current(d));
-  return (
-    <group ref={ref} position={origin}>
-      <mesh position={[0, 0.1, 0]} castShadow>
-        <sphereGeometry args={[0.1, 8, 6]} />
-        <meshStandardMaterial color="#6b5340" />
-      </mesh>
-      <mesh position={[0.08, 0.1, 0]}>
-        <sphereGeometry args={[0.05, 6, 6]} />
-        <meshStandardMaterial color="#c4a574" />
-      </mesh>
-    </group>
-  );
-}
-
-export function IslandAnimals({ chicken, onChicken }: { chicken: { x: number; y: number } | null; onChicken: () => void }) {
+export const Chicken3 = ({
+  x,
+  y,
+  onClick,
+}: {
+  x: number;
+  y: number;
+  onClick?: () => void;
+}) => <Animal kind="chicken" x={x} y={y} onClick={onClick} />;
+export const Rabbit = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="rabbit" x={x} y={y} />
+);
+export const Duck = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="duck" x={x} y={y} />
+);
+export const Sheep = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="sheep" x={x} y={y} />
+);
+export const Cat = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="cat" x={x} y={y} />
+);
+export const Fox = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="fox" x={x} y={y} />
+);
+export const Deer = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="deer" x={x} y={y} />
+);
+export const Frog = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="frog" x={x} y={y} />
+);
+export const Hedgehog = ({ x, y }: { x: number; y: number }) => (
+  <Animal kind="hedgehog" x={x} y={y} />
+);
+export function IslandAnimals({
+  chicken,
+  onChicken,
+}: {
+  chicken: { x: number; y: number } | null;
+  onChicken: () => void;
+}) {
   return (
     <group>
-      {chicken ? <Chicken3 x={chicken.x} y={chicken.y} onClick={onChicken} /> : null}
+      {chicken && <Chicken3 x={chicken.x} y={chicken.y} onClick={onChicken} />}
       <Rabbit x={280} y={700} />
       <Rabbit x={520} y={760} />
       <Duck x={500} y={190} />
@@ -241,8 +222,8 @@ export function IslandAnimals({ chicken, onChicken }: { chicken: { x: number; y:
       <Fox x={220} y={300} />
       <Deer x={1620} y={460} />
       <Deer x={1740} y={560} />
-      <Frog x={500} y={160} />
-      <Frog x={560} y={180} />
+      <Frog x={430} y={280} />
+      <Frog x={610} y={280} />
       <Hedgehog x={1040} y={700} />
       <Rabbit x={700} y={920} />
     </group>

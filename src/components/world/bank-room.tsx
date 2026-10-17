@@ -1,30 +1,13 @@
+import {useIndoor} from "@/lib/game/indoor-state";
 import { InteriorCanvas as Canvas, RoomDecor } from "./interior-assets";
-import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
-import { useRef, useState } from "react";
-import * as THREE from "three";
+import { useState } from "react";
 import { GnomeRig } from "./gnome-rig";
 import { DeedMap } from "@/components/hud/deed-map";
 import { useGame } from "@/lib/game/store";
 import { isWeekend } from "@/lib/game/data/market";
 import { StockMarket } from "@/components/hud/stock-market";
 import { BOAT_LOANS, LAND_OFFERS } from "@/lib/game/data/honour";
-
-function Walker({ hat, spot }: { hat: string; spot: THREE.Vector3 }) {
-  const ref = useRef<THREE.Group>(null);
-  useFrame((_, dt) => {
-    if (!ref.current) return;
-    ref.current.position.lerp(spot, Math.min(1, dt * 4));
-    const dx = spot.x - ref.current.position.x;
-    const dz = spot.z - ref.current.position.z;
-    if (dx * dx + dz * dz > 0.01) ref.current.rotation.y = Math.atan2(dx, dz);
-  });
-  return (
-    <group ref={ref} position={[0, 0, 2.4]}>
-      <GnomeRig hat={hat} scale={0.85} coat="#6a3d58" />
-    </group>
-  );
-}
 
 function Room({
   weekend,
@@ -35,12 +18,8 @@ function Room({
   onTeller: () => void;
   onBoard: () => void;
 }) {
-  const spot = useRef(new THREE.Vector3(0, 0, 2.4));
-  const [, bump] = useState(0);
-  const hat = useGame((s) => s.hat);
   const move = (x: number, z: number) => {
-    spot.current.set(THREE.MathUtils.clamp(x, -3.2, 3.2), 0, THREE.MathUtils.clamp(z, -1.2, 3.2));
-    bump((n) => n + 1);
+    useIndoor.setState({target:{x,z}});
   };
   return (
     <>
@@ -109,7 +88,7 @@ function Room({
           </Html>
         </group>
       )}
-      <Walker hat={hat} spot={spot.current} />
+
     </>
   );
 }

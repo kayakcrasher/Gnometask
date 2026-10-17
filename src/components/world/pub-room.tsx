@@ -48,7 +48,7 @@ export function PubRoom() {
   if (!pub) return null;
   return (
     <div className="fixed inset-0 z-30 bg-[#2a1812]">
-      <Canvas camera={{ position: [0, 2.6, 4.4], fov: 42 }}>
+      <Canvas camera={{ position: [0, 5.8, 8.8], fov: 42 }}>
         <RoomDecor theme="pub" />
         <Bar />
         <group position={[-1.5, 0, 0.3]}>

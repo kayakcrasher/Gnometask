@@ -1,5 +1,14 @@
-import { Component, type ComponentProps, type ReactNode } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useGame } from "@/lib/game/store";
+import { IndoorWalker, IndoorControls, IndoorCamera } from "./indoor-walker";
+import {
+  useRef,
+  useState,
+  useEffect,
+  Component,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
+import { useFrame, Canvas } from "@react-three/fiber";
 import { GnomeRig } from "./gnome-rig";
 import type { InteriorId } from "@/lib/game/types";
 
@@ -20,13 +29,26 @@ class InteriorBoundary extends Component<
   }
 }
 export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
+  const id = useGame((s) => s.interior);
+  const { children, ...canvasProps } = props;
   return (
     <InteriorBoundary>
-      <Canvas
-        dpr={[1, 1.5]}
-        {...props}
-        fallback={<div className="h-full w-full bg-[#3a3541]" />}
-      />
+      <div className="relative h-full w-full" aria-label="Walkable interior">
+        <Canvas
+          dpr={[1, 1.5]}
+          {...canvasProps}
+          fallback={<div className="h-full w-full bg-[#3a3541]" />}
+        >
+          {children}
+          {id && id !== "chart" && (
+            <>
+              <IndoorCamera id={id} />
+              <IndoorWalker key={id} id={id} />
+            </>
+          )}
+        </Canvas>
+        {id && id !== "chart" && <IndoorControls />}
+      </div>
     </InteriorBoundary>
   );
 }
@@ -318,10 +340,63 @@ function ShopFurniture({ id }: { id: InteriorId }) {
     </group>
   );
 }
+function CozyTouches() {
+  const steam = useRef<import("three").Group>(null);
+  useFrame(({ clock }) => {
+    steam.current?.children.forEach((p, i) => {
+      const phase = (clock.elapsedTime * 0.22 + i * 0.33) % 1;
+      p.position.y = 0.88 + phase * 0.45;
+      p.position.x = -1.4 + Math.sin(phase * 6 + i) * 0.045;
+      p.scale.setScalar(0.025 + phase * 0.025);
+    });
+  });
+  return (
+    <group>
+      <pointLight
+        position={[-2.3, 1, -1.3]}
+        intensity={1.8}
+        color="#ffd29b"
+        distance={5}
+      />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0.2, 0.013, 1.1]}>
+        <circleGeometry args={[0.85, 24]} />
+        <meshStandardMaterial color="#7c9b81" />
+      </mesh>
+      <mesh position={[-1.7, 0.69, 0.18]} rotation={[0, 0.2, 0]}>
+        <boxGeometry args={[0.35, 0.06, 0.27]} />
+        <meshStandardMaterial color="#ad6c57" />
+      </mesh>
+      <mesh position={[-1.7, 0.725, 0.18]} rotation={[0, 0.2, 0]}>
+        <boxGeometry args={[0.29, 0.008, 0.22]} />
+        <meshStandardMaterial color="#e5d6ad" />
+      </mesh>
+      <group ref={steam}>
+        {[0, 1, 2].map((i) => (
+          <mesh key={i} position={[-1.4, 0.9 + i * 0.1, 0.2]}>
+            <sphereGeometry args={[1, 6, 5]} />
+            <meshStandardMaterial color="#f5ecda" transparent opacity={0.3} />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  );
+}
 export function InteriorPreview({ id }: { id: InteriorId }) {
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    const close = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, []);
   return (
     <div
-      className="mb-3 h-44 w-full shrink-0 overflow-hidden rounded-2xl sm:h-52"
+      className={
+        expanded
+          ? "fixed inset-0 z-[70] bg-[#776452] pb-16"
+          : "relative mb-3 h-64 w-full shrink-0 overflow-hidden rounded-2xl sm:h-72"
+      }
       aria-label={`${id} interior preview`}
     >
       <InteriorCanvas camera={{ position: [5.2, 4.4, 6.2], fov: 45 }}>
@@ -361,7 +436,20 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
         </mesh>
         <RoomPlant x={2.6} z={1.8} />
         <ShopFurniture id={id} />
+        {id === "cottage" && <CozyTouches />}
       </InteriorCanvas>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="absolute right-2 top-2 z-20 min-h-11 rounded-xl bg-parchment px-3 text-xs font-bold text-ink"
+      >
+        {expanded ? "Back to room services" : "Explore room"}
+      </button>
+      {expanded && (
+        <p className="absolute bottom-3 inset-x-2 text-center text-sm font-bold text-parchment">
+          Tap the floor to walk · arrow keys / WASD · front door to leave
+        </p>
+      )}
     </div>
   );
 }

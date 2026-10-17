@@ -44,3 +44,11 @@ Run `npm run check:city` for construction, road routing, delivery accounting, co
 City setup prices increase 25% of the base price for each additional building of the same kind. City upgrades cost the base price times the square of the current level; home upgrades cost 240, 720 and 2,160 coins. All setup and upgrades use coins, never logs.
 
 Fishing offers 20 species, including koi, seahorses, lionfish, swordfish, manta rays and starlight angelfish. The shared home/town hall aquarium costs 120 coins to set up, then 360 / 1,080 / 3,240 coins to expand to 20 / 40 / 80 spaces. Fish can be moved back to the bag without losing them. Existing aquarium collections are preserved when upgrading an old save.
+
+## Explore indoors and meet wildlife
+
+All 14 building interiors have a walking character. Tap clear floor to find a route around furniture, hold the on-screen direction buttons, or use arrow keys / WASD. Shop and home previews have an **Explore room** button for a full room view; **Back to room services** brings back the shop, aquarium or upgrade controls. Tap the front-door mat, or walk out through the front doorway, to return outdoors. Indoor movement never overwrites your outdoor position. Banking, trade, court, pub and casino controls remain available.
+
+Wildlife uses original rounded models with recognizable faces, feet, ears, wings and tails. Rabbits and frogs hop; sheep and deer graze; chickens peck; cats and foxes flick their tails. Animals stop and notice nearby players. Tap them for a small observation; the quest chicken retains its usual interaction. Land animals avoid water and buildings, including new city construction, while ducks stay inside the pond and follow its water height. Wildlife movement pauses while you are indoors, overseas, in combat or at the title screen.
+
+Run `npm run check:cozy` to verify indoor entrances, furniture routing, direction controls, wildlife habitat and construction clearance.
