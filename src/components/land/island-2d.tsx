@@ -14,6 +14,7 @@ import { MapFights } from "./map-fights";
 import { MapPlots } from "./map-plots";
 import { MapPlayer } from "./map-player";
 import { dist } from "./map-data";
+import { navigableWater } from "@/lib/game/sailing";
 
 type WalkTo = (x: number, y: number, arrive?: () => void) => void;
 
@@ -42,7 +43,7 @@ export function Island2d({
     const svg = svgRef.current;
     if (!svg) return;
     const world = clientToWorld(svg, v, cx, cy);
-    if (!onIsland(world.x, world.y)) return;
+    if (save.afloat ? !navigableWater(world.x, world.y) : !onIsland(world.x, world.y)) return;
     save.closePopup();
     walkTo(world.x, world.y);
   });
@@ -83,7 +84,7 @@ export function Island2d({
         viewBox={`0 0 ${VB.w} ${VB.h}`}
         className="absolute inset-0 h-full w-full touch-none"
         role="img"
-        aria-label="Gnome island. Click the land to walk."
+        aria-label={save.afloat ? "Gnome island. Click the water to sail." : "Gnome island. Click the land to walk."}
       >
         <defs>
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">

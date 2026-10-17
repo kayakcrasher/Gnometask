@@ -149,7 +149,7 @@ export function capitolStreets(): StreetSeg[] {
     { ax: 380, ay: 255, bx: 560, by: 255, alley: false, width: 1.1 },
     { ax: 470, ay: 195, bx: 470, by: 300, alley: false, width: 1.1 },
     { ax: 834, ay: 185, bx: 834, by: 475, alley: true, width: 0.65 },
-    { ax: 270, ay: 610, bx: 700, by: 610, alley: true, width: 0.65 },
+    { ax: 230, ay: 610, bx: 720, by: 610, alley: true, width: 0.65 },
   ];
 }
 

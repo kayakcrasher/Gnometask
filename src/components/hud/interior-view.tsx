@@ -1,3 +1,4 @@
+import { SailingProgress } from "./sailing-progress";
 import { X } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import { ShopView } from "./shop-view";
@@ -145,7 +146,8 @@ function DockhousePanel() {
   const lv = levelFromXp(skills.sailing);
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-      <p className="text-sm font-semibold text-bark/70">Sailing {lv}. The rowboat is already on the pier.</p>
+      <SailingProgress />
+      <p className="text-xs font-semibold text-bark/70">Skill improves your speed by 1% per level, up to 25%. The rowboat is already yours.</p>
       {BOATS.filter((b) => b.price > 0).map((boat) => {
         const owned = hulls.includes(boat.id);
         return (
@@ -160,7 +162,7 @@ function DockhousePanel() {
               {owned ? `${boat.name} — yours` : `${boat.name} — ${boat.price} coins`}
             </span>
             <span className="text-xs font-semibold text-bark/70">
-              Sailing {boat.need}. {boat.blurb}
+              Sailing {boat.need} · Speed {Math.round(boat.speed / 180 * 100)}% of rowboat · {boat.blurb}
             </span>
           </button>
         );

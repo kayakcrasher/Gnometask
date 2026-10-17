@@ -6,7 +6,7 @@ import { BOAT_RANK, boatById } from "../data/boats";
 import { NEWCOMERS, supplyDue } from "../data/supply";
 import { FISH_BY_ID, rollFish } from "../data/fish";
 import { levelFromXp, levelsOf } from "../xp";
-import { onIsland } from "../world3";
+import { clearSeaSegment, DOCKING_RANGE, HARBOUR_APPROACH, navigableWater, SAILING_XP_DISTANCE } from "../sailing";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -22,7 +22,7 @@ function treeStage(rec: { stage?: string; choppedAt?: number } | undefined, now:
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "buyBoat" | "buyCannon" | "advanceCoach" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "sailStep" | "buyBoat" | "buyCannon" | "advanceCoach" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -125,52 +125,76 @@ export function gatherSlice(
 
     sailTo: (dest, boatId) => {
       const s = get();
-      if (s.combat) return;
-      const atSea = !onIsland(s.gnomeX, s.gnomeY);
-      if (dest === "dock" && !atSea) {
-        set({ speech: "The town dock is already under your boots.", popup: null });
+      if (s.combat || s.fishing) return;
+      if (dest === "dock") {
+        if (!s.afloat) {
+          set({ speech: "You are already ashore.", popup: null });
+          return;
+        }
+        if (Math.hypot(s.gnomeX - HARBOUR_APPROACH.x, s.gnomeY - HARBOUR_APPROACH.y) > DOCKING_RANGE) {
+          set({ sailHome: true, popup: null, speech: "Sailing back to the town harbour. Tap another patch of water to change course." });
+          return;
+        }
+        set({
+          gnomeX: PLACE_ANCHORS.dock.x, gnomeY: PLACE_ANCHORS.dock.y,
+          afloat: null, sailHome: false, popup: null, interior: null,
+          selectedPlace: "dock", speech: "Moored safely. Back on the town dock.",
+        });
+        sfx("open");
+        scheduleWrite(get);
         return;
       }
-      const boat = boatById(boatId ?? "row") ?? boatById("row")!;
+      if (s.afloat) {
+        set({ speech: "Return to the harbour before changing boats.", popup: null });
+        return;
+      }
+      if (Math.hypot(s.gnomeX - PLACE_ANCHORS.dock.x, s.gnomeY - PLACE_ANCHORS.dock.y) > 130) {
+        set({ speech: "Come to the town dock to board a boat." });
+        return;
+      }
+      const boat = boatById(boatId ?? "row");
+      if (!boat) return;
+      if (boat.id !== "row" && !s.hulls.includes(boat.id)) {
+        set({ speech: `${boat.name} isn't yours. Wim sells her at the dockhouse.`, popup: null });
+        return;
+      }
       const lv = levelFromXp(s.skills.sailing);
-      const owned = boat.id === "row" || s.hulls.includes(boat.id);
-      if (!owned) {
-        set({
-          speech: `${boat.name} isn't yours. Wim sells her at the dockhouse.`,
-          popup: null,
-        });
+      if (lv < boat.need) {
+        set({ speech: `${boat.name} needs Sailing ${boat.need}. Sail the boats you know to gain experience.`, popup: null });
         return;
       }
-      if (lv < boat.need && s.loan?.boat !== boat.id) {
-        set({
-          speech: `${boat.name} wants Sailing ${boat.need}. You are ${lv}. Take the rowboat a few more times.`,
-          popup: null,
-        });
-        return;
-      }
-      const toSea = dest !== "dock";
-      const target = toSea ? { x: boat.x, y: boat.y } : PLACE_ANCHORS.dock;
-      const gained = withXp(s.skills, { sailing: boat.xp });
       set({
-        gnomeX: target.x,
-        gnomeY: target.y,
-        afloat: toSea ? boat.id : null,
-        selectedPlace: "dock",
-        skills: gained.skills,
-        boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
-        popup: null,
-        interior: null,
-        speech:
-          gained.ding ??
-          (toSea
-            ? `The ${boat.name.toLowerCase()} casts off. Tap the water to move. Oars work themselves. +${boat.xp} Sailing.`
-            : `Back to the town dock in the ${boat.name.toLowerCase()}. +${boat.xp} Sailing.`),
+        gnomeX: boat.x, gnomeY: boat.y, afloat: boat.id, sailHome: false,
+        selectedPlace: "dock", boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
+        popup: null, interior: null,
+        speech: `The ${boat.name.toLowerCase()} casts off. Tap the water to sail. Distance travelled earns Sailing XP.`,
         bounceKey: s.bounceKey + 1,
       });
       sfx("open");
       scheduleWrite(get);
-      const chore = get().tasks.find((t) => t.builtinKey === "coil-watch" && !t.done);
-      if (chore) get().toggleTask(chore.id);
+    },
+
+    sailStep: (x, y) => {
+      const s = get();
+      const boat = s.afloat ? boatById(s.afloat) : null;
+      if (!boat || s.combat || s.atHome || s.interior || s.abroad || s.fishing) return;
+      const distance = Math.hypot(x - s.gnomeX, y - s.gnomeY);
+      // Only actual movement steps earn XP; boarding and port transfers do not.
+      if (!Number.isFinite(distance) || distance <= 0 || distance > 50
+        || !navigableWater(x, y) || !clearSeaSegment({ x: s.gnomeX, y: s.gnomeY }, { x, y })) return;
+      const before = s.sailingDistance ?? 0;
+      const total = before + distance;
+      const xp = (Math.floor(total / SAILING_XP_DISTANCE) - Math.floor(before / SAILING_XP_DISTANCE)) * boat.xp;
+      const gained = xp ? withXp(s.skills, { sailing: xp }) : null;
+      set({
+        gnomeX: x, gnomeY: y, sailingDistance: total,
+        ...(gained ? { skills: gained.skills, speech: gained.ding ?? `+${xp} Sailing XP. Steady on the water.` } : {}),
+      });
+      scheduleWrite(get);
+      if (xp) {
+        const chore = get().tasks.find(t => t.builtinKey === "coil-watch" && !t.done);
+        if (chore) get().toggleTask(chore.id);
+      }
     },
 
     buyBoat: (id) => {
@@ -322,6 +346,10 @@ export function gatherSlice(
     castLine: (where, x, y, boatId) => {
       const s = get();
       if (s.combat || s.fishing) return;
+      if (where === "shore" && s.afloat) {
+        set({ speech: "Return to the harbour before fishing from the shore.", popup: null });
+        return;
+      }
       const rodId = bestRod(s.ownedGear);
       if (!rodId) {
         set({ speech: "You need a rod. The armory sells a stick rod for six coins.", popup: null });
@@ -329,7 +357,12 @@ export function gatherSlice(
       }
       const rod = CATALOG_BY_ID[rodId]?.fish ?? 0;
       const lv = levelFromXp(s.skills.fishing);
-      const rank = boatId && BOAT_RANK[boatId as keyof typeof BOAT_RANK] ? BOAT_RANK[boatId as keyof typeof BOAT_RANK] : s.boatRank;
+      const activeBoat = s.afloat ? boatById(s.afloat) : null;
+      if (where === "sea" && !activeBoat) {
+        set({ speech: "Board a boat before fishing in open water.", popup: null });
+        return;
+      }
+      const rank = activeBoat ? BOAT_RANK[activeBoat.id] : 1;
       if (where === "sea" && rank < 2) {
         set({
           speech: "The rowboat stays in the shallows. Sail a skiff or bigger, then cast in the open water.",
@@ -350,7 +383,8 @@ export function gatherSlice(
       }
       const id = Date.now();
       set({
-        fishing: { id, started: id, where, fishId: fish.id, color: fish.color, shadow: fish.shadow, x, y },
+        fishing: { id, started: id, where, fishId: fish.id, color: fish.color, shadow: fish.shadow,
+          x: where === "sea" ? s.gnomeX : x, y: where === "sea" ? s.gnomeY : y },
         popup: null,
         speech: where === "sea" ? "The rod bends over the deep water." : "The line kisses the shallows.",
         gnomeX: where === "shore" ? 96 : s.gnomeX,

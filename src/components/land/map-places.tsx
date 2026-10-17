@@ -8,6 +8,7 @@ import { GnomeSprite } from "./gnome";
 import { MapHotspot } from "./map-hotspot";
 import { Cottage, RowHouse, TownHall } from "./props";
 import { Chicken, GuardGnome } from "./creatures";
+import { BOATS } from "@/lib/game/data/boats";
 
 type Hover = (label: string, clientX: number, clientY: number) => void;
 
@@ -27,6 +28,17 @@ export function MapPlaces({
   const save = useGame();
   return (
     <>
+      {BOATS.filter(boat => boat.id !== save.afloat).map(boat => (
+        <MapHotspot key={boat.id} x={boat.x} y={boat.y} rx={35} ry={55} label={boat.name}
+          selected={save.popup?.hotspotId === boat.id} onHover={hoverTip}
+          onActivate={() => interact(save.afloat ? boat.x : PLACE_ANCHORS.dock.x, save.afloat ? boat.y : PLACE_ANCHORS.dock.y,
+            { kind: "boat", hotspotId: boat.id, title: boat.name, blurb: boat.blurb, place: "dock" })}>
+          <g transform={`translate(${boat.x} ${boat.y})`}>
+            <path d="M0 -48 Q30 -28 26 22 L17 37 Q0 43 -17 37 L-26 22 Q-30 -28 0 -48Z" fill="#c4894a" stroke="#6b5340" strokeWidth="4" />
+            {boat.id !== "row" && boat.id !== "barge" ? <path d="M0 -35 V18 M3 -32 Q28 -10 30 10 H3Z" fill="#f4efe4" stroke="#6b5340" strokeWidth="3" /> : <path d="M-20 -8 H20 M-20 15 H20" stroke="#6b5340" strokeWidth="5" />}
+          </g>
+        </MapHotspot>
+      ))}
       <MapHotspot
         x={PLACE_ANCHORS.cottage.x}
         y={PLACE_ANCHORS.cottage.y}

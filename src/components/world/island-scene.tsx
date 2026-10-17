@@ -23,6 +23,7 @@ import { GnomeRig } from "./gnome-rig";
 import { IslandAnimals } from "./animals";
 import { EastHills, Fights3, Landing3, LootFlash3, Npcs3, Rocks3, Towers3, Trees3 } from "./world-life";
 import { CivicLife } from "./civic-life";
+import { SEA_LEVEL } from "@/lib/game/data/water";
 import { CountryRoads, SupplyRunners } from "./roads";
 import { Kenney } from "./kenney";
 import { MOUNT_NOBLE, NOBLE_PLATEAU, groundY, nearestPlace, onDesert, onGrass, onIsland, to3 } from "@/lib/game/world3";
@@ -105,7 +106,7 @@ function SceneBody({
   const fighting = save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost";
   const face = fighting ? Math.atan2(save.combat!.atX - pos.x, save.combat!.atY - pos.y) : yaw;
   const villageCount = save.placed.filter((p) => p.slotId.startsWith("v")).length;
-  const p3 = to3(pos.x, pos.y, groundY(pos.x, pos.y));
+  const p3 = to3(pos.x, pos.y, save.afloat ? SEA_LEVEL + 0.68 : groundY(pos.x, pos.y));
 
   const interact = (worldX: number, worldY: number, popup: GamePopup, range = 70) => {
     if (save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost") return;
@@ -175,7 +176,7 @@ function SceneBody({
       />
       <Harbor3
         onBoat={(id, x, y, title, blurb) =>
-          interact(x, y, {
+          interact(save.afloat ? x : PLACE_ANCHORS.dock.x, save.afloat ? y : PLACE_ANCHORS.dock.y, {
             kind: "boat",
             hotspotId: id,
             title,
@@ -346,7 +347,7 @@ function SceneBody({
       />
       <Kenney name="log_large" position={to3(70, 250, 0.08)} scale={1.0} />
       {save.afloat ? (
-        <group position={to3(pos.x, pos.y, p3[1] - 0.55)} rotation={[0, face, 0]}>
+        <group position={to3(pos.x, pos.y, SEA_LEVEL + 0.06)} rotation={[0, face, 0]}>
           <group scale={2.4}>
             <BoatMesh
               kind={
@@ -366,7 +367,7 @@ function SceneBody({
           weapon={save.equipment.weapon}
           shield={save.equipment.shield}
           armor={save.equipment.armor}
-          walking={walking}
+          walking={walking && !save.afloat}
           striking={striking}
           gesture={
             striking || !walking

@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "check:roads": "node scripts/check-roads.mjs",
+    "check:market": "node scripts/check-market.mjs",
+    "check:sailing": "node scripts/check-sailing.mjs",
     "dev": "node scripts/build.mjs && node scripts/serve.mjs",
     "serve": "node scripts/serve.mjs"
   },
@@ -14,6 +17,7 @@
     "clsx": "^2.1.1",
     "esbuild-wasm": "^0.28.2",
     "lucide-react": "^0.446.0",
+    "polygon-clipping": "^0.15.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^3.7.0",

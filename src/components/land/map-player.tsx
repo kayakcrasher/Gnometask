@@ -38,13 +38,17 @@ export function MapPlayer({
           <Tree key={m} x={200 + i * 70} y={520} scale={0.7 + (i % 3) * 0.1} />
         ))}
         <g transform={`translate(${pos.x} ${pos.y})`}>
+          {save.afloat ? <g transform={`rotate(${facing === "up" ? 0 : facing === "right" ? 90 : facing === "down" ? 180 : 270})`}>
+            <path d="M0 -58 Q34 -40 32 20 L22 43 Q0 51 -22 43 L-32 20 Q-34 -40 0 -58Z" fill="#c4894a" stroke="#6b5340" strokeWidth="5" />
+            <path d="M-23 -10 H23 M-23 18 H23" stroke="#6b5340" strokeWidth="5" />
+          </g> : null}
           <GnomeSprite
             hat={save.hat}
             bounceKey={save.combat ? save.combat.shake : save.bounceKey}
             weapon={save.equipment.weapon}
             shield={save.equipment.shield}
             armor={save.equipment.armor}
-            walking={walking}
+            walking={walking && !save.afloat}
             striking={Boolean(save.combat?.striking)}
             facing={facing}
             transform="translate(-40 -86) scale(0.82)"

@@ -5,7 +5,8 @@ import * as THREE from "three";
 import { GnomeRig } from "./gnome-rig";
 import { DeedMap } from "@/components/hud/deed-map";
 import { useGame } from "@/lib/game/store";
-import { isWeekend, nextGnomeRise, sharePrice, STOCKS } from "@/lib/game/data/market";
+import { isWeekend } from "@/lib/game/data/market";
+import { StockMarket } from "@/components/hud/stock-market";
 import { BOAT_LOANS, LAND_OFFERS } from "@/lib/game/data/honour";
 
 function Walker({ hat, spot }: { hat: string; spot: THREE.Vector3 }) {
@@ -119,9 +120,6 @@ export function BankRoom() {
   const leave = useGame((s) => s.leaveInterior);
   const days = useGame((s) => s.daysPlayed);
   const coins = useGame((s) => s.coins);
-  const shares = useGame((s) => s.shares);
-  const buy = useGame((s) => s.buyShare);
-  const sell = useGame((s) => s.sellShare);
   const claimed = useGame((s) => s.claimed);
   const claim = useGame((s) => s.claimTile);
   const loan = useGame((s) => s.loan);
@@ -133,7 +131,6 @@ export function BankRoom() {
   const collect = useGame((s) => s.collectExpedition);
   const weekend = isWeekend(days);
   const [desk, setDesk] = useState<"none" | "teller" | "board" | "map">("none");
-  const rise = nextGnomeRise(days);
   return (
     <div className="fixed inset-0 z-30 bg-[#1c2430]">
       <Canvas camera={{ position: [0, 4.2, 6.2], fov: 42 }} shadows>
@@ -150,6 +147,7 @@ export function BankRoom() {
           Leave
         </button>
       </div>
+      {desk === "none" ? <button type="button" onClick={() => setDesk("board")} className="absolute bottom-4 left-1/2 z-10 min-h-11 -translate-x-1/2 rounded-xl bg-gold px-5 text-sm font-bold text-ink">Open stock market</button> : null}
       {desk === "teller" && !weekend ? (
         <div className="absolute inset-x-0 bottom-0 z-10 p-3">
           <div className="mx-auto max-h-[70dvh] max-w-lg overflow-y-auto rounded-[20px] bg-parchment p-4 shadow-panel">
@@ -196,36 +194,10 @@ export function BankRoom() {
         </div>
       ) : null}
       {desk === "board" ? (
-        <div className="absolute inset-x-0 bottom-0 z-10 max-h-[55dvh] overflow-y-auto p-3">
-          <div className="mx-auto flex max-w-lg flex-col gap-2 rounded-[20px] bg-parchment p-4 shadow-panel">
-            <p className="font-display text-lg font-semibold text-ink">Gnome board</p>
-            <p className="text-xs font-semibold text-bark/70">
-              Purse {coins}. Gnome500 starts cheap and rises 15% every 90 days. Next rise on day {rise}.
-            </p>
-            {STOCKS.map((stock) => {
-              const price = sharePrice(stock.id, days);
-              const held = shares[stock.id] ?? 0;
-              return (
-                <div key={stock.id} className="rounded-[12px] bg-parchment-dark/50 px-3 py-2">
-                  <p className="font-display text-sm font-semibold text-ink">
-                    {stock.name} · {price}
-                    {stock.sure ? " · sure" : ""}
-                  </p>
-                  <p className="text-[11px] font-semibold text-bark/65">{stock.blurb} You hold {held}.</p>
-                  <div className="mt-1 flex gap-1.5">
-                    <button type="button" disabled={coins < price} onClick={() => buy(stock.id)} className="rounded-full bg-gold px-3 py-1 text-[11px] font-semibold text-ink disabled:opacity-40">
-                      Buy
-                    </button>
-                    <button type="button" disabled={held < 1} onClick={() => sell(stock.id)} className="rounded-full bg-pine px-3 py-1 text-[11px] font-semibold text-parchment disabled:opacity-40">
-                      Sell
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-            <button type="button" onClick={() => setDesk("none")} className="h-10 rounded-[14px] bg-parchment-dark text-sm font-semibold text-ink">
-              Step back
-            </button>
+        <div className="absolute inset-x-0 bottom-0 z-10 max-h-[82dvh] overflow-y-auto p-3">
+          <div className="mx-auto max-w-5xl rounded-[20px] bg-parchment p-4 shadow-panel">
+            <div className="mb-3 flex justify-end"><button type="button" onClick={() => setDesk("none")} className="min-h-10 rounded-xl bg-parchment-dark px-3 text-xs font-bold">Back to bank</button></div>
+            <StockMarket />
           </div>
         </div>
       ) : null}

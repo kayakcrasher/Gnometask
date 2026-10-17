@@ -281,6 +281,7 @@ export type GameSave = {
   /** 0 unused, 1–4 Pappy's lessons, 5 finished. */
   coach: number;
   afloat: string | null;
+  sailingDistance: number;
   cannons: boolean;
   civic: CivicState;
 };
@@ -301,6 +302,7 @@ export type GameUi = {
   interior: InteriorId | null;
   raids: Raid[];
   followWalk: boolean;
+  sailHome: boolean;
   praying: boolean;
   lootFlash: LootFlash | null;
   fishing: FishingCast | null;

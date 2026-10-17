@@ -1,10 +1,11 @@
 import { BOAT_LOANS, LAND_OFFERS, rolledChart } from "../data/honour";
 import { parcelAt } from "../data/parcels";
-import { STOCKS, sharePrice } from "../data/market";
-import { BOAT_RANK, type BoatId } from "../data/boats";
+import { STOCKS } from "../data/market";
+import { quoteShareTrade } from "../trading";
+import { boatById, BOAT_RANK, type BoatId } from "../data/boats";
 import { makeCombat } from "../combat";
 import { sfx } from "../juice";
-import { maxHitpoints } from "../xp";
+import { levelFromXp, maxHitpoints } from "../xp";
 import { armAutoAttack, scheduleWrite } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -146,43 +147,39 @@ export function honourSlice(
       scheduleWrite(get);
     },
 
-    buyShare: (id) => {
+    buyShare: (id, quantity = 1) => {
       const s = get();
       const stock = STOCKS.find((row) => row.id === id);
-      if (!stock) return;
-      const price = sharePrice(id, s.daysPlayed);
-      if (s.coins < price) {
+      const order = quoteShareTrade(id, s.daysPlayed, s.coins, s.shares, "buy", quantity);
+      if (!stock || !order) {
         sfx("error");
-        set({ speech: `${stock.name} is ${price} coins a share.` });
+        set({ speech: "Order declined. Choose whole shares you can afford." });
         return;
       }
       set({
-        coins: s.coins - price,
+        coins: order.coins,
         coinPopKey: s.coinPopKey + 1,
-        shares: { ...s.shares, [id]: (s.shares[id] ?? 0) + 1 },
-        speech: `One share of ${stock.name}. ${price} coins. The board takes the rest.`,
+        shares: order.shares,
+        speech: `Bought ${quantity} ${stock.name} ${quantity === 1 ? "share" : "shares"} for ${order.total} coins.`,
       });
       sfx("buy");
       scheduleWrite(get);
     },
 
-    sellShare: (id) => {
+    sellShare: (id, quantity = 1) => {
       const s = get();
-      const held = s.shares[id] ?? 0;
       const stock = STOCKS.find((row) => row.id === id);
-      if (!stock || held < 1) {
-        set({ speech: "You don't hold that share." });
+      const order = quoteShareTrade(id, s.daysPlayed, s.coins, s.shares, "sell", quantity);
+      if (!stock || !order) {
+        sfx("error");
+        set({ speech: "Order declined. Choose whole shares from your holdings." });
         return;
       }
-      const price = sharePrice(id, s.daysPlayed);
-      const next = { ...s.shares };
-      if (held === 1) delete next[id];
-      else next[id] = held - 1;
       set({
-        shares: next,
-        coins: s.coins + price,
+        coins: order.coins,
+        shares: order.shares,
         coinPopKey: s.coinPopKey + 1,
-        speech: `Sold one ${stock.name}. ${price} coins back in the purse.`,
+        speech: `Sold ${quantity} ${stock.name} ${quantity === 1 ? "share" : "shares"} for ${order.total} coins.`,
       });
       sfx("buy");
       scheduleWrite(get);
@@ -198,6 +195,11 @@ export function honourSlice(
       }
       if (s.hulls.includes(offer.boat)) {
         set({ speech: `The ${offer.name.toLowerCase()} is already yours.` });
+        return;
+      }
+      const boatDef = boatById(offer.boat)!;
+      if (levelFromXp(s.skills.sailing) < boatDef.need) {
+        set({ speech: `Train Sailing ${boatDef.need} before borrowing the ${boatDef.name.toLowerCase()}.` });
         return;
       }
       if (s.respect < offer.respect) {

@@ -91,12 +91,12 @@ export function eventsThrough(day: number): MarketEvent[] {
 
 export function eventsOn(day: number): MarketEvent[] {
   const d = Math.floor(day);
-  return eventsThrough(d).filter((e) => e.day === d);
+  if (!Number.isFinite(d) || d < 12 || d % 12 !== 0) return [];
+  return [{ ...EVENT_POOL[(d / 12 - 1) % EVENT_POOL.length]!, day: d }];
 }
 
 export function latestEvent(day: number): MarketEvent | null {
-  const list = eventsThrough(day);
-  return list.length ? list[list.length - 1]! : null;
+  return eventsOn(Math.floor(day / 12) * 12)[0] ?? null;
 }
 
 function eventBias(sector: Sector, day: number): number {
@@ -107,25 +107,31 @@ function eventBias(sector: Sector, day: number): number {
 
 // --- Pricing -------------------------------------------------------------
 
+const priceHistory = new Map<string, number[]>();
+
 export function sharePrice(id: string, days: number) {
   const stock = STOCKS.find((s) => s.id === id);
   if (!stock) return 1;
-  const d = Math.max(0, Math.floor(days));
-  let price = stock.start;
+  const d = Number.isFinite(days) ? Math.max(0, Math.floor(days)) : 0;
+  const history = priceHistory.get(id) ?? [stock.start];
+  priceHistory.set(id, history);
+  let price = history[history.length - 1]!;
   const climber = Boolean(stock.sure || stock.climb);
-  for (let i = 1; i <= d; i++) {
+  for (let i = history.length; i <= d; i++) {
     const u = unit(i * 12.9898 + stock.start * 78.233);
     const walk = climber ? (u < 0.22 ? -1 : 1) : u < 0.46 ? -1 : u < 0.9 ? 1 : 0;
     const bias = sectorBias(stock.sector, i);
     const ev = eventBias(stock.sector, i);
     price = Math.max(1, price + walk + bias + ev);
+    history.push(price);
   }
-  return price;
+  return history[d]!;
 }
 
 export function priceSeries(id: string, days: number, n = 16) {
-  const last = Math.max(0, Math.floor(days));
-  const start = Math.max(0, last - (n - 1));
+  const last = Number.isFinite(days) ? Math.max(0, Math.floor(days)) : 0;
+  const count = Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 16;
+  const start = Math.max(0, last - (count - 1));
   const out: number[] = [];
   for (let d = start; d <= last; d++) out.push(sharePrice(id, d));
   return out;

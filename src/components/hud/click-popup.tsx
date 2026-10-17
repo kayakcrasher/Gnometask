@@ -2,6 +2,8 @@ import { X } from "lucide-react";
 import { CATALOG_BY_ID } from "@/lib/game/catalog";
 import { nextTowerId } from "@/lib/game/data/catalog/towers";
 import { ENEMIES } from "@/lib/game/combat";
+import { SailingProgress } from "./sailing-progress";
+import { boatById } from "@/lib/game/data/boats";
 import { BOATS } from "@/lib/game/data/boats";
 import { FISH } from "@/lib/game/data/fish";
 import { CROP_BY_ID, CROPS, pailBonusMs, plotStage, type CropId } from "@/lib/game/data/crops";
@@ -147,6 +149,8 @@ export function ClickPopup() {
   const buyCannon = useGame((s) => s.buyCannon);
   const fireCannon = useGame((s) => s.fireCannon);
   const afloat = useGame((s) => s.afloat);
+  const hulls = useGame(s => s.hulls);
+  const activeBoat = afloat ? boatById(afloat) : null;
   const cannons = useGame((s) => s.cannons);
   const landing = useGame((s) => s.landing);
   const castLine = useGame((s) => s.castLine);
@@ -166,14 +170,11 @@ export function ClickPopup() {
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
-        {!cannons ? (
-          <Action label={coins < 45 ? "Cannons · 45" : "Bolt cannons · 45"} tone="gold" disabled={coins < 45} onClick={buyCannon} />
-        ) : landing ? (
-          <Action label="Fire cannon" tone="berry" onClick={fireCannon} />
-        ) : (
-          <p className="flex flex-1 items-center px-1 text-xs font-semibold text-bark/70">Tap the water. The oars keep time.</p>
-        )}
-        <Action label="Back to dock" tone="quiet" onClick={() => sailTo("dock", afloat)} />
+        <p className="w-full font-display text-sm font-semibold text-ink">{activeBoat?.name ?? "At sea"}</p>
+        <SailingProgress />
+        {activeBoat && activeBoat.need >= 2 ? <Action label="Cast line" tone="gold" onClick={() => { const s = useGame.getState(); castLine("sea", s.gnomeX, s.gnomeY); }} /> : null}
+        {cannons && landing ? <Action label="Fire cannon" tone="berry" onClick={fireCannon} /> : null}
+        <Action label="Return to harbour" tone="quiet" onClick={() => sailTo("dock")} />
       </div>
     </div>
   ) : null;
@@ -324,7 +325,7 @@ export function ClickPopup() {
               <Action
                 label="Talk-to"
                 onClick={() =>
-                  speak("Cute as a bun. Mean past the bar. Row the little boat until Sailing 5, then the sloop is yours.")
+                  speak("Sail to build experience. Sailing 5 unlocks the sloop; Wim sells her for 180 coins.")
                 }
               />
               <Action
@@ -340,27 +341,29 @@ export function ClickPopup() {
             <>
               {BOATS.map((boat) => {
                 const lv = levelFromXp(skills.sailing);
-                const locked = lv < boat.need;
+                const owned = boat.id === "row" || hulls.includes(boat.id);
+                const locked = lv < boat.need || !owned || Boolean(afloat);
                 return (
                   <Action
                     key={boat.id}
-                    label={locked ? `${boat.name} · ${boat.need}` : `Cast off · ${boat.name}`}
+                    label={!owned ? `${boat.name} · buy at dockhouse` : lv < boat.need ? `${boat.name} · Sailing ${boat.need}` : afloat ? `${boat.name} · return to harbour first` : `Cast off · ${boat.name}`}
                     tone={boat.id === "sloop" ? "berry" : boat.id === popup.hotspotId ? "gold" : "pine"}
                     disabled={locked}
                     onClick={() => sailTo("haven", boat.id)}
                   />
                 );
               })}
-              <Action label="Back to dock" tone="quiet" onClick={() => sailTo("dock", afloat ?? "row")} />
+              {afloat ? <Action label="Return to harbour" tone="quiet" onClick={() => sailTo("dock")} /> : <SailingProgress />}
               {!cannons ? (
                 <Action label="Cannons · 45" tone="gold" disabled={coins < 45} onClick={buyCannon} />
               ) : landing ? (
                 <Action label="Fire cannon" tone="berry" onClick={fireCannon} />
               ) : null}
               <Action
-                label="Fish from this hull"
+                label={afloat ? "Fish from your boat" : "Board a boat to fish"}
                 tone="gold"
-                onClick={() => castLine("sea", popup.x ?? 20, popup.y ?? 480, popup.hotspotId)}
+                disabled={!activeBoat || activeBoat.need < 2}
+                onClick={() => { const s = useGame.getState(); castLine("sea", s.gnomeX, s.gnomeY); }}
               />
             </>
           ) : null}

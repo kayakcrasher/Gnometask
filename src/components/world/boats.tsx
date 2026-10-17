@@ -1,4 +1,4 @@
-import { useMemo, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -26,32 +26,59 @@ function Bob({ children, amp = 0.05, speed = 0.9 }: { children: ReactNode; amp?:
   return <group ref={ref}>{children}</group>;
 }
 
+function hullOutline(length: number, width: number) {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, -length * 0.55);
+  shape.quadraticCurveTo(width * 0.5, -length * 0.38, width * 0.5, -length * 0.08);
+  shape.lineTo(width * 0.44, length * 0.4);
+  shape.quadraticCurveTo(0, length * 0.5, -width * 0.44, length * 0.4);
+  shape.lineTo(-width * 0.5, -length * 0.08);
+  shape.quadraticCurveTo(-width * 0.5, -length * 0.38, 0, -length * 0.55);
+  return shape;
+}
+
 function Hull({ length, width, color, lip = "#6b5340" }: { length: number; width: number; color: string; lip?: string }) {
+  const geometry = useMemo(() => {
+    const hull = new THREE.ExtrudeGeometry(hullOutline(length, width), {
+      depth: 0.14, bevelEnabled: true, bevelThickness: 0.025, bevelSize: 0.025, bevelSegments: 1, steps: 1, curveSegments: 8,
+    });
+    hull.rotateX(-Math.PI / 2);
+    hull.translate(0, 0.02, 0);
+    const edge = hullOutline(length + 0.04, width + 0.04);
+    edge.holes.push(new THREE.Path(hullOutline(length - 0.1, Math.max(0.1, width - 0.09)).getPoints(24)));
+    const rim = new THREE.ExtrudeGeometry(edge, { depth: 0.055, bevelEnabled: false, curveSegments: 8 });
+    rim.rotateX(-Math.PI / 2);
+    rim.translate(0, 0.18, 0);
+    return { hull, rim };
+  }, [length, width]);
+  useEffect(() => () => { geometry.hull.dispose(); geometry.rim.dispose(); }, [geometry]);
   return (
     <group>
-      <mesh position={[0, 0.08, 0]} castShadow>
-        <boxGeometry args={[width, 0.16, length]} />
-        <meshStandardMaterial color={color} roughness={0.72} />
-      </mesh>
-      <mesh position={[0, 0.2, 0]}>
-        <boxGeometry args={[width + 0.06, 0.06, length + 0.06]} />
-        <meshStandardMaterial color={lip} roughness={0.8} />
-      </mesh>
+      <mesh geometry={geometry.hull} castShadow receiveShadow><meshStandardMaterial color={color} roughness={0.85} /></mesh>
+      <mesh geometry={geometry.rim} castShadow><meshStandardMaterial color={lip} roughness={0.85} /></mesh>
+      {[-0.22, 0.1].map(z => <mesh key={z} position={[0, 0.19, z * length]}><boxGeometry args={[width * 0.8, 0.035, 0.09]} /><meshStandardMaterial color={lip} /></mesh>)}
     </group>
   );
 }
 
 function Mast({ h, sailW, z = 0, tint = SAIL }: { h: number; sailW: number; z?: number; tint?: string }) {
+  const cloth = useRef<THREE.Mesh>(null);
+  const geometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    shape.moveTo(0.035, h * 0.92);
+    shape.quadraticCurveTo(sailW * 0.75, h * 0.7, sailW, h * 0.2);
+    shape.quadraticCurveTo(sailW * 0.5, h * 0.12, 0.035, h * 0.2);
+    shape.closePath();
+    return new THREE.ShapeGeometry(shape, 12);
+  }, [h, sailW]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  useFrame(({ clock }) => {
+    if (cloth.current) cloth.current.rotation.y = Math.sin(clock.elapsedTime * 1.5 + z) * 0.06;
+  });
   return (
     <group position={[0, 0.2, z]}>
-      <mesh position={[0, h / 2, 0]} castShadow>
-        <boxGeometry args={[0.04, h, 0.04]} />
-        <meshStandardMaterial color={WOOD_DARK} />
-      </mesh>
-      <mesh position={[sailW * 0.28, h * 0.48, 0]} castShadow>
-        <boxGeometry args={[sailW, h * 0.62, 0.02]} />
-        <meshStandardMaterial color={tint} roughness={0.9} />
-      </mesh>
+      <mesh position={[0, h / 2, 0]} castShadow><cylinderGeometry args={[0.018, 0.025, h, 8]} /><meshStandardMaterial color={WOOD_DARK} /></mesh>
+      <mesh ref={cloth} geometry={geometry} castShadow><meshStandardMaterial color={tint} roughness={0.95} side={THREE.DoubleSide} /></mesh>
     </group>
   );
 }
@@ -60,20 +87,22 @@ function Oars({ rowing }: { rowing?: boolean }) {
   const left = useRef<THREE.Group>(null);
   const right = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
-    const speed = rowing ? 3.8 : 1.7;
-    const dip = Math.sin(clock.elapsedTime * speed) * (rowing ? 0.72 : 0.4);
-    if (left.current) left.current.rotation.x = dip;
-    if (right.current) right.current.rotation.x = -dip;
+    const stroke = rowing ? Math.sin(clock.elapsedTime * 4.5) * 0.55 : 0;
+    const dip = rowing ? Math.cos(clock.elapsedTime * 4.5) * 0.16 : 0;
+    if (left.current) { left.current.rotation.y = stroke; left.current.rotation.z = dip; }
+    if (right.current) { right.current.rotation.y = -stroke; right.current.rotation.z = -dip; }
   });
   return (
     <group>
       <group ref={left} position={[-0.2, 0.22, 0.02]}>
+        <mesh position={[-0.5, 0, 0]}><boxGeometry args={[0.2, 0.035, 0.12]} /><meshStandardMaterial color={WOOD_DARK} /></mesh>
         <mesh position={[-0.22, 0, 0]} rotation={[0, 0, 0.45]}>
           <boxGeometry args={[0.48, 0.03, 0.045]} />
           <meshStandardMaterial color="#6b4428" />
         </mesh>
       </group>
       <group ref={right} position={[0.2, 0.22, 0.02]}>
+        <mesh position={[0.5, 0, 0]}><boxGeometry args={[0.2, 0.035, 0.12]} /><meshStandardMaterial color={WOOD_DARK} /></mesh>
         <mesh position={[0.22, 0, 0]} rotation={[0, 0, -0.45]}>
           <boxGeometry args={[0.48, 0.03, 0.045]} />
           <meshStandardMaterial color="#6b4428" />
@@ -101,8 +130,8 @@ export function BoatMesh({ kind, rowing, cannon }: { kind: BoatId | "goblin"; ro
     return (
       <group>
         <Hull length={0.95} width={0.38} color={WOOD} />
-        <mesh position={[0, 0.24, 0.12]} rotation={[0, 0, Math.PI / 2]}>
-          <boxGeometry args={[0.03, 0.7, 0.04]} />
+        <mesh position={[0, 0.24, 0.12]}>
+          <boxGeometry args={[0.32, 0.04, 0.12]} />
           <meshStandardMaterial color="#5b4230" />
         </mesh>
         <mesh position={[0.22, 0.18, -0.1]}>

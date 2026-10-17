@@ -9,6 +9,7 @@ import { nextNewcomer, supplyDue } from "./data/supply";
 import { growFolk, type Settler } from "./data/folk";
 import { coerceCivic, seedCivic, stepCivic } from "./data/civic";
 import { dailyRoadTax } from "./data/country";
+import { boatById } from "./data/boats";
 import { totalDividend } from "./data/market";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
@@ -106,6 +107,7 @@ export function defaultSave(): GameSave {
     combatStyle: "attack",
     coach: 5,
     afloat: null,
+    sailingDistance: 0,
     cannons: false,
     civic: seedCivic(1),
   };
@@ -351,7 +353,8 @@ export function migrate(raw: unknown): GameSave {
     landing: asLanding(s.landing),
     combatStyle: s.combatStyle === "strength" || s.combatStyle === "defence" ? s.combatStyle : "attack",
     coach: typeof s.coach === "number" ? Math.max(0, Math.min(5, Math.floor(s.coach))) : 5,
-    afloat: typeof s.afloat === "string" ? s.afloat : null,
+    afloat: typeof s.afloat === "string" && boatById(s.afloat) ? s.afloat : null,
+    sailingDistance: typeof s.sailingDistance === "number" && Number.isFinite(s.sailingDistance) ? Math.max(0, s.sailingDistance) : 0,
     cannons: Boolean(s.cannons),
     civic: coerceCivic(s.civic, typeof s.daysPlayed === "number" ? s.daysPlayed : 1),
   });

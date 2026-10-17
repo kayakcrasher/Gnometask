@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject, type RefObject } from "react";
 import { clamp } from "@/lib/utils";
+import { SEA_BOUNDS } from "@/lib/game/sailing";
 import { PLAYER_START } from "@/lib/game/types";
 
 export type ViewTransform = { x: number; y: number; k: number };
@@ -57,10 +58,8 @@ export function usePanZoom(
 
   const apply = useCallback((next: ViewTransform) => {
     const k = clamp(next.k, MIN_K, MAX_K);
-    const maxX = VB.w * 0.55 * k;
-    const maxY = VB.h * 0.55 * k;
-    const x = clamp(next.x, -maxX, maxX);
-    const y = clamp(next.y, -maxY, maxY);
+    const x = clamp(next.x, VB.w / 2 - SEA_BOUNDS.maxX * k, VB.w / 2 - SEA_BOUNDS.minX * k);
+    const y = clamp(next.y, VB.h / 2 - SEA_BOUNDS.maxY * k, VB.h / 2 - SEA_BOUNDS.minY * k);
     setView({ x, y, k });
   }, []);
 

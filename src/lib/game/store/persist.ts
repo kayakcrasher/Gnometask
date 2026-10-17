@@ -112,6 +112,7 @@ export function snap(s: GameSave): GameSave {
     combatStyle: s.combatStyle,
     coach: s.coach,
     afloat: s.afloat,
+    sailingDistance: s.sailingDistance ?? 0,
     cannons: s.cannons,
     civic: s.civic,
   };
@@ -207,6 +208,7 @@ export const UI_SEED: Pick<
   | "interior"
   | "raids"
   | "followWalk"
+  | "sailHome"
   | "praying"
   | "lootFlash"
   | "fishing"
@@ -228,6 +230,7 @@ export const UI_SEED: Pick<
   interior: null,
   raids: [],
   followWalk: true,
+  sailHome: false,
   praying: false,
   lootFlash: null,
   fishing: null,
