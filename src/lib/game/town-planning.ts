@@ -4,7 +4,7 @@ import { buildingSiteClear, insideParcel } from "./land-planning";
 import type { GameSave } from "./types";
 import type { CivicPlot, CivicState } from "./data/civic";
 export function npcBuildAllowed(
-  s: Pick<GameSave, "deeds" | "estate" | "civic">,
+  s: Pick<GameSave, "deeds" | "estate" | "civic" | "city">,
   p: CivicPlot,
 ) {
   if (
@@ -16,6 +16,7 @@ export function npcBuildAllowed(
     return false;
   return buildingSiteClear(p.x, p.y, [
     ...Object.values(s.estate),
+    ...s.city.buildings,
     ...s.civic.plots.filter((other) => other.id !== p.id && other.stories > 0),
   ]);
 }

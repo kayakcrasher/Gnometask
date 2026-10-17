@@ -9,7 +9,7 @@ export const ROAD_PROJECTS = [
     id: "woodland-pass",
     name: "Woodland approach",
     coins: 180,
-    logs: 12,
+    logs: 0,
     hall: 2,
     wealth: 600,
     points: softenRoad(
@@ -25,7 +25,7 @@ export const ROAD_PROJECTS = [
     id: "noble-pass",
     name: "Mount Noble bypass",
     coins: 450,
-    logs: 25,
+    logs: 0,
     hall: 3,
     wealth: 1800,
     points: softenRoad(
@@ -42,7 +42,7 @@ export const ROAD_PROJECTS = [
     id: "noble-reach",
     name: "Noble Reach avenue",
     coins: 950,
-    logs: 45,
+    logs: 0,
     hall: 4,
     wealth: 4000,
     points: softenRoad(

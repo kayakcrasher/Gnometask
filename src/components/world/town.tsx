@@ -341,7 +341,8 @@ export function Cottage3({
   const COTTAGE_ROOFS = ["berry", "gold", "moss", "night"] as const;
   const roof = COTTAGE_ROOFS[cottageLevel] ?? "berry";
   const scale = 1 + cottageLevel * 0.06;
-  const spot = PLACE_ANCHORS.cottage;
+  const home=useGame(s=>s.city.buildings.find(b=>b.kind==='home'));
+  const spot = home??PLACE_ANCHORS.cottage;
   const p = to3(spot.x, spot.y, groundY(spot.x, spot.y));
   return (
     <group

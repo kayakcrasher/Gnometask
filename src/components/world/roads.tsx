@@ -88,8 +88,8 @@ function earthTexture(surface: "gravel" | "dirt") {
   return texture;
 }
 
-function makeGeometries(works:RoadWorks,estate:Record<string,EstateHome>) {
-  const lines = developedRoads(works,estate).map(route => ({
+function makeGeometries(works:RoadWorks,estate:Record<string,EstateHome>,city:import("@/lib/game/city").PlayerCity) {
+  const lines = [...developedRoads(works,estate),...city.roads].map(route => ({
     ...route,
     points: route.points.map(([x, y]): [number, number] => {
       const p = to3(x, y);
@@ -111,14 +111,14 @@ function makeGeometries(works:RoadWorks,estate:Record<string,EstateHome>) {
 function ignoreRaycast() {}
 
 export function CountryRoads() {
-  const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate);
-  const geos = useMemo(() => makeGeometries(works,estate), [works,estate]);
+  const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate),city=useGame(s=>s.city);
+  const geos = useMemo(() => makeGeometries(works,estate,city), [works,estate,city.roads]);
   const textures = useMemo(() => ({ cobble: cobbleTexture(), gravel: earthTexture("gravel"), dirt: earthTexture("dirt") }), []);
   useEffect(() => () => {
     geos.surfaces.forEach(s => s.geometry.dispose());
     geos.shoulder.dispose();
-    Object.values(textures).forEach(texture => texture?.dispose());
-  }, [geos, textures]);
+  }, [geos]);
+  useEffect(()=>()=>{Object.values(textures).forEach(texture=>texture?.dispose());},[textures]);
   return (
     <group>
       <mesh geometry={geos.shoulder} receiveShadow renderOrder={1} raycast={ignoreRaycast}>
@@ -162,10 +162,11 @@ function at(pts: [number, number][], dist: number) {
   return { x: last[0], y: last[1], nx: last[0] - prev[0], ny: last[1] - prev[1] };
 }
 
-function DonkeyCart({ crates }: { crates: { current: THREE.Group | null } }) {
+export function DonkeyCart({ crates, moving }: { crates: { current: THREE.Group | null }; moving?:{current:boolean} }) {
   const legs = useRef<THREE.Group>(null);
   const wheels = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
+    if(moving&&!moving.current)return;
     const t = clock.elapsedTime * 7;
     const swing = Math.sin(t) * 0.6;
     legs.current?.children.forEach((leg, i) => {

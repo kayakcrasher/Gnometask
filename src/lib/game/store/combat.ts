@@ -1,9 +1,10 @@
+import {playerHomeDoor} from "../city";
 import { localDate } from "@/lib/utils";
 import { gearStats } from "../catalog";
 import { MAX_STAMINA, enemyIntentFor, roll, type CombatState } from "../combat";
 import type { CombatStyle } from "../types";
 import { sfx } from "../juice";
-import { PLAYER_START, type GameSave } from "../types";
+import { type GameSave } from "../types";
 import { hitChance, levelsOf, maxHit, maxHitpoints } from "../xp";
 import { landingAlive, landingCleared } from "../data/landing";
 import { rolledChart } from "../data/honour";
@@ -80,7 +81,7 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatSt
     },
     skills: gained.skills,
     hp: lost ? max : playerHp,
-    ...(lost ? { gnomeX: PLAYER_START.x, gnomeY: PLAYER_START.y, afloat: null, sailHome: false,
+    ...(lost ? { gnomeX: playerHomeDoor(s).x, gnomeY: playerHomeDoor(s).y, afloat: null, sailHome: false,
       abroad: null, raidVisit: null, popup: null, interior: null } : {}),
   });
   if (lost) { clearCombatTimer(); scheduleWrite(get); }
@@ -377,8 +378,8 @@ export function combatSlice(
       set({
         combat: null,
         selectedPlace: "cottage",
-        gnomeX: PLAYER_START.x,
-        gnomeY: PLAYER_START.y,
+        gnomeX: playerHomeDoor(s).x,
+        gnomeY: playerHomeDoor(s).y,
         speech: "You retreat to the cottage. Keep some food for the next trip.",
         afloat: null, sailHome: false, abroad: null, raidVisit: null, popup: null,
         hp: Math.max(1, c.playerHp),
@@ -396,8 +397,8 @@ export function combatSlice(
       set({
         combat: null,
         hp: won ? Math.min(max, c.playerHp + 4) : max,
-        gnomeX: won ? s.gnomeX : PLAYER_START.x,
-        gnomeY: won ? s.gnomeY : PLAYER_START.y,
+        gnomeX: won ? s.gnomeX : playerHomeDoor(s).x,
+        gnomeY: won ? s.gnomeY : playerHomeDoor(s).y,
         abroad: won ? s.abroad : null,
         speech: won ? s.speech : "Kettle on. Restocked food and better gear will help next time.",
         bounceKey: s.bounceKey + 1,

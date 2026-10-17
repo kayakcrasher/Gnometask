@@ -1,3 +1,4 @@
+import {nearRoad} from "@/lib/game/data/road-layout";
 import { useRef } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
@@ -155,9 +156,11 @@ export function RoadCrew() {
 }
 export function NorthernScenery() {
   const estate = useGame((s) => s.estate),
+    city = useGame(s=>s.city),
     plots = useGame((s) => s.civic.plots);
   const homes = [
     ...Object.values(estate),
+    ...city.buildings,
     ...plots.filter((p) => p.stories > 0),
   ];
   return (
@@ -172,7 +175,7 @@ export function NorthernScenery() {
           (p) =>
             !homes.some(
               (h) => Math.abs(h.x - p.x) < 40 && Math.abs(h.y - p.y) < 38,
-            ),
+            ) && !city.roads.some(r=>nearRoad(p.x,p.y,r,20)),
         )
         .map((p, i) => (
           <group key={i} position={to3(p.x, p.y, groundY(p.x, p.y))}>

@@ -72,6 +72,7 @@ export function useNpcWander(homes: NpcHome[], frozen: boolean) {
       const cur = { ...posesRef.current },
         state = useGame.getState();
       const obstacles = [
+        ...state.city.buildings.map(b=>({...b,w:26,h:24})),
         ...Object.values(state.estate).map((h) => ({ ...h, w: 23, h: 21 })),
         ...state.civic.plots
           .filter((p) => p.stories > 0)

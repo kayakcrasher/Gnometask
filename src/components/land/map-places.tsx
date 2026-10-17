@@ -1,3 +1,4 @@
+import {playerHome} from "@/lib/game/city";
 import { useGame } from "@/lib/game/store";
 import type { GamePopup, InteriorId } from "@/lib/game/types";
 import { HAVEN_ORIGIN, NPCS, TOWN_SHOPS } from "@/lib/game/world";
@@ -40,16 +41,16 @@ export function MapPlaces({
         </MapHotspot>
       ))}
       <MapHotspot
-        x={PLACE_ANCHORS.cottage.x}
-        y={PLACE_ANCHORS.cottage.y}
+        x={playerHome(save).x}
+        y={playerHome(save).y}
         rx={62}
         ry={52}
         selected={save.popup?.hotspotId === "cottage"}
         label="The Cottage"
         onHover={hoverTip}
-        onActivate={() => goInside(PLACE_ANCHORS.cottage.x, PLACE_ANCHORS.cottage.y, "cottage")}
+        onActivate={() => goInside(playerHome(save).x, playerHome(save).y, "cottage")}
       >
-        <Cottage x={PLACE_ANCHORS.cottage.x - 50} y={PLACE_ANCHORS.cottage.y - 60} upgrades={save.houseUpgrades} />
+        <Cottage x={playerHome(save).x - 50} y={playerHome(save).y - 60} upgrades={save.houseUpgrades} />
       </MapHotspot>
 
       {TOWN_SHOPS.map((shop) => (

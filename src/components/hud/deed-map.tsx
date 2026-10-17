@@ -1,3 +1,4 @@
+import {CityPlanner} from "./city-planner";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -31,7 +32,7 @@ const VIEWS = {
 };
 export function DeedMap({ onClose }: { onClose: () => void }) {
   const s = useGame(),
-    [tab, setTab] = useState<"land" | "roads">("land"),
+    [tab, setTab] = useState<"land" | "roads" | "city">("land"),
     [view, setView] = useState<keyof typeof VIEWS>("All"),
     [picked, setPicked] = useState<string | null>(null);
   const tile = PARCELS.find((p) => p.id === picked) ?? null,
@@ -43,17 +44,18 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
   const others = useMemo(
     () => [
       ...Object.values(s.estate),
+      ...s.city.buildings,
       ...s.civic.plots.filter((p) => p.stories > 0),
     ],
-    [s.estate, s.civic.plots],
+    [s.estate, s.civic.plots,s.city.buildings],
   );
   const spot = useMemo(
     () => (tile && !home ? parcelBuildingSpot(tile, others) : home),
     [tile, home, others],
   );
   const roads = useMemo(
-    () => developedRoads(s.roadWorks, s.estate),
-    [s.roadWorks, s.estate],
+    () => [...developedRoads(s.roadWorks, s.estate),...s.city.roads],
+    [s.roadWorks, s.estate,s.city.roads],
   );
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
@@ -69,7 +71,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
       role="dialog"
       aria-label="Land and road planning"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex flex-col gap-2 bg-[#143028]/95 p-3 text-parchment pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      className="fixed inset-0 z-[80] flex flex-col gap-2 bg-[#143028] p-3 text-parchment pb-[max(0.75rem,env(safe-area-inset-bottom))]"
     >
       <header className="flex items-center justify-between gap-2">
         <h1 className="font-display text-lg font-semibold">Island planning</h1>
@@ -81,7 +83,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
           Leave
         </button>
       </header>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <button
           type="button"
           aria-pressed={tab === "land"}
@@ -98,8 +100,9 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
         >
           Road crew
         </button>
+        <button type="button" aria-pressed={tab==='city'} onClick={()=>setTab('city')} className={`${button} ${tab==='city'?'bg-gold text-ink':'bg-parchment/15'}`}>Your city</button>
       </div>
-      {tab === "roads" ? (
+      {tab==='city'?<CityPlanner onReturn={onClose}/>:tab === "roads" ? (
         <section
           aria-label="Road crew projects"
           className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-parchment p-3 text-ink"
@@ -113,7 +116,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
           </p>
           <p className="mt-2 text-xs text-bark">
             Coins, permanent equipment, boats, deeds and homes contribute to
-            island wealth. Projects need timber and funding once; the crew then
+            island wealth. Projects need coin funding once; the crew then
             works while you play. Better crafting tools speed them up.
           </p>
           <div className="mt-3 flex flex-col gap-3">
@@ -134,7 +137,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                 >
                   <h3 className="font-display text-lg">{p.name}</h3>
                   <p className="text-xs font-semibold">
-                    {p.coins} coins · {p.logs} logs · Hall {p.hall} · wealth{" "}
+                    {p.coins} coins · Hall {p.hall} · wealth{" "}
                     {p.wealth}
                   </p>
                   {active ? (
@@ -265,6 +268,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                 />
               );
             })}
+            {s.city.buildings.map(b=><rect key={b.id} x={b.x-25} y={b.y-22} width={50} height={44} fill={b.kind==='depot'?'#345d70':b.kind==='housing'?'#914f3e':'#61466b'} pointerEvents="none"/>)}
             {Object.entries(s.estate).map(([id, h]) => (
               <rect
                 key={id}
@@ -360,7 +364,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                       className={`${button} mt-2 w-full bg-pine text-parchment`}
                     >
                       {home ? "Extend home" : "Build home"} · {quote.coins}{" "}
-                      coins + {quote.logs} logs
+                      coins
                     </button>
                   )}
                   {quote && spot && (

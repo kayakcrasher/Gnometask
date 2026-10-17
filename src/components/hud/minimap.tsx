@@ -1,3 +1,4 @@
+import {playerHome} from "@/lib/game/city";
 import { developedRoads } from "@/lib/game/land-planning";
 import { useMemo, useState } from "react";
 import { type MouseEvent as ReactMouseEvent } from "react";
@@ -31,8 +32,8 @@ export function Minimap({
   npcPoses: Record<string, NpcPose>;
   compassRef: { current: HTMLDivElement | null };
 }) {
-  const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate);
-  const roads=useMemo(()=>developedRoads(works,estate),[works,estate]);
+  const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate),city=useGame(s=>s.city);
+  const roads=useMemo(()=>[...developedRoads(works,estate),...city.roads],[works,estate,city.roads]);
   const travel = useGame((s) => s.travelIsle);
   const [deedsOpen, setDeedsOpen] = useState(false);
   const cleared = useGame((s) => s.clearedPack);
@@ -86,7 +87,7 @@ export function Minimap({
           <circle key={v.id} cx={v.x} cy={v.y} r={v.capitol ? 26 : 16} fill={v.capitol ? "#d6a84c" : "#f2e8d5"} stroke="#24402f" strokeWidth={4} />
         ))}
         {Object.entries(PLACE_ANCHORS).map(([id, a]) => (
-          <circle key={id} cx={a.x} cy={a.y} r={id === "shop" || id === "cottage" ? 28 : 18} fill="#d6a84c" opacity={0.9} />
+          <circle key={id} cx={id==='cottage'?playerHome({city}).x:a.x} cy={id==='cottage'?playerHome({city}).y:a.y} r={id === "shop" || id === "cottage" ? 28 : 18} fill="#d6a84c" opacity={0.9} />
         ))}
         {NPCS.map((n) => {
           const x = npcPoses[n.id]?.x ?? n.x;

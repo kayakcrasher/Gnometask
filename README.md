@@ -28,3 +28,15 @@ Content lives in `src/lib/game/data/`. Engine and UI stay out of those files.
 ## Run
 
 This tree is the game source. The live preview on Grok App Builder runs the full app. Clone, then overlay onto a Vite + React + R3F shell, or keep editing here and push.
+
+## Build your city
+
+Open **Deeds → Your city**. Buy an empty deed, name your city, then place **Your home** for free to move your existing cottage, furniture and upgrades into the city. Then tap your land on the construction map and confirm a building. Town Hall 2 unlocks trade depots, timber factories, workers’ cottages and streets; Hall 3 unlocks furniture factories. Buildings and roads preserve public streets, neighbours, waterways and mountain slopes. Finish Noble Reach avenue before developing northern deeds.
+
+Place a factory and trade depot near connected roads. Buy factory supplies with coins and hire a donkey cart for 180 coins. Carts follow road centre lines, deliver finished goods, and pay the sale into your wallet once on arrival. Turn on **Automatic supplies** to have a cart buy up to 10 supply units for 3 coins each at the depot and carry them back to its factory. It never spends your logs. Without supplies or storage space, production stops.
+
+Timber factories turn 1 supply unit into 2 crates worth 8 coins each; furniture factories turn 2 supply units and 2 operating coins into 3 crates worth 14 coins each. Production runs every 27 seconds, with up to one batch per building level. Depots increase cart capacity from 6 to 18 crates as they upgrade. After the first successful delivery, road-connected cottages attract residents and pay 1 coin per resident every 90 seconds. Upgrades reach level 3 and require coins and a higher Hall. All construction, including regional roads and estate homes, is coin-only.
+
+To lay a street, choose **Gravel street**, tap and set a start, then tap an end and confirm. The road crew charges by length and snaps junctions onto existing streets. Extend from the public network across your own clear ground. Developed deeds cannot be sold as empty land. City buildings, streets, residents, supplies, cargo and earnings persist across saves. Production and travel pause when the game is closed, at home, in interiors, overseas or in combat.
+
+Run `npm run check:city` for construction, road routing, delivery accounting, coin-only purchases, automatic supply conservation, home relocation, upgrades, population and save checks.

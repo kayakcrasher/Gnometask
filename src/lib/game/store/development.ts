@@ -1,3 +1,4 @@
+import {nearRoad} from "../data/road-layout";
 import { ROAD_PROJECTS } from "../data/expansion";
 import { bestCraft } from "../data/catalog";
 import { developmentWorth, homeBuildQuote } from "../development";
@@ -42,15 +43,14 @@ export function developmentSlice(
         });
         return;
       }
-      if (s.coins < project.coins || s.logs < project.logs) {
+      if (s.coins < project.coins) {
         set({
-          speech: `The road needs ${project.coins} coins and ${project.logs} logs.`,
+          speech: `The road needs ${project.coins} coins.`,
         });
         return;
       }
       set({
         coins: s.coins - project.coins,
-        logs: s.logs - project.logs,
         roadWorks: { ...s.roadWorks, active: { id, progress: 0 } },
         speech: `Road crew commissioned: ${project.name}. The materials are paid for; work advances while you play.`,
       });
@@ -105,9 +105,9 @@ export function developmentSlice(
         });
         return;
       }
-      if (s.coins < quote.coins || s.logs < quote.logs) {
+      if (s.coins < quote.coins) {
         set({
-          speech: `Building needs ${quote.coins} coins and ${quote.logs} logs.`,
+          speech: `Building needs ${quote.coins} coins.`,
         });
         return;
       }
@@ -119,6 +119,7 @@ export function developmentSlice(
         return;
       }
       const others = [
+        ...s.city.buildings,
         ...Object.entries(s.estate)
           .filter(([key]) => key !== id)
           .map(([, h]) => h),
@@ -128,7 +129,7 @@ export function developmentSlice(
       if (
         !spot ||
         !insideParcel(parcel, spot.x, spot.y) ||
-        !buildingSiteClear(spot.x, spot.y, others)
+        !buildingSiteClear(spot.x, spot.y, others) || s.city.roads.some(r=>nearRoad(spot.x,spot.y,r,28))
       ) {
         set({
           speech:
@@ -145,9 +146,8 @@ export function developmentSlice(
           [id]: { x: spot.x, y: spot.y, level: (existing?.level ?? 0) + 1 },
         },
         coins: s.coins - quote.coins,
-        logs: s.logs - quote.logs,
         skills: gained.skills,
-        speech: `${existing ? "Home extended" : "Roadside home built"}. ${quote.coins} coins and ${quote.logs} logs spent. Your deed is unchanged.`,
+        speech: `${existing ? "Home extended" : "Roadside home built"}. ${quote.coins} coins spent. Your deed is unchanged.`,
       });
       scheduleWrite(get);
     },

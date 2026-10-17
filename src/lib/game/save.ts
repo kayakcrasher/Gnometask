@@ -1,3 +1,4 @@
+import { emptyCity, coerceCity } from "./city";
 import { developmentLevel } from "./development";
 import { npcBuildAllowed, openFrontier } from "./town-planning";
 import { coerceRoadWorks } from "./data/expansion";
@@ -21,7 +22,7 @@ import { totalDividend } from "./data/market";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -88,6 +89,7 @@ export function defaultSave(): GameSave {
     logs: 0,
     saplings: 0,
     deeds: [],
+    city: emptyCity(),
     estate: {},
     roadWorks: {completed:[],active:null},
     shares: {},
@@ -296,7 +298,7 @@ export function migrate(raw: unknown): GameSave {
   const stripped = rawTasks.filter((t) => !t.builtin || !t.builtinKey || !IRL_KEYS.has(t.builtinKey));
   const tasks = (s.version ?? 0) < 9 ? stripped : rawTasks;
 
-  return freshenSupply({
+  const result = freshenSupply({
     ...base,
     ...s,
     version: SAVE_VERSION,
@@ -380,6 +382,7 @@ export function migrate(raw: unknown): GameSave {
     cannons: Boolean(s.cannons),
     civic: coerceCivic(s.civic, typeof s.daysPlayed === "number" ? s.daysPlayed : 1),
   });
+  return {...result,city:coerceCity(s.city,result)};
 }
 
 function asHerd(raw: unknown): GameSave["herd"] {

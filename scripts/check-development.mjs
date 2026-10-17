@@ -61,14 +61,13 @@ test('roads reserve narrow corridors rather than whole parcels',()=>{
 test('homes require a deed and resources, preserve ownership, and survive reload',()=>{
  reset();state.coins=5000;state.logs=100;state.townHallLevel=4;state.skills.crafting=xpForLevel(35);
  state.buildParcelHome(parcel.id);assert.equal(state.estate[parcel.id],undefined);
- state.deeds=[parcel.id];state.logs=0;state.buildParcelHome(parcel.id);assert.equal(state.estate[parcel.id],undefined);
- state.logs=100;state.buildParcelHome(parcel.id);assert.equal(state.estate[parcel.id].level,1);assert(state.coins<5000&&state.logs<100);
+ state.deeds=[parcel.id];state.logs=0;state.buildParcelHome(parcel.id);assert.equal(state.estate[parcel.id].level,1);assert(state.coins<5000);assert.equal(state.logs,0,'Homes require coins, never logs');
  state.buildParcelHome(parcel.id);state.buildParcelHome(parcel.id);assert.equal(state.estate[parcel.id].level,3);const paid=state.coins;state.buildParcelHome(parcel.id);assert.equal(state.coins,paid);
  state.sellParcel(parcel.id);assert(state.deeds.includes(parcel.id),'Built homes cannot be sold as empty deeds');
  const loaded=migrate(snap(state));assert.deepEqual(loaded.estate,state.estate);assert.deepEqual(loaded.deeds,state.deeds);
 });
 test('road projects are sequential, paid once, resumable and visible',()=>{
- reset();state.coins=20000;state.logs=500;state.townHallLevel=5;
+ reset();state.coins=20000;state.logs=0;state.townHallLevel=5;
  state.commissionRoad('noble-reach');assert.equal(state.roadWorks.active,null);state.commissionRoad('bad-id');assert.equal(state.roadWorks.active,null);
  for(const p of ROAD_PROJECTS){
   const worth=developmentWorth(state),coins=state.coins,logs=state.logs;state.commissionRoad(p.id);assert.equal(developmentWorth(state),worth,"Investing in public roads preserves development value");assert.equal(state.coins,coins-p.coins);assert.equal(state.logs,logs-p.logs);

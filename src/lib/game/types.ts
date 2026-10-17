@@ -224,6 +224,7 @@ export type GameSave = {
   logs: number;
   saplings: number;
   deeds: string[];
+  city: import("./city").PlayerCity;
   roadWorks: import("./data/expansion").RoadWorks;
   estate: Record<string, import("./data/expansion").EstateHome>;
   shares: Record<string, number>;

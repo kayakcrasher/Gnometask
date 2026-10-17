@@ -207,3 +207,11 @@ export function developedRoads(
     })),
   ];
 }
+
+/** Narrow construction clearance for streets, distinct from a house footprint. */
+export function roadSiteClear(x:number,y:number,others:{x:number;y:number}[]=[]){
+ if(!Number.isFinite(x)||!Number.isFinite(y)||nobleRise(x,y)>.15)return false;
+ if(![-13,13].every(dx=>[-13,13].every(dy=>onGrass(x+dx,y+dy)||onDesert(x+dx,y+dy))))return false;
+ if(Math.hypot(x-520,y-190)<135)return false;
+ return !FIXED_BUILDINGS.some(b=>Math.abs(x-b.x)<b.w+13&&Math.abs(y-b.y)<b.h+13)&&!others.some(b=>Math.abs(x-b.x)<39&&Math.abs(y-b.y)<37);
+}

@@ -1,3 +1,4 @@
+import {playerHome} from "@/lib/game/city";
 import { useMemo } from "react";
 import { developedRoads } from "@/lib/game/land-planning";
 import { DESERT_POLY, DESERT_BEACH, ISLAND_POLY } from "@/lib/game/world3";
@@ -41,7 +42,7 @@ export function MapScenery({
   havenHurt: number;
 }) {
   const save = useGame();
-  const roads=useMemo(()=>developedRoads(save.roadWorks,save.estate),[save.roadWorks,save.estate]);
+  const roads=useMemo(()=>[...developedRoads(save.roadWorks,save.estate),...save.city.roads],[save.roadWorks,save.estate,save.city.roads]);
   return (
     <>
       <ellipse cx="1380" cy="740" rx="1280" ry="680" fill="#4e7370" />
@@ -80,6 +81,7 @@ export function MapScenery({
         {roads.map(road => <polyline key={`${road.id}-edge`} points={road.points.map(p => p.join(",")).join(" ")} fill="none" stroke="#827b56" strokeWidth={road.width / 0.05 + 5} strokeLinecap="round" strokeLinejoin="round" />)}
         {(["dirt", "gravel", "cobble"] as const).flatMap(surface => roads.filter(r => r.surface === surface).map(road => <polyline key={road.id} points={road.points.map(p => p.join(",")).join(" ")} fill="none" stroke={surface === "cobble" ? "#c8bda7" : surface === "gravel" ? "#b3a58c" : "#ab8b61"} strokeWidth={road.width / 0.05} strokeLinecap="round" strokeLinejoin="round" />))}
 
+        {save.city.buildings.filter(b=>b.kind!=='home').map(b=><g key={b.id} transform={`translate(${b.x} ${b.y})`}><rect x={-25} y={-22} width={50} height={44} fill={b.kind==='depot'?'#345d70':b.kind==='housing'?'#914f3e':'#61466b'}/><text textAnchor="middle" y={5} fill="white" fontSize={14}>{b.kind==='depot'?'D':b.kind==='housing'?'H':'F'}{b.level}</text></g>)}
         {Object.entries(save.estate).map(([id,h])=><g key={id} transform={`translate(${h.x} ${h.y})`}><rect x={-22} y={-12-h.level*8} width={44} height={32+h.level*8} fill="#e4d2a9"/><path d={`M-27 ${-12-h.level*8} L0 ${-30-h.level*8} L27 ${-12-h.level*8} Z`} fill="#8c5141"/></g>)}
         <ellipse cx="530" cy="170" rx="150" ry="70" fill="#4e7370" className="water-ripple" />
         <ellipse cx="530" cy="170" rx="128" ry="56" fill="#6a8f8a" />
@@ -106,7 +108,7 @@ export function MapScenery({
         <TownFountain x={TOWN_SQUARE.x} y={TOWN_SQUARE.y} />
 
         <PalisadeRing x={920} y={520} level={save.fortLevel} />
-        <Scorch x={PLACE_ANCHORS.cottage.x} y={PLACE_ANCHORS.cottage.y} amount={cottageHurt} />
+        <Scorch x={playerHome(save).x} y={playerHome(save).y} amount={cottageHurt} />
         <Scorch x={920} y={500} amount={villageHurt} />
 
         <g>

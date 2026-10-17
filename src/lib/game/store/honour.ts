@@ -1,3 +1,4 @@
+import {cityDeedDeveloped} from "../city";
 import { civicParcelOwner } from "../land-planning";
 import { BOAT_LOANS, LAND_OFFERS, rolledChart } from "../data/honour";
 import { parcelAt } from "../data/parcels";
@@ -129,6 +130,10 @@ export function honourSlice(
       const tile = parcelAt(id);
       if (!tile || !s.deeds.includes(id)) {
         set({ speech: "That deed is not in your name." });
+        return;
+      }
+      if (cityDeedDeveloped(s.city,tile)) {
+        set({speech:"Developed city land cannot be sold as an empty deed."});
         return;
       }
       if(s.estate[id]){set({speech:"This deed has your home on it. Built homes are not sold with bare land."});return;}

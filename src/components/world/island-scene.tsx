@@ -1,3 +1,5 @@
+import {playerHome} from "@/lib/game/city";
+import { PlayerCity } from "./player-city";
 import { EstateHomes, RoadCrew, NorthernScenery } from "./development";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -146,7 +148,7 @@ function SceneBody({
       <CastLine />
       <Cottage3
         upgrades={save.houseUpgrades}
-        onEnter={() => goInside(PLACE_ANCHORS.cottage.x, PLACE_ANCHORS.cottage.y, "cottage")}
+        onEnter={() => goInside(playerHome(save).x, playerHome(save).y, "cottage")}
       />
       <YardPlots
         onPlot={(id, x, y, popup) =>
@@ -254,7 +256,7 @@ function SceneBody({
       <MountNoble onWalk={onWalk} />
       <Sunstep />
       <CountryRoads />
-      <EstateHomes />
+      <EstateHomes /><PlayerCity />
       <RoadCrew />
       <NorthernScenery />
       <SupplyRunners />

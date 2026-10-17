@@ -437,6 +437,7 @@ export function worldSlice(
 
     tickWorld: () => {
       get().advanceRoadCrew?.();
+      get().advanceCity?.();
       const s = get();
       if (!s.named || s.combat) return;
       let buildingHp = s.buildingHp;
