@@ -3,13 +3,13 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { GnomeRig } from "./gnome-rig";
-import { ROADS, RUNNERS, ROAD_TOP, pathToCapitol } from "@/lib/game/data/country";
-import { TOWN_GRIDS, capitolStreets, townStreets } from "@/lib/game/data/grids";
+import { ROAD_NETWORK, RUNNERS, ROAD_TOP, pathToCapitol } from "@/lib/game/data/country";
+import type { RoadSurface } from "@/lib/game/data/road-layout";
 import { groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 import { roadGeometry, type RoadLine } from "./road-surface";
 
-const COUNTRY_WIDTH = 1.65;
+const SURFACES: RoadSurface[] = ["dirt", "gravel", "cobble"];
 
 function cobbleTexture() {
   const c = document.createElement("canvas");
@@ -27,14 +27,14 @@ function cobbleTexture() {
   const tones = ["#c3b69f", "#b9ac96", "#cfc2ac", "#b0a38e", "#c7baa4"];
   // Staggered, gently irregular setts. Draw across the tile boundary to make it seamless.
   const rows = 16;
-  const columns = 8;
+  const columns = 12;
   const cellW = 512 / columns;
   const cellH = 512 / rows;
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < columns; col++) {
       const x = col * cellW + (row % 2) * cellW / 2;
       const y = row * cellH;
-      const inset = 2 + rnd() * 1.5;
+      const inset = 0.8 + rnd() * 0.8;
       const cut = 4 + rnd() * 3;
       g.fillStyle = tones[Math.floor(rnd() * tones.length)]!;
       for (const offset of [-512, 0]) {
@@ -64,24 +64,45 @@ function cobbleTexture() {
   return tex;
 }
 
-function makeGeometries() {
-  const lines: RoadLine[] = [];
-  const addLine = (points: [number, number][], width: number) => {
-    lines.push({
-      points: points.map(([x, y]) => {
-        const p = to3(x, y);
-        return [p[0], p[2]];
-      }),
-      width,
-    });
-  };
-  for (const road of ROADS) addLine(road.points, COUNTRY_WIDTH);
-  for (const seg of [...TOWN_GRIDS.flatMap(townStreets), ...capitolStreets()]) {
-    addLine([[seg.ax, seg.ay], [seg.bx, seg.by]], seg.width ?? (seg.alley ? 0.65 : 1.8));
+function earthTexture(surface: "gravel" | "dirt") {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  let seed = 73;
+  const random = () => ((seed = seed * 16807 % 2147483647) - 1) / 2147483646;
+  ctx.fillStyle = surface === "gravel" ? "#b3a58c" : "#ab8b61";
+  ctx.fillRect(0, 0, 256, 256);
+  const tones = surface === "gravel" ? ["#cfc4ab", "#918674", "#bfb39b", "#a69a83"] : ["#b79970", "#a0845e", "#c0a17a", "#967b57"];
+  for (let i = 0; i < 6500; i++) {
+    ctx.fillStyle = tones[Math.floor(random() * tones.length)]!;
+    const size = surface === "gravel" ? 1 + random() * 3 : 1 + random();
+    ctx.fillRect(random() * 256, random() * 256, size, size * 0.7);
   }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
+function makeGeometries() {
+  const lines = ROAD_NETWORK.map(route => ({
+    ...route,
+    points: route.points.map(([x, y]): [number, number] => {
+      const p = to3(x, y);
+      return [p[0], p[2]];
+    }),
+  }));
   return {
-    road: roadGeometry(lines, ROAD_TOP),
+    // A single shoulder surrounds the entire network. Higher priority surfaces
+    // cut out lower ones, so a gravel-to-cobble junction has no stacked faces.
     shoulder: roadGeometry(lines, ROAD_TOP - 0.025, true),
+    surfaces: SURFACES.map((surface, index) => ({
+      surface,
+      geometry: roadGeometry(lines.filter(l => l.surface === surface), ROAD_TOP, false,
+        lines.filter(l => SURFACES.indexOf(l.surface) > index)),
+    })),
   };
 }
 
@@ -89,45 +110,22 @@ function ignoreRaycast() {}
 
 export function CountryRoads() {
   const geos = useMemo(() => makeGeometries(), []);
-  const roadMap = useMemo(() => cobbleTexture(), []);
+  const textures = useMemo(() => ({ cobble: cobbleTexture(), gravel: earthTexture("gravel"), dirt: earthTexture("dirt") }), []);
   useEffect(() => () => {
-    geos.road.dispose();
+    geos.surfaces.forEach(s => s.geometry.dispose());
     geos.shoulder.dispose();
-    roadMap?.dispose();
-  }, [geos, roadMap]);
+    Object.values(textures).forEach(texture => texture?.dispose());
+  }, [geos, textures]);
   return (
     <group>
-      <mesh
-        geometry={geos.shoulder}
-        receiveShadow
-        renderOrder={1}
-        raycast={ignoreRaycast}
-      >
-        <meshStandardMaterial
-          color="#998b70"
-          roughness={0.98}
-          side={THREE.DoubleSide}
-          polygonOffset
-          polygonOffsetFactor={-1}
-          polygonOffsetUnits={-1}
-        />
+      <mesh geometry={geos.shoulder} receiveShadow renderOrder={1} raycast={ignoreRaycast}>
+        <meshStandardMaterial color="#827b56" roughness={1} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
-      <mesh
-        geometry={geos.road}
-        receiveShadow
-        renderOrder={2}
-        raycast={ignoreRaycast}
-      >
-        <meshStandardMaterial
-          map={roadMap ?? undefined}
-          color={roadMap ? "#ffffff" : "#d7c7a4"}
-          roughness={0.9}
-          side={THREE.DoubleSide}
-          polygonOffset
-          polygonOffsetFactor={-3}
-          polygonOffsetUnits={-3}
-        />
-      </mesh>
+      {geos.surfaces.map(({surface, geometry}) => <mesh key={surface} geometry={geometry} receiveShadow renderOrder={2} raycast={ignoreRaycast}>
+        <meshStandardMaterial map={textures[surface] ?? undefined}
+          color={textures[surface] ? "#ffffff" : surface === "cobble" ? "#c8bda7" : surface === "gravel" ? "#b3a58c" : "#ab8b61"}
+          roughness={0.96} polygonOffset polygonOffsetFactor={-3} polygonOffsetUnits={-3} />
+      </mesh>)}
     </group>
   );
 }

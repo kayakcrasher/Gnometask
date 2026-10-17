@@ -9,8 +9,10 @@ const result = await build({
     contents: `
       import assert from "node:assert/strict";
       import { roadFootprint, roadGeometry } from "./src/components/world/road-surface";
-      import { ROADS, ROAD_TOP } from "./src/lib/game/data/country";
-      import { TOWN_GRIDS, townStreets, capitolStreets } from "./src/lib/game/data/grids";
+      import { ROAD_NETWORK, ROADS, ROAD_TOP, deckY, pathToCapitol } from "./src/lib/game/data/country";
+      import { softenRoad, nearRoad } from "./src/lib/game/data/road-layout";
+      import { TOWN_GRIDS, cellsOf } from "./src/lib/game/data/grids";
+      import { onIsland } from "./src/lib/game/world3";
 
       function area(geometry) {
         const p = geometry.getAttribute("position");
@@ -43,12 +45,44 @@ const result = await build({
       assert(area(blockGeo) < 80 && area(blockGeo) > 75, "Triangulation must preserve the block hole");
       assert.equal(roadGeometry([{ points: [[0, 0], [0, 0]], width: 2 }], ROAD_TOP)
         .getAttribute("position").count, 0, "Zero-length segments must be ignored");
-      const lines = ROADS.map(r => ({ points: r.points, width: 1.65 }));
-      for (const s of [...TOWN_GRIDS.flatMap(townStreets), ...capitolStreets()]) {
-        lines.push({ points: [[s.ax, s.ay], [s.bx, s.by]], width: s.width });
+      const smooth = softenRoad([[0,0],[100,0],[100,100]], 25);
+      assert.deepEqual(smooth[0],[0,0]);assert.deepEqual(smooth.at(-1),[100,100]);
+      assert(smooth.some(([x,y])=>x>75 && x<100 && y>0 && y<25),'Corners should bend before the junction');
+      assert.equal(new Set(ROAD_NETWORK.map(r=>r.id)).size,ROAD_NETWORK.length);
+      for(const route of ROAD_NETWORK){
+        for(let i=1;i<route.points.length;i++){
+          const a=route.points[i-1],b=route.points[i];
+          for(let j=0;j<=10;j++){
+            const x=a[0]+(b[0]-a[0])*j/10,y=a[1]+(b[1]-a[1])*j/10;
+            assert(onIsland(x,y),'Road must remain on land: '+route.id);
+            const length=Math.hypot(b[0]-a[0],b[1]-a[1])||1,half=route.width/0.05/2;
+            for(const side of [-1,1])assert(onIsland(x-side*(b[1]-a[1])/length*half,y+side*(b[0]-a[0])/length*half),'Road edges must stay on land: '+route.id);
+            if(ROADS.some(r=>r.id===route.id))for(const cell of TOWN_GRIDS.flatMap(cellsOf)){
+              const dx=Math.max(0,Math.abs(x-cell.x)-22),dy=Math.max(0,Math.abs(y-cell.y)-16);
+              assert(Math.hypot(dx,dy)>=half-0.5,'Country road must avoid building plots: '+route.id);
+            }
+            assert(Math.hypot(x-520,y-190)>90+route.width/0.05/2,'Road must avoid the pond: '+route.id);
+            assert.equal(deckY(x,y),ROAD_TOP,'Standing height must follow the rendered road');
+          }
+        }
       }
+      for(const id of ['tideham','greenlane','haven','sunstep']){
+        const path=pathToCapitol(id);
+        for(let i=1;i<path.length;i++)for(let j=0;j<=10;j++){
+          const x=path[i-1][0]+(path[i][0]-path[i-1][0])*j/10,y=path[i-1][1]+(path[i][1]-path[i-1][1])*j/10;
+          assert(ROAD_NETWORK.some(r=>nearRoad(x,y,r)),'Supply runners must stay on roads: '+id);
+        }
+      }
+      const lines = ROAD_NETWORK.map(r=>({ ...r, points:r.points.map(p=>[...p]) }));
       for (const line of lines) line.points = line.points.map(([x, y]) => [(x - 1400) * 0.05, (y - 740) * 0.05]);
       assert.equal(roadFootprint(lines).length, 1, "Every town street must connect to the road network");
+      const allArea=area(roadGeometry(lines,ROAD_TOP));
+      const surfaces=['dirt','gravel','cobble'];
+      const layeredArea=surfaces.reduce((sum,surface,index)=>{
+        const geo=roadGeometry(lines.filter(r=>r.surface===surface),ROAD_TOP,false,lines.filter(r=>surfaces.indexOf(r.surface)>index));
+        const result=area(geo);geo.dispose();return sum+result;
+      },0);
+      assert(Math.abs(layeredArea-allArea)<0.001,'Material joins must cover the network exactly once');
       for (const shoulder of [false, true]) {
         const geo = roadGeometry(lines, ROAD_TOP, shoulder);
         assert(area(geo) > 0, "The full road network must triangulate");
@@ -63,7 +97,7 @@ const result = await build({
         geo.dispose();
       }
       for (const geo of [single, crossing, duplicate, blockGeo]) geo.dispose();
-      console.log("Road checks passed: junctions, duplicate faces, block holes, winding, UVs, full network.");
+      console.log("Road checks passed: junctions, duplicate faces, block holes, winding, UVs, surface transitions, pond clearance, land routes, runner paths, standing heights, full network.");
     `,
   },
   bundle: true,

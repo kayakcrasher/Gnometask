@@ -1,3 +1,4 @@
+import { ROAD_NETWORK } from "@/lib/game/data/country";
 import { mixLandColor, regionValue } from "@/lib/game/metrics";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { useGame } from "@/lib/game/store";
@@ -68,22 +69,8 @@ export function MapScenery({
         );
       })}
       <g pointerEvents="none">
-        <path
-          d="M430 500 C 520 510 620 500 720 490 C 860 480 980 500 1120 560"
-          fill="none"
-          stroke="#c4a574"
-          strokeWidth="22"
-          strokeLinecap="round"
-          opacity={villageCount > 0 ? 0.95 : 0.55}
-        />
-        <path d="M400 500 C 380 560 360 620 340 700" fill="none" stroke="#c4a574" strokeWidth="16" strokeLinecap="round" opacity="0.8" />
-        <path d="M180 480 C 260 500 340 500 400 490" fill="none" stroke="#c4a574" strokeWidth="12" strokeLinecap="round" opacity="0.7" />
-        {hLevel >= 1 ? (
-          <path d="M1180 620 C 1240 680 1280 760 1340 820" fill="none" stroke="#b08960" strokeWidth="14" strokeLinecap="round" />
-        ) : null}
-        <path d="M1280 520 C 1480 480 1620 400 1760 360" fill="none" stroke="#7a6550" strokeWidth="16" strokeLinecap="round" opacity="0.7" />
-        <path d="M1180 860 C 1280 980 1360 1100 1420 1220" fill="none" stroke="#7a6550" strokeWidth="14" strokeLinecap="round" opacity="0.65" />
-        <path d="M2100 280 C 2180 240 2260 220 2360 240" fill="none" stroke="#8a7a68" strokeWidth="12" strokeLinecap="round" opacity="0.7" />
+        {ROAD_NETWORK.map(road => <polyline key={`${road.id}-edge`} points={road.points.map(p => p.join(",")).join(" ")} fill="none" stroke="#827b56" strokeWidth={road.width / 0.05 + 5} strokeLinecap="round" strokeLinejoin="round" />)}
+        {(["dirt", "gravel", "cobble"] as const).flatMap(surface => ROAD_NETWORK.filter(r => r.surface === surface).map(road => <polyline key={road.id} points={road.points.map(p => p.join(",")).join(" ")} fill="none" stroke={surface === "cobble" ? "#c8bda7" : surface === "gravel" ? "#b3a58c" : "#ab8b61"} strokeWidth={road.width / 0.05} strokeLinecap="round" strokeLinejoin="round" />))}
 
         <ellipse cx="530" cy="170" rx="150" ry="70" fill="#4e7370" className="water-ripple" />
         <ellipse cx="530" cy="170" rx="128" ry="56" fill="#6a8f8a" />

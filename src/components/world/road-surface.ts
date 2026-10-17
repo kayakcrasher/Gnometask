@@ -4,7 +4,7 @@ import * as THREE from "three";
 export type RoadLine = { points: [number, number][]; width: number };
 
 /** Round-ended strips, merged before triangulation so junctions have no seams. */
-export function roadFootprint(lines: RoadLine[], shoulder = false) {
+export function roadFootprint(lines: RoadLine[], shoulder = false, exclude: RoadLine[] = []) {
   const strips: Polygon[] = [];
   for (const line of lines) {
     const radius = line.width / 2 + (shoulder ? Math.min(0.18, line.width * 0.12) : 0);
@@ -28,13 +28,15 @@ export function roadFootprint(lines: RoadLine[], shoulder = false) {
       strips.push([ring]);
     }
   }
-  return strips.length ? polygonClipping.union(strips[0]!, ...strips.slice(1)) : [];
+  const merged = strips.length ? polygonClipping.union(strips[0]!, ...strips.slice(1)) : [];
+  const mask = exclude.length ? roadFootprint(exclude) : [];
+  return merged.length && mask.length ? polygonClipping.difference(merged, mask) : merged;
 }
 
-export function roadGeometry(lines: RoadLine[], height: number, shoulder = false) {
+export function roadGeometry(lines: RoadLine[], height: number, shoulder = false, exclude: RoadLine[] = []) {
   const positions: number[] = [];
   const uvs: number[] = [];
-  for (const polygon of roadFootprint(lines, shoulder)) {
+  for (const polygon of roadFootprint(lines, shoulder, exclude)) {
     // ShapeGeometry handles the unpaved holes inside town blocks.
     const paths = polygon.map((ring) => ring.slice(0, -1).map(([x, z]) => new THREE.Vector2(x, -z)));
     const shape = new THREE.Shape(paths[0]);

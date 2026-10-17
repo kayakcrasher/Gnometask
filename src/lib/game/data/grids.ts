@@ -140,16 +140,16 @@ export const CAPITOL_GATE = { x: 720, y: 860 };
 /** Streets around the square, tied to the country road at the south gate. */
 export function capitolStreets(): StreetSeg[] {
   return [
-    { ax: 230, ay: 185, bx: 930, by: 185, alley: false, width: 1.55 },
-    { ax: 230, ay: 475, bx: 930, by: 475, alley: false, width: 1.85 },
-    { ax: 230, ay: 185, bx: 230, by: 620, alley: false, width: 1.45 },
-    { ax: 720, ay: 185, bx: 720, by: CAPITOL_GATE.y, alley: false, width: 1.55 },
-    { ax: 400, ay: 848, bx: 760, by: 848, alley: false, width: 1.7 },
+    { ax: 720, ay: 185, bx: 930, by: 185, alley: false, width: 1.5 },
+    { ax: 230, ay: 475, bx: 930, by: 475, alley: false, width: 2.1 },
+    { ax: 230, ay: 310, bx: 230, by: 610, alley: false, width: 1.45 },
+    { ax: 720, ay: 185, bx: 720, by: CAPITOL_GATE.y, alley: false, width: 2.1 },
+    { ax: 400, ay: 848, bx: 720, by: 848, alley: false, width: 1.7 },
     { ax: 930, ay: 185, bx: 930, by: 475, alley: false, width: 1.45 },
-    { ax: 380, ay: 255, bx: 560, by: 255, alley: false, width: 1.1 },
-    { ax: 470, ay: 195, bx: 470, by: 300, alley: false, width: 1.1 },
+    { ax: 230, ay: 310, bx: 470, by: 310, alley: true, width: 0.85 },
+    { ax: 470, ay: 310, bx: 470, by: 300, alley: true, width: 0.85 },
     { ax: 834, ay: 185, bx: 834, by: 475, alley: true, width: 0.65 },
-    { ax: 230, ay: 610, bx: 720, by: 610, alley: true, width: 0.65 },
+    { ax: 230, ay: 610, bx: 720, by: 610, alley: false, width: 1.8 },
   ];
 }
 

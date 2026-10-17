@@ -1,4 +1,5 @@
-import { CAPITOL_GATE, CAPITOL_HALL, capitolStreets, cellsOf, townGate, townGrid, townStreets, TOWN_GRIDS } from "./grids";
+import { CAPITOL_GATE, CAPITOL_HALL, CAPITOL_SHOPS, capitolStreets, cellsOf, townGate, townGrid, townStreets, TOWN_GRIDS } from "./grids";
+import { nearRoad, softenRoad, type RoadRoute } from "./road-layout";
 
 const tide = townGate("tideham");
 const lane = townGate("greenlane");
@@ -81,10 +82,8 @@ export const ROADS: { id: string; points: [number, number][] }[] = [
   {
     id: "tideham",
     points: [
-      [145, 760],
-      [tide.west, tide.midY],
-      [tide.west, tide.y],
       [tide.x, tide.y],
+      [400, 1000],
       [520, 1020],
       [CAPITOL_GATE.x, 960],
       [CAPITOL_GATE.x, CAPITOL_GATE.y],
@@ -94,30 +93,61 @@ export const ROADS: { id: string; points: [number, number][] }[] = [
     id: "greenlane",
     points: [
       [CAPITOL_GATE.x, CAPITOL_GATE.y],
-      [980, 940],
-      [lane.x, 980],
+      [980, 1100],
+      [1180, 1310],
+      [1320, 1310],
+      [lane.x, 1310],
       [lane.x, lane.y],
     ],
   },
   {
     id: "haven",
     points: [
-      [lane.x, 980],
-      [1500, 980],
-      [havenGate.x, 980],
+      [1320, 1310],
+      [1680, 1310],
+      [havenGate.x, 1310],
       [havenGate.x, havenGate.y],
     ],
   },
   {
     id: "sunstep",
     points: [
-      [havenGate.x, 980],
-      [2200, 1000],
-      [2700, 1020],
+      [havenGate.x, 1310],
+      [1950, 1180],
+      [2060, 1080],
+      [2300, 1080],
+      [2800, 1040],
       [sunGate.x, 1000],
       [sunGate.x, sunGate.y],
     ],
   },
+].map(road => ({ ...road, points: softenRoad(road.points as [number, number][], 32) }));
+
+/** One map-space network for rendering, standing height, and the fallback map. Widths are world units. */
+export const ROAD_NETWORK: RoadRoute[] = [
+  ...ROADS.map(r => ({ ...r, width: 2.1, surface: "cobble" as const })),
+  ...TOWN_GRIDS.flatMap(grid => townStreets(grid).map((s, i) => ({
+    id: `${grid.id}-street-${i}`, points: [[s.ax, s.ay], [s.bx, s.by]] as [number, number][],
+    width: s.alley ? 0.6 : 1.3, surface: s.alley ? "dirt" as const : "gravel" as const,
+  }))),
+  ...capitolStreets().map((s, i) => ({
+    id: `capitol-street-${i}`, points: [[s.ax, s.ay], [s.bx, s.by]] as [number, number][],
+    width: s.width ?? 1.5, surface: s.alley ? "dirt" as const : "cobble" as const,
+  })),
+  { id: "harbour-town", points: softenRoad([[108, 570], [130, 595], [185, 610], [230, 610]]), width: 1.8, surface: "cobble" },
+  { id: "cottage-lane", points: softenRoad([[930, 475], [980, 500], [1015, 570], [1015, 675], [980, 675]]), width: 0.85, surface: "dirt" },
+  { id: "cottage-gate", points: [[980, 675], [980, 658]], width: 0.7, surface: "dirt" },
+  { id: "mine-trail", points: softenRoad([[1180, 1310], [1240, 1275], [1300, 1240], [1380, 1190]], 25), width: 0.7, surface: "dirt" },
+  { id: "woods-trail", points: softenRoad([[230, 310], [195, 300], [175, 280], [160, 270]], 18), width: 0.6, surface: "dirt" },
+  ...CAPITOL_SHOPS.filter(s => s.id !== "townhall").flatMap(s => [
+    { id: `${s.id}-walk`, points: [[s.x, 475], [s.x, 525]] as [number, number][], width: 0.85, surface: "cobble" as const },
+    { id: `${s.id}-apron`, points: [[s.x - 10, 525], [s.x + 10, 525]] as [number, number][], width: 0.65, surface: "cobble" as const },
+  ]),
+  ...[420, 490, 560, 660].map(x => ({ id: `exchange-walk-${x}`, points: [[x, 848], [x, 807]] as [number, number][], width: x === 560 ? 1.2 : 0.6, surface: "gravel" as const })),
+  ...TOWN_GRIDS.flatMap(grid => cellsOf(grid).map((cell, i) => {
+    const row = townStreets(grid).filter(s => s.ay === s.by && s.ay > cell.y).sort((a, b) => a.ay - b.ay)[0]!;
+    return { id: `${grid.id}-door-${i}`, points: [[cell.x, row.ay], [cell.x, cell.y + 20]] as [number, number][], width: 0.55, surface: "dirt" as const };
+  })),
 ];
 
 /** True when a point sits on the capitol's road. That ground is not for sale. */
@@ -143,26 +173,7 @@ export const ROAD_TOP = 0.36;
 
 /** Height to stand on when a point is on cobble, otherwise 0. */
 export function deckY(x: number, y: number) {
-  const near = (ax: number, ay: number, bx: number, by: number, half: number) => {
-    const dx = bx - ax;
-    const dy = by - ay;
-    const len2 = dx * dx + dy * dy || 1;
-    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2));
-    return Math.hypot(x - ax - dx * t, y - ay - dy * t) <= half;
-  };
-  for (const road of ROADS) {
-    for (let i = 1; i < road.points.length; i++) {
-      const a = road.points[i - 1]!;
-      const b = road.points[i]!;
-      if (near(a[0], a[1], b[0], b[1], 18)) return ROAD_TOP;
-    }
-  }
-  const segs = [...TOWN_GRIDS.flatMap((g) => townStreets(g)), ...capitolStreets()];
-  for (const s of segs) {
-    const world = s.width ?? (s.alley ? 0.85 : 1.8);
-    if (near(s.ax, s.ay, s.bx, s.by, world / 0.05 / 2)) return ROAD_TOP;
-  }
-  return 0;
+  return ROAD_NETWORK.some(road => nearRoad(x, y, road)) ? ROAD_TOP : 0;
 }
 
 function roadById(id: string) {
@@ -171,19 +182,24 @@ function roadById(id: string) {
 
 /** Waypoints from a town's gate to the capitol steps. */
 export function pathToCapitol(townId: string): [number, number][] {
-  const gate: [number, number] = [CAPITOL_GATE.x, CAPITOL_GATE.y];
   if (townId === "tideham") return roadById("tideham");
-  if (townId === "greenlane") return [...[...roadById("greenlane")].reverse(), gate];
+  if (townId === "greenlane") return [...roadById("greenlane")].reverse();
+  const appendTowardCapitol = (path: [number, number][], roadId: string) => {
+    const road = [...roadById(roadId)].reverse();
+    const end = path[path.length - 1]!;
+    let nearest = 0;
+    for (let i = 1; i < road.length; i++) {
+      if (Math.hypot(road[i]![0] - end[0], road[i]![1] - end[1]) < Math.hypot(road[nearest]![0] - end[0], road[nearest]![1] - end[1])) nearest = i;
+    }
+    return [...path, ...road.slice(nearest)];
+  };
   if (townId === "haven") {
     const haven = [...roadById("haven")].reverse();
-    const lane = [...roadById("greenlane")].reverse().slice(1);
-    return [...haven, ...lane, gate];
+    return appendTowardCapitol(haven, "greenlane");
   }
   if (townId === "sunstep") {
     const sun = [...roadById("sunstep")].reverse();
-    const haven = [...roadById("haven")].reverse().slice(1);
-    const lane = [...roadById("greenlane")].reverse().slice(1);
-    return [...sun, ...haven, ...lane, gate];
+    return appendTowardCapitol(appendTowardCapitol(sun, "haven"), "greenlane");
   }
   return [];
 }

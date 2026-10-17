@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { type MouseEvent as ReactMouseEvent } from "react";
 import { ISLAND_POLY, BEACH_POLY, DESERT_POLY, MOUNT_NOBLE } from "@/lib/game/world3";
-import { VILLAGES, ROADS } from "@/lib/game/data/country";
+import { VILLAGES, ROAD_NETWORK } from "@/lib/game/data/country";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { NPCS } from "@/lib/game/world";
 import { WORLD_PACK } from "@/lib/game/catalog";
@@ -67,13 +67,13 @@ export function Minimap({
         <polygon points={poly(BEACH_POLY)} fill="#eaddb0" />
         <polygon points={poly(DESERT_POLY)} fill="#e2b15a" />
         <polygon points={poly(ISLAND_POLY)} fill="#6f8f66" />
-        {ROADS.map((road) => (
+        {ROAD_NETWORK.map((road) => (
           <polyline
             key={road.id}
             points={road.points.map(([x, y]) => `${x},${y}`).join(" ")}
             fill="none"
-            stroke="#efe4cf"
-            strokeWidth={16}
+            stroke={road.surface === "cobble" ? "#efe4cf" : "#b9a47c"}
+            strokeWidth={Math.max(8, road.width / 0.05)}
             strokeLinejoin="round"
           />
         ))}
