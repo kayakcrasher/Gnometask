@@ -45,6 +45,29 @@ const result = await build({
       const tests=[];
       const test=(name,fn)=>{try{fn();tests.push(name);}catch(error){throw new Error(name+': '+error.message);}};
       try {
+        test('manual turns wait for a choice',()=>{
+          reset();state.combat=makeCombat('boar',state.hp,{skills:state.skills});
+          assert.equal(state.combat.autoAttack,false);armAutoAttack(get,800);advance(5000);
+          assert.equal(state.combat.phase,'player');assert.equal(state.combat.round,1);
+        });
+        test('power spends stamina and quick strikes restore it',()=>{
+          reset('captain');state.combat.enemyHp=100;state.combat.enemyMax=100;
+          state.combatAttack('power');const powerDamage=state.combat.splatOnEnemy;
+          assert.equal(state.combat.stamina,1);advance(900);
+          const hp=state.combat.enemyHp;state.combatAttack('power');
+          assert.equal(state.combat.phase,'player');assert.equal(state.combat.enemyHp,hp);assert.equal(state.combat.stamina,1);
+          state.combatAttack();assert.equal(state.combat.stamina,2);assert(powerDamage>state.combat.splatOnEnemy);
+          const spent=state.combat.stamina;state.combatAttack('power');assert.equal(state.combat.stamina,spent,'No double action while enemy acts');
+        });
+        test('guard restores stamina and prepares one accurate counter',()=>{
+          reset('captain');state.combat.enemyHp=100;state.combat.enemyMax=100;state.combat.stamina=0;
+          state.combatGuard();assert.equal(state.combat.stamina,2);advance(900);
+          assert(state.combat.counterReady);const hp=state.combat.enemyHp;
+          Math.random=()=>0.999;state.combatAttack('power');
+          assert(state.combat.enemyHp<hp,'Counter cannot miss');assert.equal(state.combat.counterReady,false);assert.equal(state.combat.stamina,0);
+          advance(900);assert.equal(state.combat.counterReady,false);state.combatAttack();assert.equal(state.combat.splatOnEnemy,'miss');
+          assert.equal(state.combat.stamina,1,'A missed quick strike still recovers stamina');
+        });
         test('telegraphed enemy patterns',()=>{
           assert.equal(enemyIntentFor('boar',1).kind,'strike');
           assert.equal(enemyIntentFor('boar',3).label,'Boar charge');

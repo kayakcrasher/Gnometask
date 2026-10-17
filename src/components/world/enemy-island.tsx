@@ -1,6 +1,7 @@
-import { Component, type ReactNode } from "react";
-import { Canvas } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
+import { Component, useRef, type ReactNode } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Html, OrbitControls } from "@react-three/drei";
+import type { Group } from "three";
 import { useGame } from "@/lib/game/store";
 import { ISLE_BY_ID, type IsleDef } from "@/lib/game/data/isles";
 import { ENEMIES, type EnemyId } from "@/lib/game/combat";
@@ -49,7 +50,7 @@ function Palm({ x, z }: { x: number; z: number }) {
 
 function Banner({ claimed, pirates }: { claimed: boolean; pirates: boolean }) {
   return (
-    <group position={[2.3, 0, -4.8]}>
+    <group position={[3, 0, -6.4]}>
       <mesh position={[0, 1.9, 0]}>
         <cylinderGeometry args={[0.04, 0.05, 3.8, 8]} />
         <meshStandardMaterial color="#7f5733" />
@@ -102,7 +103,7 @@ function Enemy({
   const pirate = kind === "pirate" || kind === "gunner" || kind === "captain";
   return (
     <group
-      position={[x * 0.03, 0, y * 0.03]}
+      position={[x * 0.04, 0, y * 0.04]}
       onClick={(e) => {
         e.stopPropagation();
         fight(id);
@@ -175,10 +176,32 @@ function Enemy({
   );
 }
 
+function IslandHero({ isle, hat }: { isle: IsleDef; hat: string }) {
+  const combat = useGame(s => s.combat);
+  const equipment = useGame(s => s.equipment);
+  const hero = useRef<Group>(null);
+  const targetId = combat?.islandTarget?.targetId;
+  const target = targetId === isle.boss.id ? isle.boss : isle.defenders.find(d => d.id === targetId);
+  useFrame((_, delta) => {
+    if (!hero.current) return;
+    const x = target ? target.x * 0.04 : 0;
+    const z = target ? target.y * 0.04 + 1.6 : 6;
+    const blend = 1 - Math.exp(-delta * 6);
+    hero.current.position.x += (x - hero.current.position.x) * blend;
+    hero.current.position.z += (z - hero.current.position.z) * blend;
+  });
+  return <group ref={hero} position={[0, 0.2, 6]} rotation={[0, Math.PI, 0]}>
+    <FighterMotion striking={Boolean(combat?.striking)} recoil={typeof combat?.splatOnPlayer === "number" && combat.splatOnPlayer > 0}>
+      <GnomeRig hat={hat} scale={0.95} coat="#405749" weapon={equipment.weapon} shield={equipment.shield} armor={equipment.armor} />
+    </FighterMotion>
+  </group>;
+}
+
 function IslandScene({ isle }: { isle: IsleDef }) {
   const progress = useGame((s) => s.raidProgress[isle.id]);
   const claim = useGame((s) => s.claimRaidChest);
   const hat = useGame((s) => s.hat);
+  const activeTarget = useGame(s => s.combat?.islandTarget?.targetId);
   const defeated = progress?.defeated ?? [];
   const claimed = Boolean(progress?.claimed);
   const remaining = isle.defenders.filter((d) => !defeated.includes(d.id));
@@ -190,11 +213,11 @@ function IslandScene({ isle }: { isle: IsleDef }) {
       <hemisphereLight args={["#f6ecd7", "#496774", 1.4]} />
       <directionalLight position={[8, 13, 7]} intensity={1.7} castShadow />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.46, 0]}>
-        <planeGeometry args={[150, 150]} />
+        <planeGeometry args={[500, 500]} />
         <meshStandardMaterial color="#2e8794" roughness={0.4} />
       </mesh>
       <mesh position={[0, -0.26, 0]} receiveShadow>
-        <cylinderGeometry args={[7.4, 8.1, 0.5, 48]} />
+        <cylinderGeometry args={[10, 10.9, 0.5, 48]} />
         <meshStandardMaterial color="#d9c79b" />
       </mesh>
       <mesh
@@ -202,48 +225,50 @@ function IslandScene({ isle }: { isle: IsleDef }) {
         position={[0, 0.01, -0.5]}
         receiveShadow
       >
-        <circleGeometry args={[6.6, 40]} />
+        <circleGeometry args={[8.9, 40]} />
         <meshStandardMaterial color={pirates ? "#87916b" : "#788568"} />
       </mesh>
-      <mesh position={[0, 0.14, 5.9]}>
-        <boxGeometry args={[1.6, 0.18, 3.5]} />
+      <mesh position={[0, 0.14, 8.6]}>
+        <boxGeometry args={[1.8, 0.18, 4.5]} />
         <meshStandardMaterial color="#916c45" />
       </mesh>
-      <group position={[-9, -0.38, 0.7]} rotation={[0, 0.25, 0]} scale={3}>
+      <group position={[-11.5, -0.38, 1]} rotation={[0, 0.25, 0]} scale={3}>
         <BoatMesh kind={pirates ? "sloop" : "goblin"} cannon />
       </group>
-      {[-5.5, 5.5].map((x) => (
-        <mesh key={x} position={[x, 0.8, -3.5]} castShadow>
-          <boxGeometry args={[0.2, 1.6, 5.4]} />
+      {[-7.3, 7.3].map((x) => (
+        <mesh key={x} position={[x, 0.8, -4.6]} castShadow>
+          <boxGeometry args={[0.2, 1.6, 7.2]} />
           <meshStandardMaterial color="#6c5945" />
         </mesh>
       ))}
-      {[-3.5, 3.5].map((x) => (
-        <mesh key={x} position={[x, 0.7, -3]} castShadow>
-          <boxGeometry args={[3.8, 1.4, 0.2]} />
+      {[-4.7, 4.7].map((x) => (
+        <mesh key={x} position={[x, 0.7, -4]} castShadow>
+          <boxGeometry args={[5, 1.4, 0.2]} />
           <meshStandardMaterial color="#7f6544" />
         </mesh>
       ))}
-      <mesh position={[0, 0.6, -6]} castShadow>
+      <mesh position={[0, 0.6, -8]} castShadow>
         <boxGeometry args={[3.1, 1.2, 1.25]} />
         <meshStandardMaterial color={pirates ? "#816250" : "#6c6b67"} />
       </mesh>
-      <mesh position={[0, 1.35, -6]} castShadow>
+      <mesh position={[0, 1.35, -8]} castShadow>
         <boxGeometry args={[3.4, 0.3, 1.5]} />
         <meshStandardMaterial color="#493b35" />
       </mesh>
       {[
-        [-5, 3.5],
-        [5, 3],
-        [-4, -4.5],
-        [4.9, -5],
+        [-7, 4.5],
+        [7, 4],
+        [-5.4, -6],
+        [6.5, -6.6],
+        [-8.1, 0.5],
+        [8.2, 0],
       ].map(([x, z], i) => (
         <Palm key={i} x={x!} z={z!} />
       ))}
       {[
-        [-3, 2.5],
-        [3, 2.8],
-        [4, -1],
+        [-4, 3.3],
+        [4, 3.7],
+        [5.3, -1.3],
       ].map(([x, z], i) => (
         <mesh key={i} position={[x!, 0.35, z!]} castShadow>
           <cylinderGeometry args={[0.3, 0.3, 0.7, 10]} />
@@ -251,7 +276,7 @@ function IslandScene({ isle }: { isle: IsleDef }) {
         </mesh>
       ))}
       <Banner claimed={claimed} pirates={pirates} />
-      {remaining.map((d, i) => (
+      {isle.defenders.filter(d => !defeated.includes(d.id) || activeTarget === d.id).map((d) => (
         <Enemy
           key={d.id}
           id={d.id}
@@ -261,7 +286,7 @@ function IslandScene({ isle }: { isle: IsleDef }) {
           y={d.y}
         />
       ))}
-      {!bossDown && (
+      {(!bossDown || activeTarget === isle.boss.id) && (
         <Enemy
           id={isle.boss.id}
           kind={isle.boss.kind}
@@ -273,7 +298,7 @@ function IslandScene({ isle }: { isle: IsleDef }) {
         />
       )}
       <group
-        position={[-2.3, 0.2, -5]}
+        position={[-3.1, 0.2, -6.7]}
         onClick={(e) => {
           e.stopPropagation();
           claim();
@@ -298,9 +323,8 @@ function IslandScene({ isle }: { isle: IsleDef }) {
           <pointLight color="#f1ce74" intensity={4} distance={4} />
         )}
       </group>
-      <group position={[0, 0.2, 4.5]} rotation={[0, Math.PI, 0]}>
-        <GnomeRig hat={hat} scale={0.95} coat="#405749" />
-      </group>
+      <IslandHero isle={isle} hat={hat} />
+      <OrbitControls makeDefault target={[0, 0, -0.5]} minDistance={12} maxDistance={48} minPolarAngle={0.25} maxPolarAngle={Math.PI / 2.3} enablePan={false} />
     </>
   );
 }
@@ -319,7 +343,7 @@ export function EnemyIsland() {
     <div className="fixed inset-0 z-30 bg-[#215466]">
       <SceneBoundary>
         <Canvas
-          camera={{ position: [10, 13, 18], fov: 44 }}
+          camera={{ position: [14, 19, 26], fov: 44 }}
           shadows
           onCreated={({ camera }) => camera.lookAt(0, 0, -0.5)}
         >
@@ -336,6 +360,7 @@ export function EnemyIsland() {
             Heart {s.combat?.playerHp ?? s.hp} · Food {s.honey + s.bread} ·
             Coins {s.coins}
           </p>
+          <p className="mt-1 text-[10px] text-bark/65">Drag to look around · pinch or scroll to zoom</p>
         </div>
         <button
           type="button"

@@ -25,6 +25,8 @@ export type EnemyId =
 export type PackEnemy = Exclude<EnemyId, "dragon" | "absence" | "goblin" | "darkelf">;
 
 export type CombatPhase = "player" | "enemy" | "won" | "lost";
+export type CombatMove = "quick" | "power";
+export const MAX_STAMINA = 3;
 
 export type Splat = number | "miss" | "heal";
 
@@ -35,6 +37,8 @@ export type CombatState = {
   round: number;
   autoAttack: boolean;
   guarding: boolean;
+  stamina: number;
+  counterReady: boolean;
   enemyIntent: EnemyIntent;
   rewardCoins: number;
   loot: { coins: number; bones: number } | null;
@@ -139,8 +143,10 @@ export function makeCombat(
     name: label,
     islandTarget: extra?.islandTarget,
     round: 1,
-    autoAttack: true,
+    autoAttack: false,
     guarding: false,
+    stamina: MAX_STAMINA,
+    counterReady: false,
     enemyIntent: enemyIntentFor(enemyId, 1),
     rewardCoins: scaled.coins,
     loot: null,

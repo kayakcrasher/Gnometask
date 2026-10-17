@@ -1,5 +1,5 @@
 import { Shield, Swords } from "lucide-react";
-import { ENEMIES } from "@/lib/game/combat";
+import { MAX_STAMINA } from "@/lib/game/combat";
 import { useGame } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 import { COMBAT_SKILLS, SKILL_LABEL, levelFromXp } from "@/lib/game/xp";
@@ -41,9 +41,14 @@ export function CombatView() {
           {!over && <button type="button" aria-pressed={combat.autoAttack} onClick={() => setAuto(!combat.autoAttack)} className={cn(button, "shrink-0", combat.autoAttack ? "bg-pine text-parchment" : "bg-parchment-dark text-ink")}>{combat.autoAttack ? "Auto: on" : "Auto: off"}</button>}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3"><Health label="You" value={combat.playerHp} max={combat.playerMax} /><Health label={who} value={combat.enemyHp} max={combat.enemyMax} enemy /></div>
+        {!over && <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-bold text-bark">
+          <span>Stamina {combat.stamina}/{MAX_STAMINA}</span>
+          <span className="flex gap-1" aria-hidden="true">{Array.from({length: MAX_STAMINA}, (_, i) => <span key={i} className={cn("h-2.5 w-5 rounded-full", i < combat.stamina ? "bg-gold" : "bg-bark/15")} />)}</span>
+          {combat.counterReady && <span className="rounded-full bg-pine px-2 py-1 text-parchment">Counter ready · guaranteed hit +2</span>}
+        </div>}
         {!over && <div className={cn("mt-3 flex items-start gap-2 rounded-xl p-2.5", heavy ? "bg-berry/10 text-berry" : "bg-parchment-dark/70 text-bark")}>
           {heavy ? <Shield className="mt-0.5 size-4 shrink-0" /> : <Swords className="mt-0.5 size-4 shrink-0" />}
-          <div><p className="text-xs font-bold">{busy ? "Incoming" : "Next enemy attack"}: {combat.enemyIntent.label}</p><p className="mt-0.5 text-[11px] font-semibold">{combat.guarding ? "Guard raised · the next hit deals 55% less damage." : heavy ? "A powerful attack is coming. Guard this turn to soften the hit." : "Attack, eat to recover, or guard to reduce the next hit."}</p></div>
+          <div><p className="text-xs font-bold">{busy ? "Incoming" : "Next enemy attack"}: {combat.enemyIntent.label}</p><p className="mt-0.5 text-[11px] font-semibold">{combat.guarding ? "Guard raised · 55% less damage, then a counterattack." : heavy ? "A powerful attack is coming. Guard to soften it and prepare a counter." : "Quick strikes recover stamina. Save power strikes for a counter."}</p></div>
         </div>}
         <p role="status" aria-live="polite" className="mt-2 rounded-xl bg-parchment-dark/50 px-3 py-2 text-xs font-semibold leading-relaxed text-ink">{combat.log}</p>
         {over ? <>
@@ -55,13 +60,16 @@ export function CombatView() {
             <summary className="cursor-pointer text-xs font-bold text-bark">Training: {SKILL_LABEL[style]} · change style</summary>
             <div className="mt-2 grid grid-cols-3 gap-1">{([['attack','Accurate hits'],['strength','Higher damage'],['defence','Less damage taken']] as const).map(([id,hint]) => <button key={id} type="button" aria-pressed={style === id} onClick={() => setStyle(id)} className={cn(button, style === id ? "bg-pine text-parchment" : "bg-parchment-dark text-ink")}><span className="block">{SKILL_LABEL[id]}</span><span className="block text-[9px] font-semibold opacity-75">{hint}</span></button>)}</div>
           </details>
-          <div className="mt-3 grid grid-cols-4 gap-1.5">
-            <button type="button" disabled={busy} onClick={attack} className={cn(button,"bg-berry text-parchment")}>Attack</button>
-            <button type="button" disabled={busy} onClick={guard} className={cn(button,"bg-pine text-parchment")}>Guard</button>
+          <div className="mt-3 grid grid-cols-3 gap-1.5">
+            <button type="button" disabled={busy} onClick={() => attack("quick")} className={cn(button,"bg-berry text-parchment")}>Quick strike<span className="block text-[10px] opacity-80">+1 stamina</span></button>
+            <button type="button" disabled={busy || combat.stamina < 2} onClick={() => attack("power")} className={cn(button,"bg-berry text-parchment")}>Power strike<span className="block text-[10px] opacity-80">−2 stamina · 1.75× hit</span></button>
+            <button type="button" disabled={busy} onClick={guard} className={cn(button,"bg-pine text-parchment")}>Guard<span className="block text-[10px] opacity-80">+2 stamina · counter</span></button>
+          </div>
+          <div className="mt-1.5 grid grid-cols-2 gap-1.5">
             <button type="button" disabled={busy || honey + bread < 1 || (!peaceful && combat.playerHp >= combat.playerMax)} onClick={eat} className={cn(button,"bg-gold text-ink")}>{peaceful ? "Offer cake" : `Eat (${honey + bread})`}</button>
             <button type="button" disabled={busy} onClick={flee} className={cn(button,"bg-parchment-dark text-ink")}>Flee</button>
           </div>
-          <p className="mt-2 text-center text-[10px] font-semibold text-bark/60">{combat.autoAttack ? "Auto attacks on your turn. Turn it off to choose each action." : "Manual combat · choose an action when your turn begins."}</p>
+          <p className="mt-2 text-center text-[10px] font-semibold text-bark/60">{combat.autoAttack ? "Auto uses quick strikes. Turn it off to guard or use power strikes." : "Eating uses your turn · fleeing can fail."}</p>
         </>}
       </section>
     </div>

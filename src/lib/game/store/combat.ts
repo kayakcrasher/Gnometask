@@ -1,6 +1,6 @@
 import { localDate } from "@/lib/utils";
 import { gearStats } from "../catalog";
-import { ENEMIES, enemyIntentFor, roll, type CombatState } from "../combat";
+import { MAX_STAMINA, enemyIntentFor, roll, type CombatState } from "../combat";
 import type { CombatStyle } from "../types";
 import { sfx } from "../juice";
 import { PLAYER_START, type GameSave } from "../types";
@@ -34,7 +34,6 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatSt
   const s = get();
   const live = s.combat;
   if (!live || live.id !== expected.id || live.phase !== "enemy") return;
-  const e = ENEMIES[live.enemyId];
   const who = live.enemyId === "dragon" ? s.lifeDragon.name : live.name;
   const intent = live.enemyIntent;
   const nextRound = live.round + 1;
@@ -42,9 +41,9 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatSt
   if (Math.random() > intent.accuracy) {
     set({ combat: {
       ...live, phase: "player", round: nextRound, enemyIntent: nextIntent,
-      guarding: false, striking: false, foeSwing: false,
+      guarding: false, counterReady: live.guarding || live.counterReady, striking: false, foeSwing: false,
       splatOnPlayer: "miss", splatOnEnemy: null, lastXp: {}, shake: live.shake + 1,
-      log: `${who}'s ${intent.label.toLowerCase()} misses.`,
+      log: `${who}'s ${intent.label.toLowerCase()} misses.${live.guarding ? " Counterattack ready." : ""}`,
     } });
     armAutoAttack(get, 1600);
     return;
@@ -75,8 +74,9 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatSt
     combat: {
       ...live, playerHp, playerMax: max, phase: lost ? "lost" : "player",
       round: nextRound, enemyIntent: nextIntent, guarding: false, striking: false, foeSwing: false,
+      counterReady: !lost && (live.guarding || live.counterReady),
       splatOnPlayer: taken, splatOnEnemy: null, sessionXp, lastXp: { defence: defGain },
-      shake: live.shake + 1, log,
+      shake: live.shake + 1, log: log + (live.guarding && !lost ? " Counterattack ready." : ""),
     },
     skills: gained.skills,
     hp: lost ? max : playerHp,
@@ -187,10 +187,17 @@ export function combatSlice(
   get: StoreGet,
 ): Pick<GameState, "combatAttack" | "combatGuard" | "setCombatAuto" | "combatEat" | "combatFlee" | "combatEnd" | "setCombatStyle"> {
   return {
-    combatAttack: () => {
+    combatAttack: (move = "quick") => {
       const s = get();
-      const c = s.combat;
-      if (!c || c.phase !== "player") return;
+      const current = s.combat;
+      if (!current || current.phase !== "player" || (move !== "quick" && move !== "power")) return;
+      const power = move === "power";
+      if (power && current.stamina < 2) {
+        set({ combat: { ...current, log: "Power strike needs 2 stamina. Quick strike or guard to recover." } });
+        return;
+      }
+      const counter = current.counterReady;
+      const c = { ...current, stamina: power ? current.stamina - 2 : Math.min(MAX_STAMINA, current.stamina + 1), counterReady: false };
       clearCombatTimer();
       const lv = levelsOf(s.skills);
       const weaponAtk = gearStats(s.equipment.weapon).atk;
@@ -200,6 +207,7 @@ export function combatSlice(
       let chance = hitChance(lv.attack + (style === "attack" ? 3 : 0), weaponAtk, c.enemyDef ?? 4);
       if (soft) chance = Math.max(chance, 0.9);
       if (style === "attack") chance = Math.min(0.97, chance + 0.08);
+      if (counter) chance = 1;
       if (Math.random() > chance) {
         sfx("error");
         const next: CombatState = {
@@ -210,7 +218,7 @@ export function combatSlice(
           splatOnEnemy: "miss",
           splatOnPlayer: null,
           lastXp: {},
-          log: "You miss.",
+          log: `${power ? "Power strike" : "Quick strike"} misses.`,
           shake: c.shake + 1,
         };
         set({ combat: next });
@@ -220,7 +228,8 @@ export function combatSlice(
       const cap =
         Math.max(soft ? 2 : 1, maxHit(lv.strength + (style === "strength" ? 3 : 0), weaponAtk, vsDragon ? s.fortLevel : 0)) +
         (style === "strength" ? 1 : 0);
-      const rolledDamage = Math.max(soft ? 2 : 1, roll(1, cap) + (vsDragon ? Math.floor(s.fortLevel / 2) : 0));
+      const baseDamage = Math.max(soft ? 2 : 1, roll(1, cap) + (vsDragon ? Math.floor(s.fortLevel / 2) : 0));
+      const rolledDamage = (power ? Math.ceil(baseDamage * 1.75) : baseDamage) + (counter ? 2 : 0);
       const dmg = Math.min(c.enemyHp, rolledDamage);
       const crit = rolledDamage >= cap && cap > 2;
       const enemyHp = Math.max(0, c.enemyHp - dmg);
@@ -248,7 +257,6 @@ export function combatSlice(
         set({ lifeDragon: { ...s.lifeDragon, hp: enemyHp } });
       }
       if (enemyHp <= 0) {
-        const e = ENEMIES[c.enemyId];
         const who = c.enemyId === "dragon" ? s.lifeDragon.name : c.name;
         clearCombatTimer();
         set({ skills: gained.skills, hp: Math.min(playerHp, playerMax) });
@@ -283,7 +291,7 @@ export function combatSlice(
         splatOnPlayer: null,
         sessionXp,
         lastXp,
-        log: (crit ? `Critical! You hit ${dmg}.` : `You hit ${dmg}.`) + xpBit + dingBit,
+        log: `${counter ? "Counter! " : ""}${power ? "Power strike" : "Quick strike"} hits for ${dmg}.${crit ? " Critical!" : ""}` + xpBit + dingBit,
         shake: c.shake + 1,
       };
       set({ combat: next, skills: gained.skills, hp: Math.min(playerHp, playerMax) });
@@ -295,7 +303,8 @@ export function combatSlice(
       if (!c || c.phase !== "player") return;
       clearCombatTimer();
       const next: CombatState = { ...c, phase: "enemy", guarding: true, striking: false,
-        foeSwing: false, splatOnEnemy: null, splatOnPlayer: null, lastXp: {}, log: "You brace. The next hit deals 55% less damage." };
+        stamina: Math.min(MAX_STAMINA, c.stamina + 2),
+        foeSwing: false, splatOnEnemy: null, splatOnPlayer: null, lastXp: {}, log: "Guard raised. +2 stamina, 55% less damage, then an accurate counter with +2 damage." };
       set({ combat: next });
       windUpFoe(get, set, next);
     },
