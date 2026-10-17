@@ -1,5 +1,6 @@
+import type { MultiPolygon } from "polygon-clipping";
 import { NPCS } from "./npcs";
-import { onCapitolRoad } from "./country";
+import { parcelLand, landArea } from "../land-planning";
 import { onDesert, onGrass } from "../world3";
 
 export type Parcel = {
@@ -12,6 +13,9 @@ export type Parcel = {
   /** Gnome who holds this ground. Private property. Not for sale. */
   owner: string | null;
   ownerName: string | null;
+  usableArea?: number;
+  land?: MultiPolygon;
+  northern?: boolean;
 };
 
 const HOMES: { npc: string; x: number; y: number }[] = [
@@ -38,7 +42,7 @@ function buildParcels(): Parcel[] {
       const npc = home ? NPCS.find((n) => n.id === home.npc) : undefined;
       const far = Math.hypot(x - 280, y - 520) / 90;
       const price = Math.round((18 + far * 6) * (npc ? 2 : 1));
-      const road = onCapitolRoad(x + w / 2, y + h / 2, 100);
+
       out.push({
         id,
         x,
@@ -46,17 +50,17 @@ function buildParcels(): Parcel[] {
         w,
         h,
         price,
-        owner: road ? "capitol" : (npc?.id ?? null),
-        ownerName: road ? "The Capitol" : (npc?.shortName ?? npc?.name ?? null),
+        owner: npc?.id ?? null,
+        ownerName: npc?.shortName ?? npc?.name ?? null,
       });
     }
   }
-  for (let x = 2560; x <= 3400; x += w) {
+  for (let x = 2560; x <= 4200; x += w) {
     for (let y = 320; y <= 1100; y += h) {
       const cx = x + w / 2;
       const cy = y + h / 2;
       if (!onDesert(cx, cy)) continue;
-      const road = onCapitolRoad(cx, cy, 100);
+
       const far = Math.hypot(x - 280, y - 520) / 90;
       out.push({
         id: `d-${x}-${y}`,
@@ -65,12 +69,16 @@ function buildParcels(): Parcel[] {
         w,
         h,
         price: Math.round(22 + far * 5),
-        owner: road ? "capitol" : null,
-        ownerName: road ? "The Capitol" : null,
+        owner: null,
+        ownerName: null,
       });
     }
   }
-  return out;
+  for(let x=1060;x<=1960;x+=180)for(let y=-680;y<=-320;y+=140){
+    if(!onGrass(x+80,y+60))continue;
+    out.push({id:`n-${x}-${y}`,x,y,w:170,h:130,price:Math.round(180+Math.hypot(x-1500,y+500)/3),owner:null,ownerName:null,northern:true});
+  }
+  return out.map(p=>{const land=parcelLand(p);return {...p,land,usableArea:landArea(land)};});
 }
 
 export const PARCELS: Parcel[] = buildParcels();

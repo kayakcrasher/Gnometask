@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { developedRoads } from "@/lib/game/land-planning";
+import { useMemo, useState } from "react";
 import { type MouseEvent as ReactMouseEvent } from "react";
 import { ISLAND_POLY, BEACH_POLY, DESERT_POLY, MOUNT_NOBLE } from "@/lib/game/world3";
-import { VILLAGES, ROAD_NETWORK } from "@/lib/game/data/country";
+import { VILLAGES } from "@/lib/game/data/country";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
 import { NPCS } from "@/lib/game/world";
 import { WORLD_PACK } from "@/lib/game/catalog";
@@ -11,7 +12,7 @@ import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
 const VW = 4700;
-const VH = 1800;
+const VH = 2800;
 
 function poly(pts: [number, number][]) {
   return pts.map(([x, y]) => `${x},${y}`).join(" ");
@@ -30,6 +31,8 @@ export function Minimap({
   npcPoses: Record<string, NpcPose>;
   compassRef: { current: HTMLDivElement | null };
 }) {
+  const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate);
+  const roads=useMemo(()=>developedRoads(works,estate),[works,estate]);
   const travel = useGame((s) => s.travelIsle);
   const [deedsOpen, setDeedsOpen] = useState(false);
   const cleared = useGame((s) => s.clearedPack);
@@ -40,7 +43,7 @@ export function Minimap({
     const svg = e.currentTarget;
     const r = svg.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * VW;
-    const y = ((e.clientY - r.top) / r.height) * VH;
+    const y = ((e.clientY - r.top) / r.height) * VH - 900;
     walkTo(x, y);
   };
   return (
@@ -59,15 +62,16 @@ export function Minimap({
         </div>
       </div>
       <svg
-        viewBox={`0 0 ${VW} ${VH}`}
+        viewBox={`0 -900 ${VW} ${VH}`}
         className="h-20 w-20 cursor-pointer rounded-full bg-water-deep shadow-panel ring-2 ring-parchment md:h-28 md:w-28"
         onClick={onClick}
+        preserveAspectRatio="none"
         aria-label="Island map. Click to walk."
       >
         <polygon points={poly(BEACH_POLY)} fill="#eaddb0" />
         <polygon points={poly(DESERT_POLY)} fill="#e2b15a" />
         <polygon points={poly(ISLAND_POLY)} fill="#6f8f66" />
-        {ROAD_NETWORK.map((road) => (
+        {roads.map((road) => (
           <polyline
             key={road.id}
             points={road.points.map(([x, y]) => `${x},${y}`).join(" ")}

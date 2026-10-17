@@ -87,6 +87,8 @@ export function snap(s: GameSave): GameSave {
     logs: s.logs,
     saplings: s.saplings,
     deeds: s.deeds,
+    estate: s.estate,
+    roadWorks: s.roadWorks,
     shares: s.shares,
     waveDay: s.waveDay,
     bones: s.bones,

@@ -1,3 +1,4 @@
+import { developmentSlice } from "./development";
 import { islandsSlice } from "./islands";
 import { clockSlice } from "./clock";
 import { combatSlice } from "./combat";
@@ -23,6 +24,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...UI_SEED,
   speech: GREETS[0]!,
   ...sessionSlice(set, get),
+  ...developmentSlice(set, get),
   ...tasksSlice(set, get),
   ...economySlice(set, get),
   ...worldSlice(set, get),

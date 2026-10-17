@@ -1,3 +1,8 @@
+import { developmentLevel } from "./development";
+import { npcBuildAllowed, openFrontier } from "./town-planning";
+import { coerceRoadWorks } from "./data/expansion";
+import { parcelAt } from "./data/parcels";
+import { buildingSiteClear, insideParcel } from "./land-planning";
 import { NPCS } from "./data/npcs";
 import { localDate, yesterdayDate } from "@/lib/utils";
 import { maxHitpoints } from "./xp";
@@ -16,7 +21,7 @@ import { totalDividend } from "./data/market";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -83,6 +88,8 @@ export function defaultSave(): GameSave {
     logs: 0,
     saplings: 0,
     deeds: [],
+    estate: {},
+    roadWorks: {completed:[],active:null},
     shares: {},
     waveDay: 0,
     bones: 0,
@@ -336,6 +343,10 @@ export function migrate(raw: unknown): GameSave {
     logs: typeof s.logs === "number" ? s.logs : 0,
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: asStringArray(s.deeds, []),
+    roadWorks: coerceRoadWorks(s.roadWorks),
+    estate: Object.fromEntries(Object.entries(s.estate && typeof s.estate === "object" ? s.estate : {}).filter(([id,h]) => {
+      const p=parcelAt(id);return p && asStringArray(s.deeds,[]).includes(id) && h && Number.isFinite(h.x) && Number.isFinite(h.y) && Number.isInteger(h.level) && h.level>=1 && h.level<=3 && insideParcel(p,h.x,h.y) && buildingSiteClear(h.x,h.y);
+    })),
     shares: asFishBag(s.shares),
     waveDay: typeof s.waveDay === "number" ? Math.max(0, Math.floor(s.waveDay)) : 0,
     bones: typeof s.bones === "number" ? s.bones : 0,
@@ -495,9 +506,9 @@ export function applyDailyRollover(save: GameSave): GameSave {
   ),
   );
   const grown = growFolk(rolled, true);
-  let civic = stepCivic(rolled.civic, rolled.daysPlayed);
+  let civic = stepCivic(openFrontier(rolled.civic,rolled.roadWorks.completed), rolled.daysPlayed, developmentLevel(rolled), p=>npcBuildAllowed(rolled,p));
   const extra = Math.min(2, Math.max(0, missed - 1));
-  for (let i = 0; i < extra; i++) civic = stepCivic(civic, rolled.daysPlayed);
+  for (let i = 0; i < extra; i++) civic = stepCivic(civic, rolled.daysPlayed, developmentLevel(rolled), p=>npcBuildAllowed({...rolled,civic},p));
   const dividend = totalDividend(rolled.daysPlayed, rolled.shares);
     return { ...rolled, coins: rolled.coins + grown.wage + dividend, settlers: grown.settlers, placed: grown.placed, civic };
 }

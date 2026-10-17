@@ -281,22 +281,22 @@ function ownedHomes(plots: CivicPlot[], id: string) {
   return plots.filter((p) => p.owner === id && !p.rental);
 }
 
-function tryCivic(actor: CivicGnome, gnomes: CivicGnome[], plots: CivicPlot[]): string | null {
+function tryCivic(actor: CivicGnome, gnomes: CivicGnome[], plots: CivicPlot[], economy: number): string | null {
   const homes = ownedHomes(plots, actor.id);
   const rental = plots.find((p) => p.owner === actor.id && p.rental);
   const sharesHeld = plots.filter((p) => p.shares.includes(actor.id)).length;
   const town = actor.town;
   const label = TOWN_LABEL[town];
 
-  const short = homes.find((p) => p.stories > 0 && p.stories < Math.min(3, actor.family));
-  if (short && actor.purse >= STORY) {
+  const short = homes.find((p) => p.stories > 0 && p.stories < Math.min(5, Math.max(Math.min(3, actor.family), 1 + economy)));
+  if (short && economy > 0 && actor.purse >= STORY + 10) {
     actor.purse -= STORY;
     short.stories += 1;
     return `${actor.name} added a story in ${TOWN_LABEL[short.town]}. The new family needed the room.`;
   }
 
   const mine = plots.find((p) => p.shares.includes(actor.id) && p.stories === 0);
-  if (mine && homes.length < 2 && mine.shares.length >= 2 && actor.purse >= HOUSE) {
+  if (mine && economy > 0 && homes.length < 2 && mine.shares.length >= 2 && actor.purse >= HOUSE + 10) {
     actor.purse -= HOUSE;
     mine.stories = 1;
     mine.owner = actor.id;
@@ -304,7 +304,7 @@ function tryCivic(actor: CivicGnome, gnomes: CivicGnome[], plots: CivicPlot[]): 
     return `${mine.shares.length} gnomes split a plot in ${TOWN_LABEL[mine.town]}. ${actor.name} paid for the timber.`;
   }
 
-  if (homes.length >= 2 && !rental && actor.purse >= SHARE + HOUSE) {
+  if (economy >= 2 && homes.length >= 2 && !rental && actor.purse >= SHARE + HOUSE + 10) {
     const lot = plots.find((p) => p.stories === 0 && p.shares.length === 0);
     if (lot) {
       actor.purse -= SHARE + HOUSE;
@@ -323,7 +323,7 @@ function tryCivic(actor: CivicGnome, gnomes: CivicGnome[], plots: CivicPlot[]): 
     if (seat) {
       actor.purse -= SHARE;
       seat.shares.push(actor.id);
-      if (seat.stories === 0 && seat.shares.length >= 2 && actor.purse >= HOUSE) {
+      if (economy > 0 && seat.stories === 0 && seat.shares.length >= 2 && actor.purse >= HOUSE + 10) {
         actor.purse -= HOUSE;
         seat.stories = 1;
         seat.owner = actor.id;
@@ -473,7 +473,7 @@ function spawnCruiseNewcomer(beat: number): CivicGnome {
 
 // --- The civic beat ------------------------------------------------------
 
-export function stepCivic(state: CivicState, days: number): CivicState {
+export function stepCivic(state: CivicState, days: number, economy = 1, canBuild: (plot: CivicPlot) => boolean = () => true): CivicState {
   const gnomes = state.gnomes.map((g) => ({ ...g }));
   const plots = state.plots.map((p) => ({ ...p, shares: [...p.shares], trim: [...(p.trim ?? [])] }));
   const beat = state.beat + 1;
@@ -483,7 +483,7 @@ export function stepCivic(state: CivicState, days: number): CivicState {
   const word = wordFor(days, beat);
   let news: string | null = null;
   let jarsSold = state.jarsSold;
-  if (actor.good) actor.purse += 6 + actor.family;
+  if (actor.good) actor.purse += 6 + actor.family + economy * 2;
   else actor.purse += 2;
 
   if (!actor.good) {
@@ -491,7 +491,7 @@ export function stepCivic(state: CivicState, days: number): CivicState {
     news = still.news;
     if (still.sold) jarsSold += 1;
   } else {
-    news = tryCivic(actor, gnomes, plots);
+    news = tryCivic(actor, gnomes, plots.filter(p => p.stories > 0 || canBuild(p)), economy);
     const hasRoof = plots.some((p) => p.owner === actor.id);
     if (hasRoof && actor.family < 4 && hash(`${beat}:fam:${actor.id}`) % 5 === 0) {
       actor.family += 1;
@@ -569,7 +569,7 @@ export function stepCivic(state: CivicState, days: number): CivicState {
   if (visitors.length && beat % NEWCOMER_ACT_EVERY === 0) {
     const idx = Math.floor(beat / NEWCOMER_ACT_EVERY) % visitors.length;
     const visitor = visitors[idx]!;
-    const line = tryNewcomer(visitor, { ...state, gnomes, plots }, beat);
+    const line = tryNewcomer(visitor, { ...state, gnomes, plots: plots.filter(p=>p.stories>0 || canBuild(p)) }, beat);
     if (line) {
       news = news ?? line;
       visitor.line = line;
@@ -710,7 +710,7 @@ export function coerceCivic(raw: unknown, days: number): CivicState {
         y: typeof p.y === "number" ? p.y : 0,
         shares,
         lantern: Boolean(p.lantern),
-        stories: typeof p.stories === "number" ? Math.max(0, Math.min(3, Math.floor(p.stories))) : 0,
+        stories: typeof p.stories === "number" ? Math.max(0, Math.min(5, Math.floor(p.stories))) : 0,
         owner: typeof p.owner === "string" ? p.owner : null,
         rental: Boolean(p.rental),
         trim: Array.isArray(p.trim) ? p.trim.filter((id) => typeof id === "string").slice(0, 4) : [],

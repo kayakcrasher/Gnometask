@@ -62,7 +62,7 @@ export function gatherSlice(
       const wc = gearStats(hatchet).wc || 1;
       const xp = 18 + wc * 8;
       const gained = withXp(s.skills, { woodcutting: xp });
-      const logs = logsFor(spot);
+      const logs = logsFor(spot) + Math.floor(Math.max(0,wc-1)/3);
       const nextLogs = s.logs + logs;
       const quests = s.quests.map((q) =>
         q.id === "pappy-timber" && q.stage === "active" ? { ...q, stage: "ready" as const } : q,

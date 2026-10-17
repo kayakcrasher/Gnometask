@@ -1,3 +1,6 @@
+import { useMemo } from "react";
+import { developedRoads } from "@/lib/game/land-planning";
+import { nearRoad } from "@/lib/game/data/road-layout";
 import { Html } from "@react-three/drei";
 import { Kenney } from "./kenney";
 import { BoatMesh } from "./boats";
@@ -40,11 +43,13 @@ export function Trees3({
   onTree: (id: string, x: number, y: number) => void;
 }) {
   const trees = useGame((s) => s.trees);
+  const estate=useGame(s=>s.estate),works=useGame(s=>s.roadWorks);
+  const roads=useMemo(()=>developedRoads(works,estate),[works,estate]);
   const now = Date.now();
   return (
     <group>
       {TREE_SPOTS.map((t) => {
-        if (deckY(t.x, t.y) > 0 || inTownPlot(t.x, t.y)) return null;
+        if (deckY(t.x, t.y) > 0 || inTownPlot(t.x, t.y) || roads.some(r=>nearRoad(t.x,t.y,r,6)) || Object.values(estate).some(h=>Math.abs(h.x-t.x)<32&&Math.abs(h.y-t.y)<29)) return null;
         const stage = treeStageOf(trees[t.id], now);
         const p = to3(t.x, t.y, groundY(t.x, t.y));
         if (stage === "gone") {

@@ -15,9 +15,14 @@ export type NpcHome = {
 export type NpcActivity =
   "working" | "patrolling" | "visiting" | "resting" | "chatting";
 export type WalkPoint = { x: number; y: number };
+export type NpcObstacle = WalkPoint & { w: number; h: number };
 const BUILDINGS = [
-  ...COURTS.map(c => ({...c, w: c.town === "capitol" ? 90 : 28, h: c.town === "capitol" ? 62 : 24})),
-  ...PUBS.map(p => ({...p, w: 24, h: 19})),
+  ...COURTS.map((c) => ({
+    ...c,
+    w: c.town === "capitol" ? 90 : 28,
+    h: c.town === "capitol" ? 62 : 24,
+  })),
+  ...PUBS.map((p) => ({ ...p, w: 24, h: 19 })),
   { ...SUNSTEP_FEATURES.hotel, w: 35, h: 25 },
   ...CAPITOL_SHOPS.map((p) => ({
     ...p,
@@ -29,7 +34,11 @@ const BUILDINGS = [
   { x: 560, y: 790, w: 30, h: 23 },
   ...[420, 490, 660].map((x) => ({ x, y: 790, w: 22, h: 19 })),
 ];
-export function npcWalkable(x: number, y: number) {
+export function npcWalkable(
+  x: number,
+  y: number,
+  obstacles: NpcObstacle[] = [],
+) {
   return (
     Number.isFinite(x) &&
     Number.isFinite(y) &&
@@ -41,33 +50,43 @@ export function npcWalkable(x: number, y: number) {
     ) > 52 &&
     Math.hypot(x - SUNSTEP_FEATURES.oasis.x, y - SUNSTEP_FEATURES.oasis.y) >
       60 &&
+    !obstacles.some(
+      (b) => Math.abs(x - b.x) < b.w + 5 && Math.abs(y - b.y) < b.h + 5,
+    ) &&
     !BUILDINGS.some(
       (b) => Math.abs(x - b.x) < b.w + 5 && Math.abs(y - b.y) < b.h + 5,
     )
   );
 }
-export function clearNpcSegment(a: WalkPoint, b: WalkPoint) {
+export function clearNpcSegment(
+  a: WalkPoint,
+  b: WalkPoint,
+  obstacles: NpcObstacle[] = [],
+) {
   const distance = Math.hypot(b.x - a.x, b.y - a.y),
     steps = Math.max(1, Math.ceil(distance / 5));
   for (let i = 0; i <= steps; i++) {
     const x = a.x + ((b.x - a.x) * i) / steps,
       y = a.y + ((b.y - a.y) * i) / steps;
-    if (!npcWalkable(x, y)) return false;
+    if (!npcWalkable(x, y, obstacles)) return false;
   }
   return (
     Math.abs(nobleRise(a.x, a.y) - nobleRise(b.x, b.y)) <
     Math.max(0.8, distance * 0.06)
   );
 }
-export function safeNpcSpot(point: WalkPoint): WalkPoint {
-  if (npcWalkable(point.x, point.y)) return point;
+export function safeNpcSpot(
+  point: WalkPoint,
+  obstacles: NpcObstacle[] = [],
+): WalkPoint {
+  if (npcWalkable(point.x, point.y, obstacles)) return point;
   for (let radius = 8; radius <= 160; radius += 8)
     for (let i = 0; i < 16; i++) {
       const candidate = {
         x: point.x + Math.cos((i * Math.PI) / 8) * radius,
         y: point.y + Math.sin((i * Math.PI) / 8) * radius,
       };
-      if (npcWalkable(candidate.x, candidate.y)) return candidate;
+      if (npcWalkable(candidate.x, candidate.y, obstacles)) return candidate;
     }
   return point;
 }
@@ -75,10 +94,14 @@ export function safeNpcSpot(point: WalkPoint): WalkPoint {
 export function npcRoute(
   start: WalkPoint,
   goal: WalkPoint,
+  obstacles: NpcObstacle[] = [],
 ): WalkPoint[] | null {
-  if (!npcWalkable(start.x, start.y) || !npcWalkable(goal.x, goal.y))
+  if (
+    !npcWalkable(start.x, start.y, obstacles) ||
+    !npcWalkable(goal.x, goal.y, obstacles)
+  )
     return null;
-  if (clearNpcSegment(start, goal)) return [goal];
+  if (clearNpcSegment(start, goal, obstacles)) return [goal];
   const grid = 18,
     key = (x: number, y: number) => `${x},${y}`;
   type Node = WalkPoint & { cost: number; score: number; parent?: Node };
@@ -95,7 +118,7 @@ export function npcRoute(
     const current = open.pop()!;
     if (
       Math.hypot(current.x - goal.x, current.y - goal.y) < grid * 2 &&
-      clearNpcSegment(current, goal)
+      clearNpcSegment(current, goal, obstacles)
     ) {
       const path: WalkPoint[] = [goal];
       let node: Node | undefined = current;
@@ -119,7 +142,7 @@ export function npcRoute(
       const next = { x: current.x + dx! * grid, y: current.y + dy! * grid };
       if (
         Math.hypot(next.x - start.x, next.y - start.y) > 360 ||
-        !clearNpcSegment(current, next)
+        !clearNpcSegment(current, next, obstacles)
       )
         continue;
       const id = key(
@@ -146,6 +169,7 @@ export function npcRoutine(
   home: NpcHome,
   phase: DayPhase,
   cycle: number,
+  obstacles: NpcObstacle[] = [],
 ): { point: WalkPoint; activity: NpcActivity; wait: number } {
   const seed = hash(home.id) + cycle * 97;
   const guard = /guard|watch|soldier/i.test(home.job ?? "");
@@ -161,7 +185,11 @@ export function npcRoutine(
             ? "chatting"
             : "working";
   if (activity === "resting")
-    return { point: safeNpcSpot(home), activity, wait: 12 + (seed % 7) };
+    return {
+      point: safeNpcSpot(home, obstacles),
+      activity,
+      wait: 12 + (seed % 7),
+    };
   const radius = home.stay ? 12 : activity === "working" ? 35 : 140;
   const angle = ((seed % 360) * Math.PI) / 180;
   let point = {
@@ -190,12 +218,16 @@ export function npcRoutine(
         if (
           d < distance &&
           Math.hypot(p.x - home.x, p.y - home.y) < 200 &&
-          npcWalkable(p.x, p.y)
+          npcWalkable(p.x, p.y, obstacles)
         ) {
           point = p;
           distance = d;
         }
       }
   }
-  return { point: safeNpcSpot(point), activity, wait: 4 + (seed % 7) };
+  return {
+    point: safeNpcSpot(point, obstacles),
+    activity,
+    wait: 4 + (seed % 7),
+  };
 }

@@ -134,7 +134,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
     if (state.combat || state.atHome || state.interior || state.abroad || state.fishing) return;
     const sea = Boolean(state.afloat);
     const nx = clamp(x, sea ? SEA_BOUNDS.minX : 20, sea ? SEA_BOUNDS.maxX : 4550);
-    const ny = clamp(y, sea ? SEA_BOUNDS.minY : -220, sea ? SEA_BOUNDS.maxY : 1560);
+    const ny = clamp(y, sea ? SEA_BOUNDS.minY : -850, sea ? SEA_BOUNDS.maxY : 1560);
     const spot = nearestLegal(sea, nx, ny);
     if (!spot) { stop(); return; }
     const route = sea ? seaRoute(posRef.current, spot) : [spot];

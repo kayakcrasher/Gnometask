@@ -1,4 +1,5 @@
-import { CROP_BY_ID, CROPS, pailBonusMs, type CropId } from "../data/crops";
+import { harvestYield } from "../data/catalog";
+import { CROP_BY_ID, CROPS, pailBonusMs, plotStage, type CropId } from "../data/crops";
 import { sfx } from "../juice";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
@@ -66,15 +67,17 @@ export function farmSlice(
       if (!plot) return;
       const crop = CROP_BY_ID[plot.crop];
       if (!crop) return;
+      if(plotStage(plot,Date.now(),pailBonusMs(s.ownedGear)??0)!=="ready"){set({speech:"That crop is not ripe yet."});return;}
       const next = { ...s.plots };
       delete next[plotId];
+      const yieldCount = harvestYield(s.ownedGear);
       const gained = withXp(s.skills, { farming: crop.xp });
       set({
         plots: next,
-        produce: { ...s.produce, [plot.crop]: countOf(s.produce, plot.crop) + 1 },
+        produce: { ...s.produce, [plot.crop]: countOf(s.produce, plot.crop) + yieldCount },
         skills: gained.skills,
         popup: null,
-        speech: gained.ding ?? `A ${crop.name.toLowerCase()} for the sack. Sell it at the builder's yard. +${crop.xp} Farming.`,
+        speech: gained.ding ?? `Harvested ${yieldCount} ${crop.name.toLowerCase()} for the sack. Sell it at the builder's yard. +${crop.xp} Farming.`,
       });
       sfx("buy");
       scheduleWrite(get);

@@ -1,3 +1,4 @@
+import { EstateHomes, RoadCrew, NorthernScenery } from "./development";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import {
@@ -253,6 +254,9 @@ function SceneBody({
       <MountNoble onWalk={onWalk} />
       <Sunstep />
       <CountryRoads />
+      <EstateHomes />
+      <RoadCrew />
+      <NorthernScenery />
       <SupplyRunners />
       <Npcs3
         poses={npcPoses}

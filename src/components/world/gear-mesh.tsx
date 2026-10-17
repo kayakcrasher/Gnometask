@@ -1,6 +1,6 @@
-import { TIER_META, tierOf, type GearTier } from "@/lib/game/data/tiers";
+import { TIER_META, tierOf, type VisualTier } from "@/lib/game/data/tiers";
 
-function metal(id: string | null | undefined): GearTier {
+function metal(id: string | null | undefined): VisualTier {
   return tierOf(id) ?? "wood";
 }
 
@@ -20,6 +20,7 @@ export function SwordMesh({ id, striking }: { id: string | null; striking?: bool
         <boxGeometry args={[0.07, 0.5, 0.045]} />
         <meshStandardMaterial color={t.metal} metalness={0.75} roughness={0.28} />
       </mesh>
+      {id && /mithril|starsteel|dragonsteel/.test(id) && <mesh position={[0,0.2,0.04]}><octahedronGeometry args={[0.065,0]}/><meshStandardMaterial color={t.edge} emissive={t.metal} emissiveIntensity={0.5}/></mesh>}
       <mesh position={[0, 0.68, 0]} castShadow>
         <boxGeometry args={[0.028, 0.08, 0.014]} />
         <meshStandardMaterial color={t.edge} metalness={0.8} roughness={0.2} />

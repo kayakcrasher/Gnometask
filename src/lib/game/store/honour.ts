@@ -1,3 +1,4 @@
+import { civicParcelOwner } from "../land-planning";
 import { BOAT_LOANS, LAND_OFFERS, rolledChart } from "../data/honour";
 import { parcelAt } from "../data/parcels";
 import { STOCKS } from "../data/market";
@@ -97,13 +98,14 @@ export function honourSlice(
         set({ speech: "You already hold that ground." });
         return;
       }
-      if (tile.owner) {
+      const residentOwner = civicParcelOwner(tile,s.civic);
+      if (tile.owner || residentOwner) {
         sfx("error");
         set({
           speech:
             tile.owner === "capitol"
               ? "The capitol holds the road. That ground is not for sale."
-              : `${tile.ownerName ?? "That gnome"} holds this. Private property is sacred. The old law does not sell a neighbour's floor.`,
+              : `${tile.ownerName ?? residentOwner ?? "That gnome"} holds this. Private property is sacred. The old law does not sell a neighbour's floor.`,
         });
         return;
       }
@@ -129,6 +131,7 @@ export function honourSlice(
         set({ speech: "That deed is not in your name." });
         return;
       }
+      if(s.estate[id]){set({speech:"This deed has your home on it. Built homes are not sold with bare land."});return;}
       const pay = Math.max(1, Math.floor(tile.price * 0.7));
       set({
         deeds: s.deeds.filter((d) => d !== id),

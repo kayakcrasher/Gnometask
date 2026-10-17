@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "check:development": "node scripts/check-development.mjs",
     "check:world": "node scripts/check-world-upgrade.mjs",
     "check:roads": "node scripts/check-roads.mjs",
     "check:market": "node scripts/check-market.mjs",

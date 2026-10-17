@@ -1,3 +1,4 @@
+import { PLANNED_ROADS } from "./expansion";
 import { CAPITOL_GATE, CAPITOL_HALL, CAPITOL_SHOPS, capitolStreets, cellsOf, townGate, townGrid, townStreets, TOWN_GRIDS } from "./grids";
 import { nearRoad, softenRoad, type RoadRoute } from "./road-layout";
 
@@ -125,6 +126,7 @@ export const ROADS: { id: string; points: [number, number][] }[] = [
 
 /** One map-space network for rendering, standing height, and the fallback map. Widths are world units. */
 export const ROAD_NETWORK: RoadRoute[] = [
+  ...PLANNED_ROADS.map(r => ({...r, width:0.45, surface:"dirt" as const})),
   ...ROADS.map(r => ({ ...r, width: 2.1, surface: "cobble" as const })),
   ...TOWN_GRIDS.flatMap(grid => townStreets(grid).map((s, i) => ({
     id: `${grid.id}-street-${i}`, points: [[s.ax, s.ay], [s.bx, s.by]] as [number, number][],
@@ -154,22 +156,9 @@ export const ROAD_NETWORK: RoadRoute[] = [
   })),
 ];
 
-/** True when a point sits on the capitol's road. That ground is not for sale. */
-export function onCapitolRoad(x: number, y: number, reach = 70) {
-  for (const road of ROADS) {
-    for (let i = 1; i < road.points.length; i++) {
-      const [ax, ay] = road.points[i - 1]!;
-      const [bx, by] = road.points[i]!;
-      const dx = bx - ax;
-      const dy = by - ay;
-      const len2 = dx * dx + dy * dy || 1;
-      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2));
-      const px = ax + dx * t;
-      const py = ay + dy * t;
-      if (Math.hypot(x - px, y - py) <= reach) return true;
-    }
-  }
-  return false;
+/** The roadway itself, with an optional extra map-space margin. Parcels keep the land beside it. */
+export function onCapitolRoad(x: number, y: number, reach = 0) {
+  return ROAD_NETWORK.some(road=>nearRoad(x,y,road,reach));
 }
 
 /** Top of the cobble, in world units. Sits above the grass mesh. */

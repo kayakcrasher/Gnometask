@@ -1,3 +1,4 @@
+import { CATALOG_BY_ID } from "./catalog";
 export type CropId = "carrot" | "turnip" | "cabbage" | "pumpkin";
 
 export type CropDef = {
@@ -41,6 +42,8 @@ export type PlotSave = {
 export type PlotStage = "empty" | "thirsty" | "seed" | "sprout" | "ready" | "dead";
 
 export function pailBonusMs(owned: string[]) {
+  const advanced = Math.max(0,...owned.map(id => CATALOG_BY_ID[id]?.waterBonus ?? 0));
+  if (advanced) return advanced;
   if (owned.includes("pail-adamant")) return 180_000;
   if (owned.includes("pail-steel")) return 120_000;
   if (owned.includes("pail-iron")) return 70_000;
@@ -50,11 +53,12 @@ export function pailBonusMs(owned: string[]) {
 }
 
 export function plotStage(plot: PlotSave | undefined, now: number, _bonusMs?: number): PlotStage {
-  // Crops grow on their own. Watering is flavor. No wilt, no grace timer.
+  // Crops never die; better pails accelerate growth only after watering.
   if (!plot) return "empty";
   const def = CROP_BY_ID[plot.crop];
   if (!def) return "empty";
-  const grown = now - plot.plantedAt;
+  const wateredGrowth = plot.wateredAt == null ? 0 : Math.max(0, now - Math.max(plot.plantedAt, plot.wateredAt)) * Math.min(0.75, Math.max(0,_bonusMs ?? 0)/1_000_000);
+  const grown = now - plot.plantedAt + wateredGrowth;
   if (grown >= def.growMs) return "ready";
   if (grown >= def.growMs * 0.45) return "sprout";
   return "seed";

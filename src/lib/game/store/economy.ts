@@ -1,3 +1,4 @@
+import { developmentWorth } from "../development";
 import { wheelPayout } from "../casino";
 import { uid } from "@/lib/utils";
 import { CATALOG_BY_ID, slotsForPrefix } from "../catalog";
@@ -6,7 +7,7 @@ import { sfx } from "../juice";
 import { BUILDING_MAX, type BuildingId, type EquipSlot } from "../types";
 import { havenLevel, HALL_COST, hallUnlocks } from "../world";
 import { applyXp, levelsOf, SKILL_LABEL, totalLevel } from "../xp";
-import { hollowWorth, prosperity } from "../data/market";
+import { prosperity } from "../data/market";
 import { CROPS } from "../data/crops";
 import { GOODS } from "../data/trade";
 import { FISH_BY_ID } from "../data/fish";
@@ -56,7 +57,7 @@ export function economySlice(
         });
         return false;
       }
-      if (item.reqWealth && hollowWorth(s.coins, s.daysPlayed) < item.reqWealth) {
+      if (item.reqWealth && developmentWorth(s) < item.reqWealth) {
         sfx("error");
         set({
           speech: `The hollow is not rich enough for ${item.name}. Keen Edge wants the purse fatter.`,
@@ -284,6 +285,8 @@ export function economySlice(
       const item = CATALOG_BY_ID[id];
       const s = get();
       if (!item?.slot || !s.ownedGear.includes(id)) return;
+      if (item.reqSkill && levelsOf(s.skills)[item.reqSkill] < (item.reqLevel ?? 1)) { set({ speech: `Train ${SKILL_LABEL[item.reqSkill]} to ${item.reqLevel} before equipping this.` }); return; }
+      if (item.reqHall && s.townHallLevel < item.reqHall) { set({ speech: `Need Town Hall ${item.reqHall}.` }); return; }
       const slot = item.slot as EquipSlot;
       set({
         equipment: { ...s.equipment, [slot]: id },

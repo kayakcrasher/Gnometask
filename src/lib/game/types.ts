@@ -167,6 +167,8 @@ export type CatalogItem = {
   wc?: number;
   farm?: number;
   fish?: number;
+  craft?: number;
+  waterBonus?: number;
   fortLevel?: number;
   towerRank?: number;
   reqSkill?: SkillId;
@@ -222,6 +224,8 @@ export type GameSave = {
   logs: number;
   saplings: number;
   deeds: string[];
+  roadWorks: import("./data/expansion").RoadWorks;
+  estate: Record<string, import("./data/expansion").EstateHome>;
   shares: Record<string, number>;
   waveDay: number;
   bones: number;

@@ -1,9 +1,11 @@
+import { developedRoads } from "@/lib/game/land-planning";
+import type { RoadWorks, EstateHome } from "@/lib/game/data/expansion";
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { GnomeRig } from "./gnome-rig";
-import { ROAD_NETWORK, RUNNERS, ROAD_TOP, pathToCapitol } from "@/lib/game/data/country";
+import { RUNNERS, ROAD_TOP, pathToCapitol } from "@/lib/game/data/country";
 import type { RoadSurface } from "@/lib/game/data/road-layout";
 import { groundY, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
@@ -86,8 +88,8 @@ function earthTexture(surface: "gravel" | "dirt") {
   return texture;
 }
 
-function makeGeometries() {
-  const lines = ROAD_NETWORK.map(route => ({
+function makeGeometries(works:RoadWorks,estate:Record<string,EstateHome>) {
+  const lines = developedRoads(works,estate).map(route => ({
     ...route,
     points: route.points.map(([x, y]): [number, number] => {
       const p = to3(x, y);
@@ -109,7 +111,8 @@ function makeGeometries() {
 function ignoreRaycast() {}
 
 export function CountryRoads() {
-  const geos = useMemo(() => makeGeometries(), []);
+  const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate);
+  const geos = useMemo(() => makeGeometries(works,estate), [works,estate]);
   const textures = useMemo(() => ({ cobble: cobbleTexture(), gravel: earthTexture("gravel"), dirt: earthTexture("dirt") }), []);
   useEffect(() => () => {
     geos.surfaces.forEach(s => s.geometry.dispose());

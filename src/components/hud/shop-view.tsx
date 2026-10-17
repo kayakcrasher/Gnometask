@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import type { ShopKind } from "@/lib/game/types";
 import { SKILL_LABEL, levelsOf } from "@/lib/game/xp";
-import { hollowWorth } from "@/lib/game/data/market";
+import { developmentWorth } from "@/lib/game/development";
 
 const ALL_KINDS: { id: ShopKind; label: string }[] = [
   { id: "hat", label: "Hats" },
@@ -43,9 +43,9 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
   const dragonState = useGame((s) => s.lifeDragon.state);
   const skills = useGame((s) => s.skills);
   const townHallLevel = useGame((s) => s.townHallLevel);
-  const days = useGame((s) => s.daysPlayed);
+
   const lv = levelsOf(skills);
-  const worth = hollowWorth(coins, days);
+  const worth = useGame(s=>developmentWorth(s));
 
   const tabs = ALL_KINDS.filter((k) => allowed.includes(k.id));
   const active = allowed.includes(kind) ? kind : allowed[0]!;
@@ -118,13 +118,15 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
                 {item.atk ? <p className="mt-1 text-[11px] font-bold text-moss">+{item.atk} attack</p> : null}
                 {item.def ? <p className="mt-1 text-[11px] font-bold text-moss">+{item.def} defence</p> : null}
                 {item.wc ? <p className="mt-1 text-[11px] font-bold text-moss">Woodcutting {item.wc}</p> : null}
+                {item.fish ? <p className="mt-1 text-[11px] font-bold text-moss">Rare fish bonus {item.fish}</p> : null}
+                {item.craft ? <p className="mt-1 text-[11px] font-bold text-moss">Construction {item.craft} · lower estate costs</p> : null}
                 {item.farm ? <p className="mt-1 text-[11px] font-bold text-moss">Farming {item.farm}</p> : null}
                 {locked ? (
                   <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-berry">
                     {hallLocked
                       ? `Need Town Hall ${item.reqHall}`
                       : wealthLocked
-                        ? `Needs a richer hollow (${item.reqWealth})`
+                        ? `Needs island wealth (${item.reqWealth})`
                         : `Need ${SKILL_LABEL[item.reqSkill!]} ${item.reqLevel}`}
                   </p>
                 ) : null}
@@ -170,7 +172,7 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
                   {locked
                     ? hallLocked
                       ? `Hall ${item.reqHall}`
-                      : `${SKILL_LABEL[item.reqSkill!].slice(0, 3)} ${item.reqLevel}`
+                      : wealthLocked ? `Wealth ${item.reqWealth}` : `${SKILL_LABEL[item.reqSkill!].slice(0, 3)} ${item.reqLevel}`
                     : item.price === 0
                       ? "Free"
                       : `${item.price}`}

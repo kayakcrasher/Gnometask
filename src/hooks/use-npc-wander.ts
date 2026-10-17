@@ -3,6 +3,7 @@ import type { GnomeFacing } from "@/components/land/gnome";
 import { useGame } from "@/lib/game/store";
 import {
   clearNpcSegment,
+  npcWalkable,
   npcRoute,
   npcRoutine,
   safeNpcSpot,
@@ -70,8 +71,14 @@ export function useNpcWander(homes: NpcHome[], frozen: boolean) {
       elapsed = 0;
       const cur = { ...posesRef.current },
         state = useGame.getState();
+      const obstacles = [
+        ...Object.values(state.estate).map((h) => ({ ...h, w: 23, h: 21 })),
+        ...state.civic.plots
+          .filter((p) => p.stories > 0)
+          .map((p) => ({ ...p, w: 12, h: 10 })),
+      ];
       for (const [homeIndex, home] of homes.entries()) {
-        const pose = cur[home.id] ?? {
+        let pose = cur[home.id] ?? {
           ...safeNpcSpot(home),
           facing: "down" as GnomeFacing,
           walking: false,
@@ -84,6 +91,19 @@ export function useNpcWander(homes: NpcHome[], frozen: boolean) {
             cycle: 0,
             blocked: 0,
           });
+        // A newly completed home can move a resident's anchor to another district.
+        // Start their local routine at the new home rather than retrying a route
+        // outside the bounded local planner forever.
+        if (Math.hypot(pose.x-home.x,pose.y-home.y)>360) {
+          pose={...pose,...safeNpcSpot(home,obstacles),walking:false};
+          plan.path=[];plan.wait=1;cur[home.id]=pose;
+        }
+        if (!npcWalkable(pose.x, pose.y, obstacles)) {
+          pose = { ...pose, ...safeNpcSpot(pose, obstacles), walking: false };
+          plan.path = [];
+          plan.wait = 0.5;
+          cur[home.id] = pose;
+        }
         if (state.popup?.npcId === home.id) {
           cur[home.id] = {
             ...pose,
@@ -99,8 +119,13 @@ export function useNpcWander(homes: NpcHome[], frozen: boolean) {
           continue;
         }
         if (!plan.path.length) {
-          const routine = npcRoutine(home, state.dayPhase, plan.cycle++);
-          plan.path = npcRoute(pose, routine.point) ?? [];
+          const routine = npcRoutine(
+            home,
+            state.dayPhase,
+            plan.cycle++,
+            obstacles,
+          );
+          plan.path = npcRoute(pose, routine.point, obstacles) ?? [];
           plan.wait = plan.path.length ? 0 : routine.wait;
           cur[home.id] = {
             ...pose,
@@ -138,7 +163,7 @@ export function useNpcWander(homes: NpcHome[], frozen: boolean) {
             Math.hypot(cur[other.id]!.x - next.x, cur[other.id]!.y - next.y) <
               12,
         );
-        if (crowd || !clearNpcSegment(pose, next)) {
+        if (crowd || !clearNpcSegment(pose, next, obstacles)) {
           plan.blocked += dt;
           cur[home.id] = { ...cur[home.id]!, walking: false };
           if (plan.blocked > 1.5) {

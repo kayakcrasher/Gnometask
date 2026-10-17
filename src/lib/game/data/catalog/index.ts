@@ -1,3 +1,4 @@
+import { ADVANCED_GEAR } from "./advanced";
 import type { CatalogItem } from "../../types";
 import { FOOD } from "./food";
 import { FORTS } from "./forts";
@@ -16,6 +17,7 @@ export const CATALOG: CatalogItem[] = [
   ...WEAPONS,
   ...ARMOUR,
   ...TOOLS,
+  ...ADVANCED_GEAR,
   ...FOOD,
   ...FORTS,
   ...TOWERS,
@@ -33,14 +35,13 @@ export function gearStats(id: string | null | undefined) {
   return { atk: item?.atk ?? 0, def: item?.def ?? 0, wc: item?.wc ?? 0, farm: item?.farm ?? 0 };
 }
 
-export function bestHatchet(owned: string[]) {
-  const order = ["hatchet-adamant", "hatchet-steel", "hatchet-iron", "hatchet-bronze", "hatchet-wood"];
-  return order.find((id) => owned.includes(id)) ?? null;
+function bestOwned(owned: string[], prefix: string, stat: "wc" | "fish") {
+  return owned.map(id => CATALOG_BY_ID[id]).filter(item => item?.id.startsWith(prefix))
+    .sort((a,b) => (b[stat] ?? 0) - (a[stat] ?? 0))[0]?.id ?? null;
 }
-
-export function bestRod(owned: string[]) {
-  const order = ["rod-adamant", "rod-steel", "rod-iron", "rod-bronze", "rod-wood"];
-  return order.find((id) => owned.includes(id)) ?? null;
-}
+export function bestHatchet(owned: string[]) { return bestOwned(owned,"hatchet-","wc"); }
+export function bestRod(owned: string[]) { return bestOwned(owned,"rod-","fish"); }
+export function bestCraft(owned: string[]) { return Math.max(0,...owned.map(id=>CATALOG_BY_ID[id]?.craft ?? 0)); }
+export function harvestYield(owned: string[]) { return 1 + Math.floor(Math.max(0,...owned.filter(id=>id.startsWith("hoe-")).map(id=>(CATALOG_BY_ID[id]?.farm ?? 1)-1))/3); }
 
 export { ARMOUR, FOOD, FORTS, GARDEN, GEAR, HATS, HOUSE, TOOLS, TOWERS, VILLAGE, WEAPONS };
