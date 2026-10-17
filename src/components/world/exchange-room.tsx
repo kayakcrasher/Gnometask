@@ -1,4 +1,5 @@
-import { Canvas } from "@react-three/fiber";
+import { useState } from "react";
+import { InteriorCanvas as Canvas, RoomDecor } from "./interior-assets";
 import { GnomeRig } from "./gnome-rig";
 import { useGame } from "@/lib/game/store";
 import { StockMarket } from "@/components/hud/stock-market";
@@ -34,6 +35,7 @@ function Hall() {
 }
 
 export function ExchangeRoom() {
+  const [boardOpen, setBoardOpen] = useState(false);
   const leave = useGame((s) => s.leaveInterior);
   const coins = useGame((s) => s.coins);
   const shares = useGame((s) => s.shares);
@@ -50,6 +52,7 @@ export function ExchangeRoom() {
   return (
     <div className="fixed inset-0 z-30 bg-[#2a2118]">
       <Canvas camera={{ position: [0, 4.6, 7.2], fov: 42 }}>
+        <RoomDecor theme="exchange" />
         <Hall />
       </Canvas>
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3">
@@ -69,7 +72,8 @@ export function ExchangeRoom() {
       </div>
       <div className="absolute inset-x-0 bottom-0 z-10 max-h-[82dvh] overflow-y-auto p-3">
         <div className="mx-auto max-w-5xl rounded-[20px] bg-parchment p-4 shadow-panel">
-          <StockMarket />
+          <button type="button" aria-expanded={boardOpen} onClick={() => setBoardOpen(!boardOpen)} className="min-h-11 w-full rounded-xl bg-pine px-3 text-sm font-bold text-parchment">{boardOpen ? "Close market board" : "Open market board"}</button>
+          {boardOpen && <StockMarket />}
           <div className="mt-5 border-t border-bark/15 pt-4">
             <p className="font-display text-base font-semibold text-ink">Bulk floor</p>
             <p className="mt-1 text-xs font-semibold text-bark/70">

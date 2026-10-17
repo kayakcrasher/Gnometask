@@ -160,7 +160,7 @@ function SceneBody({
       />
       <YardLife />
       <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
-      <CivicLife />
+      <CivicLife poses={npcPoses} />
       <VillageHouses
         count={villageCount}
         onClick={(x, y) =>

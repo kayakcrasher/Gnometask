@@ -9,6 +9,8 @@ import { groundY, to3 } from "@/lib/game/world3";
 import { SEA_LEVEL } from "@/lib/game/data/water";
 import { GnomeRig } from "./gnome-rig";
 
+import { LargeShip } from "./ship-assets";
+
 const WOOD = "#c4894a";
 const WOOD_DARK = "#8a5a32";
 const SAIL = "#f4efe4";
@@ -153,42 +155,7 @@ export function BoatMesh({ kind, rowing, cannon }: { kind: BoatId | "goblin"; ro
       </group>
     );
   }
-  if (kind === "fisher") {
-    return (
-      <group>
-        <Hull length={1.35} width={0.5} color="#e07a3d" lip="#2f4a6a" />
-        <mesh position={[0, 0.42, -0.15]} castShadow>
-          <boxGeometry args={[0.36, 0.32, 0.42]} />
-          <meshStandardMaterial color="#3d6ea5" />
-        </mesh>
-        <mesh position={[0.1, 0.52, 0.02]}>
-          <boxGeometry args={[0.12, 0.1, 0.02]} />
-          <meshStandardMaterial color="#d6ecff" />
-        </mesh>
-        <Mast h={0.7} sailW={0.28} z={0.28} />
-        <Oars rowing={rowing} />
-        {cannon ? <Cannon /> : null}
-      </group>
-    );
-  }
-  if (kind === "barge") {
-    return (
-      <group>
-        <Hull length={1.8} width={0.62} color="#c47b3a" lip="#5b4230" />
-        {[
-          ["#3d8f8a", -0.2],
-          ["#d06a45", 0.15],
-          ["#3d6ea5", 0.42],
-        ].map(([color, z]) => (
-          <mesh key={String(z)} position={[0, 0.36, Number(z)]} castShadow>
-            <boxGeometry args={[0.4, 0.22, 0.28]} />
-            <meshStandardMaterial color={color as string} />
-          </mesh>
-        ))}
-        {cannon ? <Cannon /> : null}
-      </group>
-    );
-  }
+  if (kind === "fisher" || kind === "barge") return <LargeShip kind={kind} cannon={cannon} />;
   if (kind === "goblin") {
     return (
       <group>
@@ -201,22 +168,7 @@ export function BoatMesh({ kind, rowing, cannon }: { kind: BoatId | "goblin"; ro
       </group>
     );
   }
-  return (
-    <group>
-      <Hull length={1.55} width={0.55} color={WOOD} lip="#a8433b" />
-      <Mast h={1.25} sailW={0.5} z={0.15} />
-      <Mast h={0.85} sailW={0.36} z={-0.38} />
-      <mesh position={[0.28, 0.28, 0.35]} rotation={[0, 0, Math.PI / 2]} castShadow>
-        <cylinderGeometry args={[0.05, 0.05, 0.34, 8]} />
-        <meshStandardMaterial color="#2a241c" />
-      </mesh>
-      <mesh position={[0.28, 0.18, 0.22]}>
-        <boxGeometry args={[0.16, 0.12, 0.18]} />
-        <meshStandardMaterial color="#6b5340" />
-      </mesh>
-      {cannon ? <Cannon /> : null}
-    </group>
-  );
+  return <LargeShip kind="sloop" cannon={cannon} />;
 }
 
 export function PirateRig() {
@@ -396,48 +348,7 @@ function Dockhouse({ onEnter }: { onEnter: () => void }) {
 }
 
 function SupplyHull() {
-  return (
-    <group scale={3.2}>
-      <mesh position={[0, 0.22, 0]} castShadow>
-        <boxGeometry args={[0.95, 0.28, 3.6]} />
-        <meshStandardMaterial color="#a86b3c" roughness={0.8} />
-      </mesh>
-      <mesh position={[0, 0.38, 0]} castShadow>
-        <boxGeometry args={[1.05, 0.08, 3.7]} />
-        <meshStandardMaterial color="#c4894a" roughness={0.75} />
-      </mesh>
-      {[-1.2, -0.4, 0.4, 1.2].map((z) => (
-        <mesh key={z} position={[0, 0.22, z]}>
-          <boxGeometry args={[0.98, 0.04, 0.06]} />
-          <meshStandardMaterial color="#6b4423" />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.62, -0.15]} castShadow>
-        <boxGeometry args={[0.62, 0.42, 1.2]} />
-        <meshStandardMaterial color="#d8c4a0" roughness={0.85} />
-      </mesh>
-      <mesh position={[0, 0.88, -0.15]} castShadow>
-        <boxGeometry args={[0.72, 0.08, 1.35]} />
-        <meshStandardMaterial color="#8a3a32" />
-      </mesh>
-      <mesh position={[0.22, 1.15, -0.05]} castShadow>
-        <cylinderGeometry args={[0.07, 0.09, 0.4, 8]} />
-        <meshStandardMaterial color="#3a2a22" />
-      </mesh>
-      <mesh position={[0, 0.58, 1.2]} castShadow>
-        <boxGeometry args={[0.42, 0.28, 0.42]} />
-        <meshStandardMaterial color="#c4894a" />
-      </mesh>
-      <mesh position={[-0.28, 0.56, -1.35]} castShadow>
-        <boxGeometry args={[0.34, 0.24, 0.4]} />
-        <meshStandardMaterial color="#6b4423" />
-      </mesh>
-      <mesh position={[0, 0.7, -1.7]}>
-        <boxGeometry args={[0.08, 0.7, 0.08]} />
-        <meshStandardMaterial color="#5b4230" />
-      </mesh>
-    </group>
-  );
+  return <group scale={3.2}><LargeShip kind="supply" /></group>;
 }
 
 function SupplyPier() {

@@ -1,117 +1,351 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
-import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { useEffect, useRef, useState } from "react";
+import type { Group } from "three";
 import { GnomeRig } from "./gnome-rig";
+import { InteriorCanvas, RoomDecor } from "./interior-assets";
 import { useGame } from "@/lib/game/store";
-import { CASINO_STAGE, prosperity } from "@/lib/game/data/market";
+import { prosperity } from "@/lib/game/data/market";
+import { casinoVenue } from "@/lib/game/data/sunstep";
+import { WHEEL_ODDS } from "@/lib/game/casino";
 
-function Walker({ hat, spot }: { hat: string; spot: THREE.Vector3 }) {
-  const ref = useRef<THREE.Group>(null);
+function PrizeWheel({
+  spinning,
+  spin,
+  accent,
+  onOpen,
+}: {
+  spinning: boolean;
+  spin: number;
+  accent: string;
+  onOpen: () => void;
+}) {
+  const wheel = useRef<Group>(null);
   useFrame((_, dt) => {
-    if (!ref.current) return;
-    ref.current.position.lerp(spot, Math.min(1, dt * 4));
-    const dx = spot.x - ref.current.position.x;
-    const dz = spot.z - ref.current.position.z;
-    if (dx * dx + dz * dz > 0.01) ref.current.rotation.y = Math.atan2(dx, dz);
+    if (wheel.current) {
+      const target = spin * Math.PI * 6 + 0.8;
+      wheel.current.rotation.y = spinning
+        ? wheel.current.rotation.y + dt * 12
+        : wheel.current.rotation.y +
+          (target - wheel.current.rotation.y) * Math.min(1, dt * 3);
+    }
   });
   return (
-    <group ref={ref} position={[0, 0, 2.2]}>
-      <GnomeRig hat={hat} scale={0.85} coat="#6a3d58" />
-    </group>
-  );
-}
-
-function Pit({ stage, onWheel }: { stage: number; onWheel: () => void }) {
-  const spot = useRef(new THREE.Vector3(0, 0, 2.2));
-  const [, bump] = useState(0);
-  const hat = useGame((s) => s.hat);
-  const accent = stage >= 3 ? "#f2c14e" : stage >= 1 ? "#ff4fa3" : "#c4894a";
-  const move = (x: number, z: number) => {
-    spot.current.set(THREE.MathUtils.clamp(x, -3, 3), 0, THREE.MathUtils.clamp(z, -1, 3));
-    bump((n) => n + 1);
-  };
-  return (
     <group
+      position={[-0.9, 0, 0]}
       onClick={(e) => {
         e.stopPropagation();
-        move(e.point.x, e.point.z);
+        onOpen();
       }}
     >
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 1]} receiveShadow>
-        <planeGeometry args={[8, 6]} />
-        <meshStandardMaterial color={stage >= 4 ? "#1a1e28" : "#3a2a28"} />
+      <mesh position={[0, 0.45, 0]}>
+        <cylinderGeometry args={[1, 0.75, 0.18, 32]} />
+        <meshStandardMaterial color="#9d8054" metalness={0.4} />
       </mesh>
-      <mesh position={[0, 1.3, -1.6]}>
-        <boxGeometry args={[7.4, 2.6, 0.2]} />
-        <meshStandardMaterial color="#241820" />
+      <mesh position={[0, 0.22, 0]}>
+        <cylinderGeometry args={[0.22, 0.35, 0.45, 12]} />
+        <meshStandardMaterial color="#735337" />
       </mesh>
-      <mesh position={[0, 2.5, -1.4]}>
-        <boxGeometry args={[3.2, 0.7, 1.4]} />
-        <meshStandardMaterial color="#c4a574" />
-      </mesh>
-      <mesh position={[0.8, 2.7, -1.2]}>
-        <boxGeometry args={[0.35, 0.28, 0.08]} />
-        <meshStandardMaterial color="#f2d7a2" emissive="#e2b84a" emissiveIntensity={0.45} />
-      </mesh>
-      <mesh position={[0, 0.45, 0.2]} onClick={(e) => { e.stopPropagation(); onWheel(); }}>
-        <cylinderGeometry args={[0.7, 0.7, 0.12, 16]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.35} />
-      </mesh>
-      <mesh position={[1.6, 0.4, 0.4]}>
-        <boxGeometry args={[0.9, 0.7, 0.6]} />
-        <meshStandardMaterial color="#2a2030" />
-      </mesh>
-      <group position={[-1.5, 0, 0.3]}>
-        <GnomeRig hat="hat-night" scale={0.8} coat="#2a2030" beard={false} />
+      <group ref={wheel} position={[0, 0.56, 0]}>
+        {Array.from({ length: 16 }, (_, i) => (
+          <mesh key={i} rotation={[-Math.PI / 2, 0, (i * Math.PI) / 8]}>
+            <ringGeometry args={[0.25, 0.86, 3, 1, 0, Math.PI / 8]} />
+            <meshStandardMaterial
+              color={i % 4 === 0 ? "#d5b76b" : i % 2 ? accent : "#293b3a"}
+              side={2}
+            />
+          </mesh>
+        ))}
       </group>
-      <Walker hat={hat} spot={spot.current} />
-      <hemisphereLight args={["#ffd0e0", "#2a2030", 0.7]} />
-      <pointLight position={[0, 2.2, 0.4]} color={accent} intensity={stage >= 2 ? 8 : 3} />
+      <mesh position={[0, 0.67, 0]}>
+        <sphereGeometry args={[0.12, 12, 8]} />
+        <meshStandardMaterial color="#e7c982" metalness={0.6} />
+      </mesh>
+      <mesh position={[0, 0.65, 0.95]} rotation={[Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.08, 0.2, 6]} />
+        <meshStandardMaterial color="#f2ddac" />
+      </mesh>
     </group>
   );
 }
-
-export function CasinoRoom() {
-  const leave = useGame((s) => s.leaveInterior);
-  const coins = useGame((s) => s.coins);
-  const days = useGame((s) => s.daysPlayed);
-  const wager = useGame((s) => s.wager);
-  const stage = prosperity(coins, days);
-  const [open, setOpen] = useState(false);
+function SlotCabinet({
+  x,
+  accent,
+  onOpen,
+}: {
+  x: number;
+  accent: string;
+  onOpen: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-30 bg-[#140e18]">
-      <Canvas camera={{ position: [0, 3.4, 5.4], fov: 42 }}>
-        <Pit stage={stage} onWheel={() => setOpen(true)} />
-      </Canvas>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-3">
-        <div className="pointer-events-auto max-w-sm rounded-[16px] bg-parchment/95 px-3 py-2 shadow-panel">
-          <p className="font-display text-lg font-semibold text-ink">{CASINO_STAGE[stage]}</p>
-          <p className="text-xs font-semibold text-bark/70">
-            The pit is downstairs. The dealer lives in the flat above the wheel. Click the floor to walk. Click the table to bet.
+    <group
+      position={[x, 0, -1.9]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen();
+      }}
+    >
+      <mesh position={[0, 0.75, 0]}>
+        <boxGeometry args={[0.65, 1.5, 0.55]} />
+        <meshStandardMaterial color="#222b39" metalness={0.25} />
+      </mesh>
+      <mesh position={[0, 1.05, 0.29]}>
+        <boxGeometry args={[0.53, 0.48, 0.02]} />
+        <meshStandardMaterial
+          color="#d7cfb6"
+          emissive={accent}
+          emissiveIntensity={0.18}
+        />
+      </mesh>
+      {[-0.16, 0, 0.16].map((x, i) => (
+        <mesh key={x} position={[x, 1.05, 0.31]}>
+          <boxGeometry args={[0.08, 0.18, 0.02]} />
+          <meshStandardMaterial
+            color={i === 1 ? "#dd9963" : accent}
+            emissive={accent}
+            emissiveIntensity={0.5}
+          />
+        </mesh>
+      ))}
+      <mesh position={[0, 1.5, 0.05]}>
+        <boxGeometry args={[0.67, 0.12, 0.62]} />
+        <meshStandardMaterial
+          color={accent}
+          emissive={accent}
+          emissiveIntensity={1}
+        />
+      </mesh>
+      <mesh position={[0, 0.7, 0.34]}>
+        <boxGeometry args={[0.55, 0.08, 0.2]} />
+        <meshStandardMaterial color="#c9a356" />
+      </mesh>
+      <mesh position={[0, 0.35, 0.85]}>
+        <cylinderGeometry args={[0.22, 0.22, 0.1, 12]} />
+        <meshStandardMaterial color="#80445d" />
+      </mesh>
+      <mesh position={[0, 0.15, 0.85]}>
+        <cylinderGeometry args={[0.035, 0.1, 0.3, 8]} />
+        <meshStandardMaterial color="#a58a51" />
+      </mesh>
+    </group>
+  );
+}
+function CasinoScene({
+  accent,
+  spinning,
+  spin,
+  onTable,
+  onSlots,
+}: {
+  accent: string;
+  spinning: boolean;
+  spin: number;
+  onTable: () => void;
+  onSlots: () => void;
+}) {
+  return (
+    <>
+      <color attach="background" args={["#141b2a"]} />
+      <ambientLight intensity={1.5} />
+      <directionalLight position={[3, 6, 5]} intensity={1.7} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[10, 8]} />
+        <meshStandardMaterial color="#343140" />
+      </mesh>
+      <mesh position={[0, 0.01, 1]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[3.2, 5.5]} />
+        <meshStandardMaterial color="#7d3654" />
+      </mesh>
+      <mesh position={[0, 1.6, -3.4]}>
+        <boxGeometry args={[10, 3.2, 0.15]} />
+        <meshStandardMaterial color="#293044" />
+      </mesh>
+      {[-4.8, 4.8].map((x) => (
+        <mesh key={x} position={[x, 1.6, -0.8]}>
+          <boxGeometry args={[0.15, 3.2, 5]} />
+          <meshStandardMaterial color="#30384a" />
+        </mesh>
+      ))}
+      {[-2.8, 2.8].map((x) => (
+        <mesh key={x} position={[x, 1.8, -3.27]}>
+          <boxGeometry args={[0.09, 2.8, 0.06]} />
+          <meshStandardMaterial
+            color={accent}
+            emissive={accent}
+            emissiveIntensity={2}
+          />
+        </mesh>
+      ))}
+      <RoomDecor theme="casino" />
+      <PrizeWheel
+        accent={accent}
+        spinning={spinning}
+        spin={spin}
+        onOpen={onTable}
+      />
+      {[1.8, 2.6, 3.4].map((x) => (
+        <SlotCabinet key={x} x={x} accent={accent} onOpen={onSlots} />
+      ))}
+      <group position={[-2, 0, -1]}>
+        <GnomeRig hat="hat-night" scale={0.85} coat="#74475f" beard={false} />
+      </group>
+      <group position={[-3, 0, 1.7]}>
+        <mesh position={[0, 0.5, 0]}>
+          <cylinderGeometry args={[0.5, 0.5, 0.08, 20]} />
+          <meshStandardMaterial color="#b49c68" />
+        </mesh>
+        <GnomeRig hat="hat-straw" scale={0.8} coat="#39726b" />
+      </group>
+      <group position={[0, 0, 2]}>
+        <GnomeRig hat="hat-straw" scale={0.85} coat="#4d6d68" />
+      </group>
+      <pointLight
+        position={[0, 2, -1]}
+        color={accent}
+        intensity={6}
+        distance={8}
+      />
+    </>
+  );
+}
+export function CasinoRoom() {
+  const leave = useGame((s) => s.leaveInterior),
+    coins = useGame((s) => s.coins),
+    days = useGame((s) => s.daysPlayed),
+    wager = useGame((s) => s.wager);
+  const venueId = useGame((s) => s.casinoVenue),
+    result = useGame((s) => s.casinoResult);
+  const venue = casinoVenue(venueId),
+    stage = prosperity(coins, days);
+  const [game, setGame] = useState<"wheel" | "slots">("wheel"),
+    [spinning, setSpinning] = useState(false);
+  const busy = useRef(false),
+    timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+  const play = (stake: number) => {
+    if (busy.current) return;
+    const before = useGame.getState().casinoResult?.spin;
+    wager(stake);
+    if (useGame.getState().casinoResult?.spin === before) return;
+    busy.current = true;
+    setSpinning(true);
+    timer.current = setTimeout(() => {
+      busy.current = false;
+      setSpinning(false);
+    }, 1100);
+  };
+  return (
+    <div
+      className="fixed inset-0 z-30 bg-[#141b2a]"
+      role="region"
+      aria-label="Casino"
+    >
+      <InteriorCanvas camera={{ position: [0, 5.8, 8.8], fov: 48 }}>
+        <CasinoScene
+          accent={venue.accent}
+          spinning={spinning}
+          spin={result?.spin ?? 0}
+          onTable={() => setGame("wheel")}
+          onSlots={() => setGame("slots")}
+        />
+      </InteriorCanvas>
+      <header className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+        <div className="max-w-[75%] rounded-2xl bg-parchment/95 p-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-bark/60">
+            Sunstep · casino & lounge
           </p>
+          <h1 className="font-display text-xl font-semibold text-ink">
+            {venue.name}
+          </h1>
+          <p className="text-xs font-bold text-bark">Purse {coins} coins</p>
         </div>
-        <button type="button" onClick={leave} className="pointer-events-auto rounded-full bg-parchment px-3 py-2 text-xs font-semibold text-ink">
+        <button
+          type="button"
+          onClick={leave}
+          className="pointer-events-auto min-h-11 rounded-xl bg-parchment px-4 text-xs font-bold"
+        >
           Leave
         </button>
-      </div>
-      {open ? (
-        <div className="absolute inset-x-0 bottom-0 z-10 p-3">
-          <div className="mx-auto max-w-lg rounded-[20px] bg-parchment p-4 shadow-panel">
-            <p className="font-display text-lg font-semibold text-ink">The wheel</p>
-            <p className="mt-1 text-sm font-semibold text-bark/70">Most spins lose. A few pay. A rare one hits.</p>
-            <div className="mt-3 flex gap-2">
-              <button type="button" onClick={() => wager(5)} className="h-11 flex-1 rounded-[14px] bg-pine font-display text-sm font-semibold text-parchment">
-                Bet 5
-              </button>
-              {stage >= 2 ? (
-                <button type="button" onClick={() => wager(20)} className="h-11 flex-1 rounded-[14px] bg-gold font-display text-sm font-semibold text-ink">
-                  High table 20
-                </button>
-              ) : null}
-            </div>
-          </div>
+      </header>
+      <section
+        aria-label="Casino games"
+        className="absolute inset-x-3 bottom-3 mx-auto max-h-[48dvh] max-w-lg overflow-y-auto rounded-2xl bg-parchment p-3 shadow-panel"
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {(["wheel", "slots"] as const).map((id) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={game === id}
+              disabled={spinning}
+              onClick={() => setGame(id)}
+              className={`min-h-11 rounded-xl text-sm font-bold ${game === id ? "bg-pine text-parchment" : "bg-parchment-dark text-ink"}`}
+            >
+              {id === "wheel" ? "Prize wheel" : "Lucky reels"}
+            </button>
+          ))}
         </div>
-      ) : null}
+        {game === "slots" && (
+          <div aria-hidden="true" className="mt-2 flex justify-center gap-2">
+            {(spinning
+              ? ["?", "?", "?"]
+              : result?.pay === result?.stake * 10
+                ? ["7", "7", "7"]
+                : result?.pay === result?.stake * 3
+                  ? ["★", "★", "★"]
+                  : result?.pay
+                    ? ["7", "7", "◇"]
+                    : ["◇", "★", "7"]
+            ).map((symbol, i) => (
+              <span
+                key={i}
+                className="flex h-12 w-12 items-center justify-center rounded-lg bg-ink font-display text-2xl text-gold"
+              >
+                {symbol}
+              </span>
+            ))}
+          </div>
+        )}
+        <p
+          role="status"
+          aria-live="polite"
+          className="mt-3 rounded-xl bg-parchment-dark p-2 text-sm font-bold text-ink"
+        >
+          {spinning
+            ? "Spinning…"
+            : result
+              ? `${result.label} · payout ${result.pay} · ${result.pay - result.stake >= 0 ? "+" : ""}${result.pay - result.stake} coins net`
+              : "Choose your stake. Both games use the payouts below."}
+        </p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            disabled={spinning || coins < 5}
+            onClick={() => play(5)}
+            className="min-h-11 rounded-xl bg-pine font-bold text-parchment disabled:opacity-40"
+          >
+            Bet 5 coins
+          </button>
+          <button
+            type="button"
+            disabled={spinning || coins < 20 || stage < 2}
+            onClick={() => play(20)}
+            className="min-h-11 rounded-xl bg-gold font-bold text-ink disabled:opacity-40"
+          >
+            {stage < 2 ? "High table · town growth 2" : "Bet 20 coins"}
+          </button>
+        </div>
+        <details className="mt-2 text-[11px] font-semibold text-bark/75">
+          <summary className="cursor-pointer">Payouts & odds</summary>
+          <p className="mt-1">
+            {WHEEL_ODDS}. Payout includes the stake; a losing spin returns zero.
+          </p>
+        </details>
+      </section>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export const CALF_PRICE = 18;
 export const FAR_ISLES = [
   { id: "reed" as const, name: "Reed Isle", fare: 8, x: 80, y: 80, blurb: "A pasture island. Quiet jetty, long grass." },
   { id: "salt" as const, name: "Saltmarket", fare: 16, x: 2620, y: 160, blurb: "They pay a fifth more for whatever you carried." },
-  { id: "holm" as const, name: "Far Holm", fare: 24, x: 2480, y: 1320, blurb: "A lighthouse rock. Nothing here is in a hurry." },
+  { id: "holm" as const, name: "Far Holm", fare: 24, x: 2520, y: 1600, blurb: "A lighthouse rock. Nothing here is in a hurry." },
 ];
 
 export type IsleId = (typeof FAR_ISLES)[number]["id"];

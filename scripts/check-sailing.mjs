@@ -19,9 +19,10 @@ const result = await build({
       for (const boat of BOATS) assert(navigableWater(boat.x,boat.y), boat.name + " must spawn in navigable water");
       assert(navigableWater(HARBOUR_APPROACH.x,HARBOUR_APPROACH.y));
       assert(!navigableWater(1000,600));
+      assert(!navigableWater(4200,760),"The expanded desert is land");
       assert(!clearSeaSegment({x:NaN,y:0},HARBOUR_APPROACH));
       const start = {x:-300,y:530};
-      const target = {x:3700,y:760};
+      const target = {x:4700,y:760};
       assert(!clearSeaSegment(start,target),"The island blocks a direct east-west crossing");
       const route = seaRoute(start,target);
       assert(route && route.length > 1,"Route must go around the island");

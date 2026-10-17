@@ -10,8 +10,8 @@ import { DeedMap } from "./deed-map";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
-const VW = 3700;
-const VH = 1600;
+const VW = 4700;
+const VH = 1800;
 
 function poly(pts: [number, number][]) {
   return pts.map(([x, y]) => `${x},${y}`).join(" ");

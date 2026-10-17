@@ -1,4 +1,4 @@
-import { Canvas } from "@react-three/fiber";
+import { InteriorCanvas as Canvas, RoomDecor } from "./interior-assets";
 import { BEERS, TOWN_LABEL } from "@/lib/game/data/civic";
 import { useGame } from "@/lib/game/store";
 import { GnomeRig } from "./gnome-rig";
@@ -49,6 +49,7 @@ export function PubRoom() {
   return (
     <div className="fixed inset-0 z-30 bg-[#2a1812]">
       <Canvas camera={{ position: [0, 2.6, 4.4], fov: 42 }}>
+        <RoomDecor theme="pub" />
         <Bar />
         <group position={[-1.5, 0, 0.3]}>
           <GnomeRig hat={pub.hat} coat={pub.coat} scale={0.85} beard gesture="wave" />

@@ -32,6 +32,7 @@ export type GameState = GameSave &
     setPanel: (panel: PanelId) => void;
     openPopup: (popup: GamePopup) => void;
     closePopup: () => void;
+    enterCasino: (id: string) => void;
     enterInterior: (id: InteriorId) => void;
     leaveInterior: () => void;
     setGnomePos: (x: number, y: number) => void;

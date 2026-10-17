@@ -303,6 +303,8 @@ export type GameUi = {
   clearedPack: string[];
   popup: GamePopup | null;
   interior: InteriorId | null;
+  casinoVenue: string | null;
+  casinoResult: { spin: number; stake: number; pay: number; label: string } | null;
   raids: Raid[];
   followWalk: boolean;
   sailHome: boolean;

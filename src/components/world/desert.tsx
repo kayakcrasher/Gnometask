@@ -1,3 +1,5 @@
+import { SUNSTEP_VENUES } from "@/lib/game/data/sunstep";
+import { CasinoLandmark, SunstepScenery } from "./sunstep-assets";
 import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
 import { cellsOf, filledCount, townGate, townGrid } from "@/lib/game/data/grids";
@@ -5,7 +7,7 @@ import { CASINO_STAGE, prosperity } from "@/lib/game/data/market";
 import { MOUNT_NOBLE, NOBLE_BASE, NOBLE_HEIGHT, NOBLE_PLATEAU, NOBLE_RADIUS, SCALE, groundY, onIsland, to2, to3 } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 
-const LOTS = cellsOf(townGrid("sunstep"));
+const LOTS = SUNSTEP_VENUES;
 
 const CACTI = [
   { x: 2900, y: 620 },
@@ -17,26 +19,17 @@ const CACTI = [
 
 export function sunstepSize(days: number, deeds: string[]) {
   const bought = deeds.filter((id) => id.startsWith("d-")).length;
-  const count = Math.min(LOTS.length, filledCount("sunstep", days) + Math.floor(bought / 2));
+  const count = Math.min(LOTS.length, Math.max(3, filledCount("sunstep", days)) + Math.floor(bought / 2));
   const level = Math.min(3, 1 + Math.floor((Math.max(0, days) + bought * 2) / 8));
   return { count, level };
 }
 
-const HOUSES = [
-  { name: "The Dune", accent: "#ff4fa3" },
-  { name: "Gilt", accent: "#f2c14e" },
-  { name: "Nightjar", accent: "#3de2ff" },
-  { name: "Oasis", accent: "#7cffb2" },
-  { name: "Lucky Pit", accent: "#ff4fa3" },
-  { name: "Mirage", accent: "#c084fc" },
-];
-
-function Casino({ name, accent, stage }: { name: string; accent: string; stage: number }) {
-  const floors = [1, 2, 3, 4, 6][stage] ?? 1;
+function Casino({ name, accent, stage, architecture }: { name: string; accent: string; stage: number; architecture: string }) {
+  const floors = Math.max(2, ([2, 3, 4, 5, 7][stage] ?? 2) + (architecture === "spire" ? 2 : architecture === "terrace" ? -2 : architecture === "dome" ? -1 : 0));
   const h = 0.72 * floors;
-  const w = 1.15 + stage * 0.16;
+  const w = (1.15 + stage * 0.16) * (architecture === "terrace" || architecture === "dome" ? 1.12 : 1);
   const glass = stage >= 3;
-  const body = stage === 0 ? "#c4894a" : glass ? "#1a2433" : "#241820";
+  const body = architecture === "dome" ? "#b89963" : architecture === "terrace" ? "#d0b995" : architecture === "spire" ? "#34304e" : glass ? "#223446" : "#493646";
   return (
     <group>
       <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
@@ -81,6 +74,9 @@ function Casino({ name, accent, stage }: { name: string; accent: string; stage: 
           <meshStandardMaterial color="#10141c" metalness={0.7} roughness={0.2} />
         </mesh>
       ) : null}
+      <group position={[0,h+0.3,0]} scale={0.65}><CasinoLandmark kind={architecture} accent={accent}/></group>
+      {Array.from({length:floors},(_,i)=><mesh key={i} position={[0,0.5+i*0.65,w*0.4+0.015]}><boxGeometry args={[w*0.85,0.09,0.03]}/><meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.4}/></mesh>)}
+      {[-1,1].map(side=><mesh key={side} position={[side*w*0.48,h/2,0.02]}><boxGeometry args={[0.055,h,0.05]}/><meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.2}/></mesh>)}
       <Html position={[0, h + (stage >= 4 ? 1.3 : 0.55), 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
         <p className="whitespace-nowrap rounded-full px-2 py-0.5 font-display text-[10px] font-semibold" style={{ background: "#140e18", color: accent }}>
           {name}
@@ -132,12 +128,13 @@ export function Sunstep() {
   const days = useGame((s) => s.daysPlayed);
   const deeds = useGame((s) => s.deeds);
   const coins = useGame((s) => s.coins);
-  const enter = useGame((s) => s.enterInterior);
+  const enter = useGame((s) => s.enterCasino);
   const { count } = sunstepSize(days, deeds);
   const stage = prosperity(coins, days);
   const gate = townGate("sunstep");
   return (
     <group>
+      <SunstepScenery onCasino={() => enter("sunstep-hotel")} />
       {CACTI.map((c) => (
         <mesh key={`${c.x}-${c.y}`} position={to3(c.x, c.y, groundY(c.x, c.y) + 0.28)} castShadow>
           <capsuleGeometry args={[0.06, 0.4, 4, 6]} />
@@ -157,17 +154,17 @@ export function Sunstep() {
         </mesh>
       </group>
       {LOTS.slice(0, count).map((lot, i) => {
-        const house = HOUSES[i % HOUSES.length]!;
+        const house = lot;
         return (
           <group
             key={`${lot.x}-${lot.y}`}
             position={to3(lot.x, lot.y, groundY(lot.x, lot.y))}
             onClick={(e) => {
               e.stopPropagation();
-              enter("casino");
+              enter(lot.id);
             }}
           >
-            <Casino name={house.name} accent={house.accent} stage={stage} />
+            <Casino name={house.name} accent={house.accent} stage={stage} architecture={house.architecture} />
             <group position={[0.85, 0, 0.35]}>
               <GnomeRig hat={i % 2 ? "hat-straw" : "hat-night"} scale={1.15} coat="#8a6238" beard={i % 2 === 0} />
             </group>

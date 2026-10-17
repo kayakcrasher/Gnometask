@@ -37,6 +37,11 @@ export const NPCS: {
   stay?: boolean;
   shortName?: string;
 }[] = [
+  { id: "sunstep-host", name: "Ruby Starlight", x: 3070, y: 750, hat: "hat-flower", job: "casino host", org: "Sunstep Strip", place: "village", tradeInterior: "casino", lines: ["Welcome to the Strip. The Dune has a prize wheel and lucky reels. The payout board tells you exactly how they work.", "Follow the promenade east for the fountain and Royal Sun Hotel."] },
+  { id: "sunstep-watch", name: "Marshal Flint", x: 3440, y: 920, hat: "hat-guard", job: "watch marshal", org: "Sunstep Watch", place: "village", lines: ["The desert is bigger than the lights. I patrol the promenade so the guests can find their way home."] },
+  { id: "sunstep-gardener", name: "Oasis Fern", x: 3560, y: 860, hat: "hat-straw", job: "palm gardener", org: "Sunstep Gardens", place: "village", lines: ["Palms, fountains, and shade. A desert town needs more than a lucky wheel."] },
+  { id: "sunstep-guest", name: "Velvet Vale", x: 3500, y: 1020, hat: "hat-night", job: "visiting performer", org: "Royal Sun", place: "village", lines: ["The hotel spire is my landmark. You can see it from halfway down the promenade."] },
+
   {
     id: "pappy",
     name: "Ol Pappy St. Francis",

@@ -1,3 +1,4 @@
+import { CASINO_VENUES } from "../data/sunstep";
 import { GREETS, PLACE_LINES, randOf } from "../quotes";
 import { applyDailyRollover, defaultSave, loadSave, writeSave } from "../save";
 import type { DragonHorn, DragonLook, GamePopup, InteriorId, MetricId, PanelId, PlaceId } from "../types";
@@ -20,7 +21,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
   | "setPanel"
   | "openPopup"
   | "closePopup"
-  | "enterInterior"
+  | "enterCasino" | "enterInterior"
   | "leaveInterior"
   | "setGnomePos"
   | "setFollowWalk"
@@ -186,7 +187,11 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     setPanel: (panel: PanelId) => set({ panel, popup: null }),
     openPopup: (popup: GamePopup) => set({ popup, panel: "place", interior: null }),
     closePopup: () => set({ popup: null }),
-    enterInterior: (id: InteriorId) => set({ interior: id, popup: null, panel: "place" }),
+    enterCasino: (id) => {
+      if (!CASINO_VENUES.some(v => v.id === id) || get().combat || get().atHome) return;
+      set({ interior: "casino", casinoVenue: id, casinoResult: null, popup: null, panel: "place" });
+    },
+    enterInterior: (id: InteriorId) => set({ interior: id, popup: null, panel: "place", ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) }),
     leaveInterior: () => set({ interior: null }),
     setGnomePos: (x: number, y: number) => {
       set({ gnomeX: x, gnomeY: y });

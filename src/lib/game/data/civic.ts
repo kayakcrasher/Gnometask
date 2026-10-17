@@ -81,7 +81,7 @@ export const COURTS: { town: CivicTown; x: number; y: number; name: string }[] =
   { town: "sunstep", x: 3280, y: 620, name: "Sunstep Court" },
 ];
 
-export const SUNSTEP_DOCK = { x: 3620, y: 760 };
+export const SUNSTEP_DOCK = { x: 4480, y: 760 };
 
 export const BEERS = [
   { id: "mild", name: "Oldie Mild", price: 3, blurb: "Soft, brown, and older than the argument." },
@@ -94,7 +94,7 @@ export const PUBS: PubBook[] = [
   { town: "tideham", name: "The Salt Nun", owner: "Kelp", bank: 5600, x: 160, y: 900, hat: "hat-straw", coat: "#3d5a6a" },
   { town: "greenlane", name: "The Crooked Pint", owner: "Wren", bank: 5100, x: 1500, y: 1080, hat: "hat-moss", coat: "#35543f" },
   { town: "haven", name: "The Lantern Eel", owner: "Pippa", bank: 6200, x: 1900, y: 980, hat: "hat-berry", coat: "#a35a42" },
-  { town: "sunstep", name: "The Gilded Cactus", owner: "Rio", bank: 7000, x: 3180, y: 760, hat: "hat-night", coat: "#c4a574" },
+  { town: "sunstep", name: "The Gilded Cactus", owner: "Rio", bank: 7000, x: 3440, y: 1000, hat: "hat-night", coat: "#c4a574" },
 ];
 
 const MATES: [string, string][] = [

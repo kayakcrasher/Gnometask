@@ -1,3 +1,4 @@
+import { wheelPayout } from "../casino";
 import { uid } from "@/lib/utils";
 import { CATALOG_BY_ID, slotsForPrefix } from "../catalog";
 import { nextTowerId, TOWERS } from "../data/catalog/towers";
@@ -5,7 +6,7 @@ import { sfx } from "../juice";
 import { BUILDING_MAX, type BuildingId, type EquipSlot } from "../types";
 import { havenLevel, HALL_COST, hallUnlocks } from "../world";
 import { applyXp, levelsOf, SKILL_LABEL, totalLevel } from "../xp";
-import { hollowWorth } from "../data/market";
+import { hollowWorth, prosperity } from "../data/market";
 import { CROPS } from "../data/crops";
 import { GOODS } from "../data/trade";
 import { FISH_BY_ID } from "../data/fish";
@@ -415,27 +416,19 @@ export function economySlice(
 
     wager: (stake = 5) => {
       const s = get();
-      const bet = stake >= 20 ? 20 : 5;
+      if (s.interior !== "casino" || ![5,20].includes(stake) || (stake === 20 && prosperity(s.coins, s.daysPlayed) < 2)) return;
+      const bet = stake;
       if (s.coins < bet) {
         set({ speech: `The pit wants ${bet} coins. Your purse is short.` });
         return;
       }
-      const roll = Math.random();
-      const mult = bet / 5;
-      let pay = 0;
-      let speech = `The wheel takes the ${bet}. The lights stay on.`;
-      if (roll < 0.04) {
-        pay = 50 * mult;
-        speech = `Jackpot on the strip. ${pay} coins.`;
-      } else if (roll < 0.16) {
-        pay = 15 * mult;
-        speech = `The dune pays ${pay}.`;
-      } else if (roll < 0.4) {
-        pay = 8 * mult;
-        speech = `A small light. ${pay} comes back.`;
-      }
+      const result = wheelPayout(bet, Math.random());
+      if (!result) return;
+      const { pay, label } = result;
+      const speech = `${label}. Wager ${bet}, payout ${pay}. ${pay - bet >= 0 ? "+" : ""}${pay - bet} coins net.`;
       set({
         coins: s.coins - bet + pay,
+        casinoResult: { spin: (s.casinoResult?.spin ?? 0) + 1, stake: bet, pay, label },
         coinPopKey: s.coinPopKey + 1,
         speech,
       });

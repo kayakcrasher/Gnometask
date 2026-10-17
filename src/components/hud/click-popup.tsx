@@ -283,7 +283,7 @@ export function ClickPopup() {
         <div className="mt-2 flex flex-wrap gap-1.5">
           {popup.kind === "npc" && popup.npcId ? (
             <>
-              <Action label="Talk-to" onClick={() => talkTo(popup.npcId!)} />
+              <Action label="Talk-to" onClick={() => npc ? talkTo(popup.npcId!) : speak(popup.blurb)} />
               {npc?.tradeInterior ? (
                 <Action label="Trade" tone="gold" onClick={() => tradeWith(popup.npcId!)} />
               ) : (
@@ -291,7 +291,7 @@ export function ClickPopup() {
                   label="Listen again"
                   tone="quiet"
                   onClick={() => {
-                    if (npc) speak(randOf(npc.lines));
+                    speak(npc ? randOf(npc.lines) : popup.blurb);
                   }}
                 />
               )}

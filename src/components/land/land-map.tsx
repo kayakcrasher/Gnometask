@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { IslandCanvas } from "@/components/world/island-scene";
 import { Island2d } from "@/components/land/island-2d";
 import { useGnomeWalk } from "@/hooks/use-gnome-walk";
@@ -11,7 +11,10 @@ export function LandMap() {
   const { pos, facing, yaw, walking, marker, walkTo, speedRef } = useGnomeWalk(followRef);
   const combat = useGame((s) => s.combat);
   const interior = useGame((s) => s.interior);
-  const npcPoses = useNpcWander(NPCS, Boolean(combat || interior));
+  const residents = useGame(s => s.civic.gnomes);
+  const atHome = useGame(s => s.atHome), abroad = useGame(s => s.abroad);
+  const homes = useMemo(() => [...NPCS, ...residents.filter(g => !NPCS.some(n => n.id === g.id)).map(g => ({ id: g.id, x: g.x, y: g.y, job: g.job }))], [residents]);
+  const npcPoses = useNpcWander(homes, Boolean(combat || interior || atHome || abroad));
   const [mode, setMode] = useState<"3d" | "2d">("3d");
 
   return (

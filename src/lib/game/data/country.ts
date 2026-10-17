@@ -138,6 +138,10 @@ export const ROAD_NETWORK: RoadRoute[] = [
   { id: "cottage-lane", points: softenRoad([[930, 475], [980, 500], [1015, 570], [1015, 675], [980, 675]]), width: 0.85, surface: "dirt" },
   { id: "cottage-gate", points: [[980, 675], [980, 658]], width: 0.7, surface: "dirt" },
   { id: "mine-trail", points: softenRoad([[1180, 1310], [1240, 1275], [1300, 1240], [1380, 1190]], 25), width: 0.7, surface: "dirt" },
+  { id: "sunstep-promenade", points: softenRoad([[sunGate.x, sunGate.y], [sunGate.x, 1080], [3520, 1080], [3620, 950], [3620, 850], [3710, 850], [3810, 780], [3810, 680]], 28), width: 1.8, surface: "cobble" },
+  { id: "sunstep-shore-trail", points: softenRoad([[3810, 780], [3920, 780], [4090, 820], [4280, 820], [4430, 780]], 35), width: 0.8, surface: "dirt" },
+  { id: "sunstep-pub-walk", points: softenRoad([[3520, 1080], [3470, 1040], [3440, 1030]]), width: 0.8, surface: "gravel" },
+  { id: "oasis-path", points: softenRoad([[3620, 950], [3740, 1000], [3820, 1000]]), width: 0.85, surface: "dirt" },
   { id: "woods-trail", points: softenRoad([[230, 310], [195, 300], [175, 280], [160, 270]], 18), width: 0.6, surface: "dirt" },
   ...CAPITOL_SHOPS.filter(s => s.id !== "townhall").flatMap(s => [
     { id: `${s.id}-walk`, points: [[s.x, 475], [s.x, 525]] as [number, number][], width: 0.85, surface: "cobble" as const },

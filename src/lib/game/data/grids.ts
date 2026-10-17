@@ -22,7 +22,7 @@ export const TOWN_GRIDS: TownGrid[] = [
   { id: "tideham", ox: 200, oy: 860, cols: 2, rows: 2 },
   { id: "greenlane", ox: 1420, oy: 980, cols: 2, rows: 4 },
   { id: "haven", ox: 1840, oy: 900, cols: 2, rows: 3 },
-  { id: "sunstep", ox: 3120, oy: 700, cols: 3, rows: 2 },
+  { id: "sunstep", ox: 3120, oy: 700, cols: 4, rows: 3 },
 ];
 
 export function inTownPlot(x: number, y: number) {

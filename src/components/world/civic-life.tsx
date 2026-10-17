@@ -1,3 +1,4 @@
+import type { NpcPose } from "@/hooks/use-npc-wander";
 import { Html } from "@react-three/drei";
 import { COURTS, SUNSTEP_DOCK, TOWN_LABEL, civicBlurb } from "@/lib/game/data/civic";
 import type { CivicPlot, CivicTown } from "@/lib/game/data/civic";
@@ -238,7 +239,7 @@ function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; 
     </group>
   );
 }
-export function CivicLife() {
+export function CivicLife({ poses = {} }: { poses?: Record<string, NpcPose> }) {
   const civic = useGame((s) => s.civic);
   const enter = useGame((s) => s.enterCourt);
   const enterPub = useGame((s) => s.enterPub);
@@ -268,27 +269,30 @@ export function CivicLife() {
       ))}
       {civic.gnomes.map((g, i) => {
         const talk = i === speaker || i === (speaker + 1) % civic.gnomes.length || !g.good;
-        const near = Math.hypot(g.x - gx, g.y - gy) < 85;
+        const pose = poses[g.id];
+        const x = pose?.x ?? g.x, y = pose?.y ?? g.y;
+        const near = Math.hypot(x - gx, y - gy) < 85;
         const atPint = civic.pint && (civic.pint.a === g.id || civic.pint.b === g.id);
         const working = i === speaker && !near;
         const gesture = near || atPint ? "wave" : working && (g.job === "mason" || g.job === "smith") ? "hammer" : working && (g.job === "carpenter") ? "saw" : working && (g.job === "gardener" || g.job === "herder") ? "hoe" : null;
         return (
           <group
             key={g.id}
-            position={to3(g.x, g.y, groundY(g.x, g.y))}
+            position={to3(x, y, groundY(x, y))}
             onClick={(e) => {
               e.stopPropagation();
               speak(g.line);
               open({
                 kind: "npc",
                 hotspotId: g.id,
+                npcId: g.id,
                 title: g.name,
                 blurb: civicBlurb(g, civic),
                 place: "village",
               });
             }}
           >
-            <GnomeRig hat={g.hat} coat={g.coat} scale={1.15} beard={g.good} walking={i === speaker} gesture={gesture} />
+            <group rotation={[0, ({ down: 0, up: Math.PI, left: -Math.PI / 2, right: Math.PI / 2 })[pose?.facing ?? "down"], 0]}><GnomeRig hat={g.hat} coat={g.coat} scale={1.15} beard={g.good} walking={pose?.walking ?? false} gesture={pose?.walking ? null : gesture} /></group>
             {g.job === "mason" || g.job === "carpenter" ? (
               <mesh position={[0.22, 0.55, 0.16]} rotation={[0.4, 0, 0.6]} castShadow>
                 <boxGeometry args={[0.05, 0.28, 0.05]} />
@@ -359,7 +363,7 @@ export function CivicLife() {
         );
       })}
       {civic.dock ? (
-        <group position={to3(SUNSTEP_DOCK.x, SUNSTEP_DOCK.y, -0.08)}>
+        <group position={to3(SUNSTEP_DOCK.x, SUNSTEP_DOCK.y, -0.08)} rotation={[0,Math.PI/2,0]}>
           <mesh position={[0, 0.12, 0]} castShadow>
             <boxGeometry args={[0.7, 0.1, 2.4]} />
             <meshStandardMaterial color="#8a6238" />

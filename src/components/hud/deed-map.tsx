@@ -6,8 +6,8 @@ import { PARCELS } from "@/lib/game/data/parcels";
 import { TREE_SPOTS } from "@/lib/game/data/trees";
 import { useGame } from "@/lib/game/store";
 
-const VW = 3700;
-const VH = 1600;
+const VW = 4700;
+const VH = 1800;
 
 function poly(pts: [number, number][]) {
   return pts.map(([x, y]) => `${x},${y}`).join(" ");

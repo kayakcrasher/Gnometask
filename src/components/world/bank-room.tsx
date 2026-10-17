@@ -1,4 +1,5 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { InteriorCanvas as Canvas, RoomDecor } from "./interior-assets";
+import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useRef, useState } from "react";
 import * as THREE from "three";
@@ -64,10 +65,7 @@ function Room({
         <boxGeometry args={[8, 3.2, 0.2]} />
         <meshStandardMaterial color="#efe4cf" />
       </mesh>
-      <mesh position={[0, 3.15, 0]}>
-        <boxGeometry args={[8, 0.12, 7]} />
-        <meshStandardMaterial color="#5b4230" />
-      </mesh>
+
       <mesh position={[0, 0.45, -1.5]} castShadow>
         <boxGeometry args={[3.2, 0.9, 0.7]} />
         <meshStandardMaterial color="#6b4423" />
@@ -104,7 +102,7 @@ function Room({
           </p>
         </Html>
       ) : (
-        <group position={[0, 0, -2.15]} onClick={(e) => { e.stopPropagation(); move(0, -0.4); onTeller(); }}>
+        <group position={[0, 0.3, -2.15]} onClick={(e) => { e.stopPropagation(); move(0, -0.4); onTeller(); }}>
           <GnomeRig hat="hat-night" scale={0.9} coat="#2f3d34" beard />
           <Html position={[0, 1.7, 0]} center>
             <p className="whitespace-nowrap rounded-full bg-ink/85 px-2 py-0.5 text-[11px] font-semibold text-parchment">Quill Bram</p>
@@ -134,6 +132,7 @@ export function BankRoom() {
   return (
     <div className="fixed inset-0 z-30 bg-[#1c2430]">
       <Canvas camera={{ position: [0, 4.2, 6.2], fov: 42 }} shadows>
+        <RoomDecor theme="bank" />
         <Room weekend={weekend} onTeller={() => setDesk("teller")} onBoard={() => setDesk("board")} />
       </Canvas>
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-3">

@@ -210,6 +210,8 @@ export const UI_SEED: Pick<
   | "clearedPack"
   | "popup"
   | "interior"
+  | "casinoVenue"
+  | "casinoResult"
   | "raids"
   | "followWalk"
   | "sailHome"
@@ -232,6 +234,8 @@ export const UI_SEED: Pick<
   clearedPack: [],
   popup: null,
   interior: null,
+  casinoVenue: null,
+  casinoResult: null,
   raids: [],
   followWalk: true,
   sailHome: false,

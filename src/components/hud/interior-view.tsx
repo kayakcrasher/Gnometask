@@ -1,3 +1,4 @@
+import { InteriorPreview } from "@/components/world/interior-assets";
 import { SailingProgress } from "./sailing-progress";
 import { X } from "lucide-react";
 import { useGame } from "@/lib/game/store";
@@ -319,100 +320,6 @@ function HallPanel() {
   );
 }
 
-function RoomScene({ id }: { id: InteriorId }) {
-  return (
-    <svg viewBox="0 0 320 148" className="mb-3 h-32 w-full shrink-0" aria-hidden>
-      <rect width="320" height="148" fill="#6a8f8a" />
-      <polygon points="160,138 302,92 160,46 18,92" fill="#c4a574" />
-      <polygon points="160,46 302,92 302,68 160,22" fill="#e8dfc4" />
-      <polygon points="160,46 18,92 18,68 160,22" fill="#d4c4a4" />
-      <polygon points="160,22 302,68 240,8 160,8" fill="#a8433b" opacity="0.85" />
-      <polygon points="160,22 18,68 80,8 160,8" fill="#8a3a32" opacity="0.9" />
-      {id === "cottage" ? (
-        <g>
-          <ellipse cx="210" cy="108" rx="28" ry="10" fill="#5b4230" opacity="0.25" />
-          <rect x="188" y="78" width="44" height="28" fill="#e6d8bc" stroke="#5b4230" />
-          <polygon points="186,78 210,62 234,78" fill="#a8433b" />
-          <circle cx="210" cy="70" r="6" fill="#8a7a68" />
-          <ellipse cx="92" cy="112" rx="34" ry="12" fill="#5b4230" opacity="0.2" />
-          <rect x="64" y="92" width="56" height="16" rx="4" fill="#6b5340" />
-          <rect x="70" y="80" width="22" height="14" rx="3" fill="#f2e8d5" />
-          <circle cx="118" cy="88" r="7" fill="#d6a84c" />
-        </g>
-      ) : null}
-      {id === "hatshop" ? (
-        <g>
-          {[86, 130, 174, 218].map((x, i) => (
-            <g key={x}>
-              <rect x={x} y="86" width="6" height="28" fill="#5b4230" />
-              <path d={`M${x - 10} 86 C${x - 10} 68 ${x + 16} 68 ${x + 16} 86 Z`} fill={i % 2 ? "#a8433b" : "#35543f"} />
-              <circle cx={x + 3} cy="66" r="3.5" fill="#d6a84c" />
-            </g>
-          ))}
-        </g>
-      ) : null}
-      {id === "armory" ? (
-        <g>
-          <rect x="70" y="70" width="70" height="46" fill="#8a7a68" stroke="#5b4230" />
-          <rect x="82" y="78" width="6" height="34" fill="#cfe4c8" />
-          <rect x="96" y="78" width="6" height="34" fill="#8a7a68" />
-          <rect x="110" y="78" width="6" height="34" fill="#c4963d" />
-          <ellipse cx="210" cy="100" rx="18" ry="24" fill="#6b5340" stroke="#3e2e20" />
-          <ellipse cx="210" cy="100" rx="8" ry="12" fill="#f2e8d5" opacity="0.35" />
-        </g>
-      ) : null}
-      {id === "bakery" ? (
-        <g>
-          <rect x="74" y="72" width="56" height="42" fill="#5b4230" />
-          <rect x="82" y="80" width="40" height="22" fill="#2a241c" />
-          <ellipse cx="102" cy="70" rx="10" ry="6" fill="#8a7a68" />
-          <circle cx="188" cy="104" r="10" fill="#d6a84c" />
-          <circle cx="214" cy="100" r="12" fill="#c4963d" />
-          <circle cx="236" cy="108" r="8" fill="#a8433b" />
-        </g>
-      ) : null}
-      {id === "general" ? (
-        <g>
-          <rect x="68" y="88" width="70" height="18" fill="#8a7a68" />
-          <rect x="76" y="76" width="54" height="14" fill="#c4a574" />
-          <rect x="188" y="70" width="8" height="44" fill="#5b4230" />
-          <rect x="200" y="66" width="8" height="48" fill="#6b5340" />
-          <rect x="212" y="74" width="8" height="40" fill="#5b4230" />
-        </g>
-      ) : null}
-      {id === "haven-shop" ? (
-        <g>
-          <rect x="86" y="80" width="48" height="32" fill="#9ec3b8" stroke="#24402f" />
-          <rect x="94" y="88" width="32" height="8" fill="#24402f" opacity="0.35" />
-          <rect x="200" y="68" width="6" height="48" fill="#cfe4c8" />
-          <circle cx="203" cy="64" r="6" fill="#d6a84c" />
-        </g>
-      ) : null}
-      {id === "townhall" ? (
-        <g>
-          <rect x="118" y="58" width="84" height="52" fill="#e6d8bc" stroke="#5b4230" />
-          <rect x="148" y="78" width="24" height="32" fill="#5b4230" />
-          <circle cx="160" cy="48" r="14" fill="#e8dfc4" stroke="#5b4230" />
-          <line x1="160" y1="48" x2="160" y2="38" stroke="#2a241c" strokeWidth="2" />
-          <line x1="160" y1="48" x2="168" y2="52" stroke="#a8433b" strokeWidth="1.6" />
-          <rect x="70" y="88" width="28" height="18" fill="#8a7a68" />
-          <rect x="222" y="88" width="28" height="18" fill="#8a7a68" />
-        </g>
-      ) : null}
-      {id === "watch" ? (
-        <g>
-          <rect x="138" y="48" width="16" height="70" fill="#8a7a68" />
-          <rect x="122" y="44" width="48" height="10" fill="#c4a574" />
-          <polygon points="130,44 146,28 162,44" fill="#35543f" />
-          <rect x="200" y="70" width="6" height="40" fill="#5b4230" />
-          <circle cx="203" cy="66" r="8" fill="#6f8f40" />
-          <ellipse cx="70" y="108" rx="28" ry="10" fill="#4e7370" opacity="0.4" />
-        </g>
-      ) : null}
-    </svg>
-  );
-}
-
 export function InteriorView() {
   const interior = useGame((s) => s.interior);
   const leave = useGame((s) => s.leaveInterior);
@@ -443,7 +350,7 @@ export function InteriorView() {
             <X className="size-4" />
           </button>
         </div>
-        <RoomScene id={interior} />
+        <InteriorPreview id={interior} />
         {interior === "cottage" ? (
           <div className="flex min-h-0 flex-1 flex-col gap-3">
             <button

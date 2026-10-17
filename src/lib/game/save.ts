@@ -1,3 +1,4 @@
+import { NPCS } from "./data/npcs";
 import { localDate, yesterdayDate } from "@/lib/utils";
 import { maxHitpoints } from "./xp";
 import { defaultSkills } from "./xp";
@@ -43,6 +44,7 @@ export function defaultSave(): GameSave {
     flagsPlanted: 0,
     clarionReads: 0,
     isles: {},
+    bonds: {},
     raidProgress: {},
     raidVisit: null,
     inventory: [],
@@ -299,6 +301,10 @@ export function migrate(raw: unknown): GameSave {
     flagsPlanted: typeof s.flagsPlanted === "number" ? Math.max(0, Math.floor(s.flagsPlanted)) : 0,
     clarionReads: typeof s.clarionReads === "number" ? Math.max(0, Math.floor(s.clarionReads)) : 0,
     isles: s.isles && typeof s.isles === "object" ? s.isles : {},
+    bonds: Object.fromEntries(NPCS.flatMap(n => {
+      const value = s.bonds?.[n.id];
+      return typeof value === "number" && Number.isFinite(value) ? [[n.id, Math.max(0, Math.floor(value))]] : [];
+    })),
     raidProgress: coerceRaidProgress(s.raidProgress),
     raidVisit: coerceRaidVisit(s.raidVisit),
     inventory: asStringArray(s.inventory, []),

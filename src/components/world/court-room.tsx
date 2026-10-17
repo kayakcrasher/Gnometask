@@ -1,4 +1,4 @@
-import { Canvas } from "@react-three/fiber";
+import { InteriorCanvas as Canvas, RoomDecor } from "./interior-assets";
 import { useEffect, useState } from "react";
 import { caseBrief, TOWN_LABEL } from "@/lib/game/data/civic";
 import {
@@ -212,6 +212,7 @@ export function CourtRoom() {
   return (
     <div className="fixed inset-0 z-30 bg-[#1c2430]">
       <Canvas camera={{ position: [0, 5.4, 10.5], fov: 44 }}>
+        <RoomDecor theme="court" />
         <Amphitheater verdict={phase === "ruled" ? verdict : null} />
       </Canvas>
 

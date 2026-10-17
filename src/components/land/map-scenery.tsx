@@ -1,3 +1,5 @@
+import { DESERT_POLY, DESERT_BEACH } from "@/lib/game/world3";
+import { SUNSTEP_VENUES } from "@/lib/game/data/sunstep";
 import { ROAD_NETWORK } from "@/lib/game/data/country";
 import { mixLandColor, regionValue } from "@/lib/game/metrics";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
@@ -50,6 +52,8 @@ export function MapScenery({
         d="M90 270 C 260 50 760 40 1160 100 C 1580 50 2100 80 2520 210 C 2700 320 2740 560 2660 880 C 2560 1180 2100 1380 1580 1420 C 1060 1460 540 1360 210 1180 C 50 1060 20 800 50 520 C 60 370 40 310 90 270 Z"
         fill="#8cb067"
       />
+      <polygon points={DESERT_BEACH.map(p => p.join(",")).join(" ")} fill="#ecd3a0" />
+      <polygon points={DESERT_POLY.map(p => p.join(",")).join(" ")} fill="#e3b772" />
       {REGIONS.map((r) => {
         const t = regionValue(save, r.id, save.metric);
         const hovered = save.hoverPlace === r.id;
@@ -68,6 +72,7 @@ export function MapScenery({
           />
         );
       })}
+      <g aria-label="Sunstep venues">{SUNSTEP_VENUES.slice(0,Math.max(3,Math.min(SUNSTEP_VENUES.length,1+Math.floor(save.daysPlayed/4)+Math.floor(save.deeds.filter(id=>id.startsWith("d-")).length/2)))).map(v=><g key={v.id} role="button" tabIndex={0} aria-label={`Enter ${v.name}`} transform={`translate(${v.x} ${v.y})`} onClick={e=>{e.stopPropagation();save.enterCasino(v.id);}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();save.enterCasino(v.id);}}} style={{cursor:"pointer"}}><rect x={-24} y={-50} width={48} height={60} rx={3} fill="#273343" stroke={v.accent} strokeWidth={4}/><path d="M-20 -38 H20 M-20 -26 H20 M-20 -14 H20" stroke={v.accent} strokeWidth={3}/><text y={-60} textAnchor="middle" fill={v.accent} fontSize={12}>{v.name}</text></g>)}</g>
       <g pointerEvents="none">
         {ROAD_NETWORK.map(road => <polyline key={`${road.id}-edge`} points={road.points.map(p => p.join(",")).join(" ")} fill="none" stroke="#827b56" strokeWidth={road.width / 0.05 + 5} strokeLinecap="round" strokeLinejoin="round" />)}
         {(["dirt", "gravel", "cobble"] as const).flatMap(surface => ROAD_NETWORK.filter(r => r.surface === surface).map(road => <polyline key={road.id} points={road.points.map(p => p.join(",")).join(" ")} fill="none" stroke={surface === "cobble" ? "#c8bda7" : surface === "gravel" ? "#b3a58c" : "#ab8b61"} strokeWidth={road.width / 0.05} strokeLinecap="round" strokeLinejoin="round" />))}

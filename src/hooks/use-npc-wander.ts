@@ -1,93 +1,167 @@
 import { useEffect, useRef, useState } from "react";
 import type { GnomeFacing } from "@/components/land/gnome";
-
-export type NpcPose = { x: number; y: number; facing: GnomeFacing; walking: boolean };
-
-const SPEED = 72;
-
+import { useGame } from "@/lib/game/store";
+import {
+  clearNpcSegment,
+  npcRoute,
+  npcRoutine,
+  safeNpcSpot,
+  type NpcActivity,
+  type NpcHome,
+  type WalkPoint,
+} from "@/lib/game/npc-brain";
+export type NpcPose = {
+  x: number;
+  y: number;
+  facing: GnomeFacing;
+  walking: boolean;
+  activity?: NpcActivity;
+};
+type Plan = { path: WalkPoint[]; wait: number; cycle: number; blocked: number };
 function facingOf(dx: number, dy: number): GnomeFacing {
-  if (Math.abs(dy) > Math.abs(dx) * 1.05) return dy > 0 ? "down" : "up";
-  return dx < 0 ? "left" : "right";
+  return Math.abs(dy) > Math.abs(dx) * 1.05
+    ? dy > 0
+      ? "down"
+      : "up"
+    : dx < 0
+      ? "left"
+      : "right";
 }
-
-export function useNpcWander(
-  homes: { id: string; x: number; y: number; stay?: boolean }[],
-  frozen: boolean,
-) {
+export function useNpcWander(homes: NpcHome[], frozen: boolean) {
   const [poses, setPoses] = useState<Record<string, NpcPose>>(() =>
-    Object.fromEntries(homes.map((h) => [h.id, { x: h.x, y: h.y, facing: "down" as GnomeFacing, walking: false }])),
+    Object.fromEntries(
+      homes.map((h) => [
+        h.id,
+        {
+          ...safeNpcSpot(h),
+          facing: "down",
+          walking: false,
+          activity: "working",
+        },
+      ]),
+    ),
   );
-  const posesRef = useRef(poses);
-  posesRef.current = poses;
-  const targets = useRef<Record<string, { x: number; y: number; wait: number }>>({});
-
+  const posesRef = useRef(poses),
+    plans = useRef<Record<string, Plan>>({});
   useEffect(() => {
     if (frozen) {
-      setPoses((prev) => {
-        const next = { ...prev };
-        let changed = false;
-        for (const id of Object.keys(next)) {
-          if (next[id]!.walking) {
-            next[id] = { ...next[id]!, walking: false };
-            changed = true;
-          }
-        }
-        return changed ? next : prev;
-      });
+      const next = Object.fromEntries(
+        Object.entries(posesRef.current).map(([id, p]) => [
+          id,
+          { ...p, walking: false },
+        ]),
+      );
+      posesRef.current = next;
+      setPoses(next);
       return;
     }
-    let raf = 0;
-    let last = performance.now();
+    let raf = 0,
+      last = performance.now(),
+      elapsed = 0;
     const loop = (now: number) => {
-      const dt = Math.min(0.1, (now - last) / 1000);
+      elapsed += Math.min(0.1, (now - last) / 1000);
       last = now;
-      const cur = { ...posesRef.current };
-      let changed = false;
-      for (const home of homes) {
-        const pose = cur[home.id] ?? { x: home.x, y: home.y, facing: "down" as GnomeFacing, walking: false };
-        let t = targets.current[home.id];
-        if (!t) {
-          t = { x: home.x, y: home.y, wait: 0.4 + Math.random() * 1.4 };
-          targets.current[home.id] = t;
-        }
-        if (t.wait > 0) {
-          t.wait -= dt;
-          if (pose.walking) {
-            cur[home.id] = { ...pose, walking: false };
-            changed = true;
-          }
-          if (t.wait <= 0) {
-            const ang = Math.random() * Math.PI * 2;
-            const rad = home.stay ? 8 + Math.random() * 16 : 18 + Math.random() * 42;
-            t.x = home.x + Math.cos(ang) * rad;
-            t.y = home.y + Math.sin(ang) * rad * 0.72;
-          }
+      // NPC decisions and pose publication run at 15 Hz, independently of rendering.
+      if (elapsed < 1 / 15) {
+        raf = requestAnimationFrame(loop);
+        return;
+      }
+      const dt = elapsed;
+      elapsed = 0;
+      const cur = { ...posesRef.current },
+        state = useGame.getState();
+      for (const [homeIndex, home] of homes.entries()) {
+        const pose = cur[home.id] ?? {
+          ...safeNpcSpot(home),
+          facing: "down" as GnomeFacing,
+          walking: false,
+        };
+        const plan =
+          plans.current[home.id] ??
+          (plans.current[home.id] = {
+            path: [],
+            wait: 0.4 + (homeIndex % 13) * 0.16,
+            cycle: 0,
+            blocked: 0,
+          });
+        if (state.popup?.npcId === home.id) {
+          cur[home.id] = {
+            ...pose,
+            walking: false,
+            activity: "chatting",
+            facing: facingOf(state.gnomeX - pose.x, state.gnomeY - pose.y),
+          };
           continue;
         }
-        const dx = t.x - pose.x;
-        const dy = t.y - pose.y;
-        const dist = Math.hypot(dx, dy);
-        if (dist < 3) {
-          t.wait = 1.2 + Math.random() * 3.2;
+        if (plan.wait > 0) {
+          plan.wait -= dt;
           cur[home.id] = { ...pose, walking: false };
-          changed = true;
           continue;
         }
-        const step = Math.min(dist, SPEED * dt);
+        if (!plan.path.length) {
+          const routine = npcRoutine(home, state.dayPhase, plan.cycle++);
+          plan.path = npcRoute(pose, routine.point) ?? [];
+          plan.wait = plan.path.length ? 0 : routine.wait;
+          cur[home.id] = {
+            ...pose,
+            walking: false,
+            activity: routine.activity,
+          };
+          if (!plan.path.length) continue;
+        }
+        const goal = plan.path[0]!,
+          dx = goal.x - pose.x,
+          dy = goal.y - pose.y,
+          distance = Math.hypot(dx, dy);
+        if (distance < 2) {
+          plan.path.shift();
+          if (!plan.path.length)
+            plan.wait = npcRoutine(home, state.dayPhase, plan.cycle - 1).wait;
+          cur[home.id] = { ...cur[home.id]!, walking: false };
+          continue;
+        }
+        const speed =
+          pose.activity === "patrolling"
+            ? 55
+            : pose.activity === "resting"
+              ? 32
+              : 43;
+        const step = Math.min(distance, speed * dt),
+          next = {
+            x: pose.x + (dx / distance) * step,
+            y: pose.y + (dy / distance) * step,
+          };
+        const crowd = homes.some(
+          (other) =>
+            other.id < home.id &&
+            cur[other.id] &&
+            Math.hypot(cur[other.id]!.x - next.x, cur[other.id]!.y - next.y) <
+              12,
+        );
+        if (crowd || !clearNpcSegment(pose, next)) {
+          plan.blocked += dt;
+          cur[home.id] = { ...cur[home.id]!, walking: false };
+          if (plan.blocked > 1.5) {
+            plan.path = [];
+            plan.wait = 1;
+            plan.blocked = 0;
+          }
+          continue;
+        }
+        plan.blocked = 0;
         cur[home.id] = {
-          x: pose.x + (dx / dist) * step,
-          y: pose.y + (dy / dist) * step,
+          ...cur[home.id]!,
+          ...next,
           facing: facingOf(dx, dy),
           walking: true,
         };
-        changed = true;
       }
-      if (changed) setPoses(cur);
+      posesRef.current = cur;
+      setPoses(cur);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [frozen, homes]);
-
+  }, [homes, frozen]);
   return poses;
 }

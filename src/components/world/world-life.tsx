@@ -169,11 +169,11 @@ export function Npcs3({
               onNpc(n.id, x, y);
             }}
           >
-            <GnomeRig hat={n.hat} scale={1.15} coat={coat} beard gesture={Math.hypot((poses[n.id]?.x ?? n.x) - gx, (poses[n.id]?.y ?? n.y) - gy) < 90 ? "wave" : null} />
+            <group rotation={[0,({down:0,up:Math.PI,left:-Math.PI/2,right:Math.PI/2})[poses[n.id]?.facing ?? "down"],0]}><GnomeRig walking={poses[n.id]?.walking} hat={n.hat} scale={1.15} coat={coat} beard gesture={Math.hypot((poses[n.id]?.x ?? n.x) - gx, (poses[n.id]?.y ?? n.y) - gy) < 90 && !poses[n.id]?.walking ? "wave" : null} /></group>
             {showLabels ? (
             <Html zIndexRange={[8, 0]} position={[0, 1.9, 0]} center distanceFactor={18} style={{ pointerEvents: "none" }}>
               <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
-                {n.shortName ?? n.name} · {n.job}
+                {n.shortName ?? n.name} · {poses[n.id]?.activity ?? n.job}
                 {onWatch ? " · watch" : ""}
               </p>
             </Html>
