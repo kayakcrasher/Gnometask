@@ -1,3 +1,4 @@
+import {aquariumLevel,cleanFishBag} from "./data/fish";
 import { emptyCity, coerceCity } from "./city";
 import { developmentLevel } from "./development";
 import { npcBuildAllowed, openFrontier } from "./town-planning";
@@ -22,7 +23,7 @@ import { totalDividend } from "./data/market";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -97,6 +98,7 @@ export function defaultSave(): GameSave {
     bones: 0,
     fishBag: {},
     tank: {},
+    aquariumLevel:0,
     boatRank: 1,
     plots: {},
     seeds: { carrot: 2 },
@@ -352,8 +354,9 @@ export function migrate(raw: unknown): GameSave {
     shares: asFishBag(s.shares),
     waveDay: typeof s.waveDay === "number" ? Math.max(0, Math.floor(s.waveDay)) : 0,
     bones: typeof s.bones === "number" ? s.bones : 0,
-    fishBag: asFishBag(s.fishBag),
-    tank: asFishBag(s.tank),
+    fishBag: cleanFishBag(s.fishBag),
+    tank: cleanFishBag(s.tank),
+    aquariumLevel:aquariumLevel(s.aquariumLevel,s.tank),
     boatRank: typeof s.boatRank === "number" ? Math.max(1, Math.min(5, s.boatRank)) : 1,
     plots: asPlots(s.plots),
     seeds: s.seeds == null ? { carrot: 2 } : asFishBag(s.seeds),

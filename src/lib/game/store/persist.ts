@@ -95,6 +95,7 @@ export function snap(s: GameSave): GameSave {
     bones: s.bones,
     fishBag: s.fishBag,
     tank: s.tank,
+    aquariumLevel:s.aquariumLevel,
     boatRank: s.boatRank,
     plots: s.plots,
     seeds: s.seeds,

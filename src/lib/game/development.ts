@@ -14,7 +14,7 @@ export function developmentWorth(
       (p) =>
         s.roadWorks.completed.includes(p.id) || s.roadWorks.active?.id === p.id,
     ).reduce((n, p) => n + p.coins, 0) +
-    s.city.buildings.reduce((n,b)=>n+CITY_BUILDINGS[b.kind].coins*(1+(b.level-1)*b.level/2),0) +
+    s.city.buildings.reduce((n,b)=>n+(b.invested??CITY_BUILDINGS[b.kind].coins*(1+Array.from({length:b.level-1},(_,i)=>(i+1)**2).reduce((a,b)=>a+b,0))),0) +
     s.city.roads.reduce((n,r)=>n+Math.ceil(routeLength(r.points)/2),0)+s.city.carts.length*180+
     s.coins +
     s.ownedGear.reduce((n, id) => n + (CATALOG_BY_ID[id]?.price ?? 0), 0) +

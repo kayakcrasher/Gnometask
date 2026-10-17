@@ -1,3 +1,4 @@
+import {HOME_UPGRADE_COST} from "../city";
 import { developmentWorth } from "../development";
 import { wheelPayout } from "../casino";
 import { uid } from "@/lib/utils";
@@ -488,7 +489,7 @@ export function economySlice(
         set({ speech: "The cottage is a manor. It cannot get more manor." });
         return;
       }
-      const COSTS = [0, 120, 260, 520];
+      const COSTS = HOME_UPGRADE_COST;
       const next = level + 1;
       const cost = COSTS[next] ?? 0;
       if (s.coins < cost) {

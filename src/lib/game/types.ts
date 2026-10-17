@@ -232,6 +232,7 @@ export type GameSave = {
   bones: number;
   fishBag: Record<string, number>;
   tank: Record<string, number>;
+  aquariumLevel: number;
   boatRank: number;
   plots: Record<string, PlotSave>;
   seeds: Record<string, number>;

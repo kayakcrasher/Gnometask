@@ -1,5 +1,6 @@
 import {
   CITY_BUILDINGS,
+  citySetupCost,
   cityPath,
   cityRoadError,
   citySiteError,
@@ -53,7 +54,10 @@ export function citySlice(
         say(error);
         return;
       }
-      const cost = CITY_BUILDINGS[kind];
+      const cost = {
+        ...CITY_BUILDINGS[kind],
+        coins: citySetupCost(s.city, kind),
+      };
       if (s.coins < cost.coins) {
         say(`Needs ${cost.coins} coins.`);
         return;
@@ -80,6 +84,7 @@ export function citySlice(
               supplies: 0,
               work: 0,
               residents: 0,
+              invested: cost.coins,
             },
           ],
         },
@@ -141,7 +146,14 @@ export function citySlice(
           ...s.city,
           spent: s.city.spent + cost.coins,
           buildings: s.city.buildings.map((p) =>
-            p.id === id ? { ...p, level: p.level + 1 } : p,
+            p.id === id
+              ? {
+                  ...p,
+                  level: p.level + 1,
+                  invested:
+                    (p.invested ?? CITY_BUILDINGS[p.kind].coins) + cost.coins,
+                }
+              : p,
           ),
         },
         speech:

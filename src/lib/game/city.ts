@@ -22,10 +22,10 @@ export const CITY_BUILDINGS: Record<
 > = {
   home: {
     name: "Your home",
-    coins: 0,
+    coins: 180,
     hall: 1,
     description:
-      "Move your existing home into your city for free. Your furniture, upgrades and interior come with you.",
+      "Move your existing home into your city. Your furniture, upgrades and interior come with you.",
   },
   depot: {
     name: "Trade depot",
@@ -67,6 +67,7 @@ export type CityBuilding = {
   supplies: number;
   work: number;
   residents: number;
+  invested?: number;
 };
 export type CityCart = {
   factory: string;
@@ -105,7 +106,7 @@ export const cityRoads = (
 ) => [...developedRoads(s.roadWorks, s.estate), ...s.city.roads];
 export const cityCapacity = (b: CityBuilding) => 20 * b.level;
 export const cityUpgradeCost = (b: CityBuilding) => ({
-  coins: CITY_BUILDINGS[b.kind].coins * b.level,
+  coins: CITY_BUILDINGS[b.kind].coins * b.level ** 2,
 });
 export function citySiteError(
   s: GameSave,
@@ -543,6 +544,14 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
       supplies: whole(b.supplies, 100),
       work: whole(b.work, 2),
       residents: whole(b.residents, 4 * level),
+      invested:
+        whole(b.invested) ||
+        CITY_BUILDINGS[b.kind].coins *
+          (1 +
+            Array.from({ length: level - 1 }, (_, i) => (i + 1) ** 2).reduce(
+              (a, b) => a + b,
+              0,
+            )),
     });
     ids.add(b.id);
   }
@@ -623,3 +632,11 @@ export function cityDeedDeveloped(
     }),
   );
 }
+
+export function citySetupCost(city: PlayerCity, kind: CityKind) {
+  return Math.ceil(
+    CITY_BUILDINGS[kind].coins *
+      (1 + city.buildings.filter((b) => b.kind === kind).length * 0.25),
+  );
+}
+export const HOME_UPGRADE_COST = [0, 240, 720, 2160];

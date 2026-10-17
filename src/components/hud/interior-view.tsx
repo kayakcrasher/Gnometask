@@ -1,3 +1,5 @@
+import {HOME_UPGRADE_COST} from "@/lib/game/city";
+import {Aquarium} from "./aquarium";
 import { InteriorPreview } from "@/components/world/interior-assets";
 import { SailingProgress } from "./sailing-progress";
 import { X } from "lucide-react";
@@ -53,7 +55,7 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   },
   townhall: {
     title: "Town Hall",
-    blurb: "Upgrade the hall toward a stone keep. The tank in the corner grows with every fish you keep.",
+    blurb: "Upgrade the hall toward a stone keep. Set up and expand the aquarium with coins to hold your fish collection.",
   },
   watch: {
     title: "Greg's watch",
@@ -77,68 +79,6 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
     blurb: "Three beers, a room upstairs, and a till that already knows interest.",
   },
 };
-
-function Aquarium() {
-  const tank = useGame((s) => s.tank);
-  const bag = useGame((s) => s.fishBag);
-  const stock = useGame((s) => s.stockFish);
-  const kept = FISH.flatMap((f) => Array.from({ length: Math.min(tank[f.id] ?? 0, 4) }, (_, i) => ({ ...f, key: `${f.id}-${i}` })));
-  const total = FISH.reduce((n, f) => n + (tank[f.id] ?? 0), 0);
-  const height = 96 + Math.min(160, total * 7);
-  const holding = FISH.filter((f) => (bag[f.id] ?? 0) > 0);
-  return (
-    <div>
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/55">Aquarium · {total}</p>
-      <div className="relative mt-1 overflow-hidden rounded-[16px] bg-[#163e48]" style={{ height }}>
-        <style>{`
-          @keyframes hw-swim {
-            0% { transform: translateX(-30%) scaleX(1); }
-            49% { transform: translateX(240%) scaleX(1); }
-            50% { transform: translateX(240%) scaleX(-1); }
-            100% { transform: translateX(-30%) scaleX(-1); }
-          }
-        `}</style>
-        {kept.length === 0 ? (
-          <p className="absolute inset-0 flex items-center justify-center px-4 text-center text-xs font-semibold text-[#d5e6ea]">
-            Empty water. Catch a fish and keep it here.
-          </p>
-        ) : (
-          kept.map((f, i) => (
-            <div
-              key={f.key}
-              className="absolute flex items-center"
-              style={{
-                top: 12 + ((i * 37) % Math.max(40, height - 28)),
-                animation: `hw-swim ${6 + (i % 4)}s linear ${i * 0.4}s infinite`,
-              }}
-            >
-              <span className="block h-3 w-7 rounded-full" style={{ background: f.color }} />
-              <span
-                className="block h-0 w-0 border-y-[6px] border-r-[8px] border-y-transparent"
-                style={{ borderRightColor: f.color }}
-              />
-            </div>
-          ))
-        )}
-      </div>
-      {holding.length ? (
-        <ul className="mt-2 flex flex-col gap-1.5">
-          {holding.map((f) => (
-            <li key={f.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
-              <span className="flex-1">
-                {f.name} × {bag[f.id]}
-              </span>
-              <button type="button" onClick={() => stock(f.id)} className="rounded-full bg-pine px-2 py-1 text-[11px] text-parchment">
-                Keep
-              </button>
-              <span className="text-[11px] text-bark/50">Shop buys {f.price}</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
 
 function DockhousePanel() {
   const coins = useGame((s) => s.coins);
@@ -352,7 +292,8 @@ export function InteriorView() {
         </div>
         <InteriorPreview id={interior} />
         {interior === "cottage" ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-3">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+            <Aquarium/>
             <button
               type="button"
               onClick={sipTea}
@@ -366,7 +307,7 @@ export function InteriorView() {
                 onClick={upgradeCottage}
                 className="h-11 rounded-[14px] bg-gold font-display text-sm font-semibold text-ink"
               >
-                {["", "Stone cottage · 120", "Gardener's cottage · 260", "Manor · 520"][cottageLevel + 1]}
+                {["", "Stone cottage", "Gardener's cottage", "Manor"][cottageLevel + 1]} · {HOME_UPGRADE_COST[cottageLevel+1]} coins
               </button>
             ) : (
               <p className="text-center font-display text-xs font-semibold text-bark/55">

@@ -4,7 +4,7 @@ import { sfx } from "../juice";
 import { PLACE_ANCHORS, VILLAGE_SLOTS } from "../data/layout";
 import { BOAT_RANK, boatById } from "../data/boats";
 import { NEWCOMERS, supplyDue } from "../data/supply";
-import { FISH_BY_ID, rollFish } from "../data/fish";
+import { FISH_BY_ID, rollFish, AQUARIUM_CAPACITY, AQUARIUM_COST, tankCount } from "../data/fish";
 import { levelFromXp, levelsOf } from "../xp";
 import { clearSeaSegment, DOCKING_RANGE, HARBOUR_APPROACH, navigableWater, SAILING_XP_DISTANCE } from "../sailing";
 import { scheduleWrite, withXp } from "./persist";
@@ -22,7 +22,7 @@ function treeStage(rec: { stage?: string; choppedAt?: number } | undefined, now:
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "sailStep" | "buyBoat" | "buyCannon" | "advanceCoach" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "sailStep" | "buyBoat" | "buyCannon" | "advanceCoach" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish" | "upgradeAquarium" | "returnFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -433,8 +433,11 @@ export function gatherSlice(
       scheduleWrite(get);
     },
 
+    upgradeAquarium:()=>{const s=get(),cost=AQUARIUM_COST[s.aquariumLevel];if(cost===undefined||s.combat)return;if(s.coins<cost){set({speech:`Aquarium setup or expansion costs ${cost} coins.`});return;}set({coins:s.coins-cost,aquariumLevel:s.aquariumLevel+1,speech:`Aquarium expanded to ${AQUARIUM_CAPACITY[s.aquariumLevel+1]} fish. Your fish stay safe.`});scheduleWrite(get);},
+    returnFish:id=>{const s=get(),have=s.tank[id]??0;if(!FISH_BY_ID[id]||have<1||s.combat)return;const tank={...s.tank};if(have===1)delete tank[id];else tank[id]=have-1;set({tank,fishBag:{...s.fishBag,[id]:(s.fishBag[id]??0)+1},speech:'Fish returned to your bag. You can keep it or sell it.'});scheduleWrite(get);},
     stockFish: (id) => {
       const s = get();
+      if(s.combat||!s.aquariumLevel||tankCount(s.tank)>=AQUARIUM_CAPACITY[s.aquariumLevel]!){set({speech:'Set up or expand your aquarium before adding another fish.'});return;}
       const have = s.fishBag[id] ?? 0;
       const fish = FISH_BY_ID[id];
       if (!fish || have < 1) return;

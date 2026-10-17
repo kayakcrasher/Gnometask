@@ -72,8 +72,8 @@ test('housing grows after trade, taxes residents, and upgrades need resources',(
  state.city.beat=9;state.city.carts=[];const coins=state.coins;state.advanceCity();assert.equal(state.city.buildings.find(b=>b.id===home.id).residents,1);assert.equal(state.coins,coins+1);
  const before=state.coins;state.townHallLevel=2;state.upgradeCity(home.id);assert.equal(state.coins,before);state.townHallLevel=5;state.upgradeCity(home.id);assert.equal(state.city.buildings.find(b=>b.id===home.id).level,2);assert.equal(state.coins,before-200);
 });
-test('player home moves into the city for free and keeps its upgrades, interior and saved return position',()=>{
- const point=points.find(p=>!citySiteError(state,'home',...p));assert(point);const coins=state.coins;state.cottageLevel=2;state.houseUpgrades=['house-fence'];state.buildCity('home',...point);assert.equal(state.coins,coins);assert.equal(state.logs,0);
+test('player home has a setup price and moves into the city and keeps its upgrades, interior and saved return position',()=>{
+ const point=points.find(p=>!citySiteError(state,'home',...p));assert(point);const coins=state.coins;state.cottageLevel=2;state.houseUpgrades=['house-fence'];state.buildCity('home',...point);assert.equal(state.coins,coins-180);assert.equal(state.logs,0);
  const home=state.city.buildings.find(b=>b.kind==='home');assert(home);assert.equal(playerHome(state).x,point[0]);state.buildCity('home',...point);assert.equal(state.city.buildings.filter(b=>b.kind==='home').length,1);
  const loaded=migrate(snap(state));assert.equal(playerHome(loaded).x,point[0]);assert.equal(loaded.cottageLevel,2);assert.deepEqual(loaded.houseUpgrades,['house-fence']);
  state.returnCityHome();assert.equal(state.interior,'cottage');assert.equal(state.gnomeX,playerHomeDoor(state).x);assert.equal(state.gnomeY,playerHomeDoor(state).y);state.interior=null;state.gnomeX=0;state.gnomeY=0;state.combat={phase:'lost',playerHp:0};state.combatEnd();assert.equal(state.gnomeX,playerHomeDoor(state).x);assert.equal(state.gnomeY,playerHomeDoor(state).y);

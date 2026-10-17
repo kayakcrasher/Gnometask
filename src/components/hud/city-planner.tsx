@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useGame } from "@/lib/game/store";
 import {
   CITY_BUILDINGS,
+  citySetupCost,
   CITY_SUPPLY_PRICE,
   cityRoads,
   citySiteError,
@@ -38,7 +39,10 @@ export function CityPlanner({ onReturn }: { onReturn: () => void }) {
         : focus === "sun"
           ? "2500 100 2100 1500"
           : "0 80 2050 1400";
-  const cost = kind === "road" ? null : CITY_BUILDINGS[kind],
+  const cost =
+      kind === "road"
+        ? null
+        : { ...CITY_BUILDINGS[kind], coins: citySetupCost(city, kind) },
     error = marker
       ? kind === "road"
         ? start
@@ -102,7 +106,7 @@ export function CityPlanner({ onReturn }: { onReturn: () => void }) {
       </button>
       {!city.buildings.some((b) => b.kind === "home") && (
         <p className="mt-2 text-xs font-bold">
-          Place Your home on your city land for free. Your existing cottage
+          Place Your home on your city land for 180 coins. Your existing cottage
           moves there with all its upgrades.
         </p>
       )}
