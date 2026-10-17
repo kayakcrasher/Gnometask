@@ -3,7 +3,10 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { ArmorTint, ShieldMesh, WeaponInHand } from "./gear-mesh";
 
-const HATS: Record<string, { peak: string; body: string; tip: string; kind: "peak" | "straw" | "crown" | "shroom" }> = {
+const HATS: Record<string, { peak: string; body: string; tip: string; kind: "peak" | "straw" | "crown" | "shroom" | "pirate" }> = {
+  "hat-grubtail": { peak: "#5c7a3a", body: "#3a4a26", tip: "#bca76b", kind: "peak" },
+  "hat-corsair": { peak: "#252a2b", body: "#9f3930", tip: "#eee0bb", kind: "pirate" },
+  "hat-sallow": { peak: "#202526", body: "#caa14b", tip: "#f4e2a3", kind: "pirate" },
   "hat-berry": { peak: "#c24f45", body: "#8a3a32", tip: "#d6a84c", kind: "peak" },
   "hat-moss": { peak: "#5c7a54", body: "#35543f", tip: "#d6a84c", kind: "peak" },
   "hat-straw": { peak: "#e6d8bc", body: "#c4a574", tip: "#d6a84c", kind: "straw" },
@@ -16,6 +19,11 @@ const HATS: Record<string, { peak: string; body: string; tip: string; kind: "pea
 
 function HatModel({ id }: { id: string }) {
   const hat = HATS[id] ?? HATS["hat-berry"]!;
+  if (hat.kind === "pirate") return <group position={[0, 1.16, 0]}>
+    <mesh rotation={[0, Math.PI / 2, 0]} castShadow><cylinderGeometry args={[0.34,0.38,0.06,3]}/><meshStandardMaterial color={hat.body}/></mesh>
+    <mesh position={[0,0.07,0]} castShadow><sphereGeometry args={[0.24,12,8]}/><meshStandardMaterial color={hat.peak}/></mesh>
+    <mesh position={[0,0.12,0.2]}><sphereGeometry args={[0.055,8,6]}/><meshStandardMaterial color={hat.tip}/></mesh>
+  </group>;
   if (hat.kind === "straw") {
     return (
       <group position={[0, 1.08, 0]}>

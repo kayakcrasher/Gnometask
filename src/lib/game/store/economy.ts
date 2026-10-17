@@ -37,6 +37,7 @@ export function economySlice(
       const item = CATALOG_BY_ID[catalogId];
       const s = get();
       if (!item) return false;
+      if (item.raidOnly && !s.ownedHats.includes(item.id)) { set({ speech: "That trophy must be earned on an enemy island." }); return false; }
       if (item.reqSkill && item.reqLevel) {
         const have = levelsOf(s.skills)[item.reqSkill];
         if (have < item.reqLevel) {

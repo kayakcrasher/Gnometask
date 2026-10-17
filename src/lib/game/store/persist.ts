@@ -54,6 +54,8 @@ export function snap(s: GameSave): GameSave {
     flagsPlanted: s.flagsPlanted ?? 0,
     clarionReads: s.clarionReads ?? 0,
     isles: s.isles ?? {},
+    raidProgress: s.raidProgress ?? {},
+    raidVisit: s.raidVisit ?? null,
     inventory: s.inventory,
     placed: s.placed,
     milestonesReached: s.milestonesReached,

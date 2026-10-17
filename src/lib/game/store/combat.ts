@@ -35,7 +35,7 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatSt
   const live = s.combat;
   if (!live || live.id !== expected.id || live.phase !== "enemy") return;
   const e = ENEMIES[live.enemyId];
-  const who = live.enemyId === "dragon" ? s.lifeDragon.name : e.name;
+  const who = live.enemyId === "dragon" ? s.lifeDragon.name : live.name;
   const intent = live.enemyIntent;
   const nextRound = live.round + 1;
   const nextIntent = enemyIntentFor(live.enemyId, nextRound);
@@ -81,7 +81,7 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatSt
     skills: gained.skills,
     hp: lost ? max : playerHp,
     ...(lost ? { gnomeX: PLAYER_START.x, gnomeY: PLAYER_START.y, afloat: null, sailHome: false,
-      abroad: null, popup: null, interior: null } : {}),
+      abroad: null, raidVisit: null, popup: null, interior: null } : {}),
   });
   if (lost) { clearCombatTimer(); scheduleWrite(get); }
   else armAutoAttack(get, 1600);
@@ -90,7 +90,11 @@ export function finishEnemyTurn(get: StoreGet, set: StoreSet, expected: CombatSt
 export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: string) {
   const s = get();
   if (!s.combat || s.combat.id !== c.id || s.combat.phase === "won" || s.combat.phase === "lost") return;
-  const e = ENEMIES[c.enemyId];
+  const islandTarget = c.islandTarget;
+  const raid = islandTarget ? s.raidProgress[islandTarget.isleId] : null;
+  if (islandTarget && (!raid || s.raidVisit?.isleId !== islandTarget.isleId || raid.claimed || raid.defeated.includes(islandTarget.targetId))) return;
+  const raidProgress = islandTarget && raid ? { ...s.raidProgress, [islandTarget.isleId]: { ...raid, defeated: [...raid.defeated, islandTarget.targetId] } } : s.raidProgress;
+  const raidBoss = Boolean(islandTarget?.boss);
   const hats =
     (c.enemyId === "dragon" || c.enemyId === "absence") && !s.ownedHats.includes("hat-dragon")
       ? [...s.ownedHats, "hat-dragon"]
@@ -120,7 +124,7 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
       speech = `A runt down. ${left} still green on the shore.`;
     }
   }
-  const lootLine = `Drops bones and ${c.rewardCoins} coins.`;
+  const lootLine = raidBoss ? `${c.name} is down. The island chest is unguarded.` : `Drops bones and ${c.rewardCoins} coins.`;
   const chart = rolledChart(c.enemyId, s.chart);
   let respect = s.respect;
   let muckRaiders = s.muckRaiders;
@@ -134,7 +138,7 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
     }
     respect += 1;
   }
-  if (c.enemyId === "chief") {
+  if (c.enemyId === "chief" && !islandTarget) {
     surrendered = true;
     respect += 8;
     bonusCoins = 40;
@@ -142,7 +146,7 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
   }
   speech = speech ? `${speech} ${lootLine}` : lootLine;
   if (chart) speech = `${speech} A hide map shows their island.`;
-  const loot = rememberLoot(get, set, c.atX, c.atY, 1, c.rewardCoins + bonusCoins);
+  const loot = raidBoss ? {} : rememberLoot(get, set, c.atX, c.atY, 1, c.rewardCoins + bonusCoins);
   let lifeDragon = s.lifeDragon;
   let absencePending = s.absencePending;
   if (c.enemyId === "dragon") {
@@ -154,7 +158,8 @@ export function winCombat(get: StoreGet, set: StoreSet, c: CombatState, log: str
   clearCombatTimer();
   set({
     ...loot,
-    combat: { ...c, enemyHp: 0, phase: "won", guarding: false, foeSwing: false, loot: { coins: c.rewardCoins + bonusCoins, bones: 1 }, shake: c.shake + 1, log },
+    raidProgress,
+    combat: { ...c, enemyHp: 0, phase: "won", guarding: false, foeSwing: false, loot: raidBoss ? null : { coins: c.rewardCoins + bonusCoins, bones: 1 }, shake: c.shake + 1, log },
     wildWins: s.wildWins + 1,
     lifeDragon,
     absencePending,
@@ -244,7 +249,7 @@ export function combatSlice(
       }
       if (enemyHp <= 0) {
         const e = ENEMIES[c.enemyId];
-        const who = c.enemyId === "dragon" ? s.lifeDragon.name : e.name;
+        const who = c.enemyId === "dragon" ? s.lifeDragon.name : c.name;
         clearCombatTimer();
         set({ skills: gained.skills, hp: Math.min(playerHp, playerMax) });
         winCombat(
@@ -366,7 +371,7 @@ export function combatSlice(
         gnomeX: PLAYER_START.x,
         gnomeY: PLAYER_START.y,
         speech: "You retreat to the cottage. Keep some food for the next trip.",
-        afloat: null, sailHome: false, abroad: null, popup: null,
+        afloat: null, sailHome: false, abroad: null, raidVisit: null, popup: null,
         hp: Math.max(1, c.playerHp),
       });
       scheduleWrite(get);

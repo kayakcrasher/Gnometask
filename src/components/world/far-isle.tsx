@@ -8,7 +8,8 @@ export function FarIsle() {
   const goods = useGame((s) => s.goods);
   const sell = useGame((s) => s.sellGood);
   const isle = FAR_ISLES.find((i) => i.id === abroad);
-  if (!isle) return null;
+  const raidVisit = useGame(s => s.raidVisit);
+  if (!isle || raidVisit) return null;
   return (
     <div className="absolute inset-0 z-30 bg-[#143e4c]">
       <Canvas camera={{ position: [4, 5, 7], fov: 42 }}>

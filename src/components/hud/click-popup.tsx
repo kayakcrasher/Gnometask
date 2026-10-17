@@ -174,6 +174,7 @@ export function ClickPopup() {
         <SailingProgress />
         {activeBoat && activeBoat.need >= 2 ? <Action label="Cast line" tone="gold" onClick={() => { const s = useGame.getState(); castLine("sea", s.gnomeX, s.gnomeY); }} /> : null}
         {cannons && landing ? <Action label="Fire cannon" tone="berry" onClick={fireCannon} /> : null}
+        <Action label="Enemy islands" tone="gold" onClick={() => enter("chart")} />
         <Action label="Return to harbour" tone="quiet" onClick={() => sailTo("dock")} />
       </div>
     </div>
@@ -187,7 +188,7 @@ export function ClickPopup() {
   const repairCost = building
     ? Math.max(4, Math.ceil((BUILDING_MAX[building] - hp[building]) / 2))
     : 0;
-  const enemyStats = popup.enemyId ? popup.enemyId === "runt" ? { hp: 3, dmg: 1 } : scaleEnemy(popup.enemyId, skills) : null;
+  const enemyStats = enemy && popup.enemyId ? popup.enemyId === "runt" ? { hp: 3, dmg: 1 } : scaleEnemy(popup.enemyId as EnemyId, skills) : null;
   const title = enemy && popup.kind !== "dragon" ? enemy.name : popup.title;
   const npc = popup.npcId ? NPCS.find((n) => n.id === popup.npcId) : null;
   const npcQuests = quests.filter((q) => {

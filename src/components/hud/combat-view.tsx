@@ -29,7 +29,7 @@ export function CombatView() {
   const busy = combat.phase === "enemy";
   const over = combat.phase === "won" || combat.phase === "lost";
   const peaceful = combat.enemyId === "dragon" && honey > 0;
-  const who = combat.enemyId === "dragon" ? dragon.name : ENEMIES[combat.enemyId].name;
+  const who = combat.enemyId === "dragon" ? dragon.name : combat.name;
   const heavy = combat.enemyIntent.kind !== "strike";
   const gainedXp = COMBAT_SKILLS.filter(id => combat.sessionXp[id] > 0);
   const button = "min-h-11 rounded-xl px-2 text-xs font-bold transition-colors disabled:opacity-40";

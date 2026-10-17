@@ -1,3 +1,4 @@
+import { islandsSlice } from "./islands";
 import { clockSlice } from "./clock";
 import { combatSlice } from "./combat";
 import { farmSlice } from "./farm";
@@ -30,6 +31,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...gatherSlice(set, get),
   ...farmSlice(set, get),
   ...honourSlice(set, get),
+  ...islandsSlice(set, get),
   ...yardSlice(set, get),
   ...clockSlice(set, get),
 }));

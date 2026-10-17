@@ -4,6 +4,9 @@ export const ENEMIES: Record<
   EnemyId,
   { name: string; blurb: string; hp: number; dmg: number; coins: number; def: number; area: number }
 > = {
+  pirate: { name: "Pirate cutthroat", blurb: "A stolen blade and a taste for somebody else's cargo.", hp: 12, dmg: 2, coins: 6, def: 3, area: 5 },
+  gunner: { name: "Powder gunner", blurb: "The powder horn rattles before the shot. Keep your guard up.", hp: 16, dmg: 3, coins: 9, def: 4, area: 8 },
+  captain: { name: "Pirate captain", blurb: "A sharp sabre, a loaded pistol, and the key to the chest.", hp: 32, dmg: 4, coins: 14, def: 5, area: 10 },
   rat: {
     name: "Garden rat",
     blurb: "Bold about crumbs. A first fight, if you can call it that.",
@@ -138,6 +141,9 @@ export const ENEMY_BEHAVIOUR: Record<EnemyId, {
   accuracy: number;
   special?: { label: string; kind: "heavy" | "fire"; bonus: number };
 }> = {
+  pirate: { attack: "Cutlass slash", accuracy: 0.82, special: { label: "Boarding rush", kind: "heavy", bonus: 2 } },
+  gunner: { attack: "Pistol shot", accuracy: 0.75, special: { label: "Powder blast", kind: "fire", bonus: 3 } },
+  captain: { attack: "Sabre cut", accuracy: 0.9, special: { label: "Captain's broadside", kind: "heavy", bonus: 4 } },
   rat: { attack: "Bite", accuracy: 0.8 },
   crab: { attack: "Pinch", accuracy: 0.8 },
   runt: { attack: "Wild swing", accuracy: 0.45 },

@@ -142,7 +142,8 @@ export function GoblinIsle() {
   const leave = useGame((s) => s.leaveIsle);
   const speech = useGame((s) => s.speech);
   const respect = useGame((s) => s.respect);
-  if (abroad !== "mucktooth") return null;
+  const raidVisit = useGame(s => s.raidVisit);
+  if (raidVisit || abroad !== "mucktooth") return null;
   return (
     <div className="fixed inset-0 z-10 bg-[#3d6a66]">
       <Canvas camera={{ position: [0, 7.5, 8.5], fov: 42 }} shadows>

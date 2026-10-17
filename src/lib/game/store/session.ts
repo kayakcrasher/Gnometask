@@ -41,6 +41,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         gnomeName,
         named,
         atHome: true,
+        abroad: loaded.raidVisit?.isleId as GameState["abroad"] ?? null,
         lifeDragon,
         quests: seeded.quests,
         chicken: seeded.chicken,
@@ -112,6 +113,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       if (!s.named || !s.gnomeName) return;
       set({
         atHome: false,
+        abroad: s.raidVisit?.isleId as GameState["abroad"] ?? null,
         lifeDragon: { ...s.lifeDragon, name: "Ember" },
         speech: `Welcome back, ${s.gnomeName}. The hall must reach level 3 before Ember shows.`,
       });

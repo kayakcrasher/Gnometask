@@ -12,6 +12,7 @@ import { levelFromXp } from "@/lib/game/xp";
 import { cn } from "@/lib/utils";
 
 const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[] }> = {
+  chart: { title: "Enemy islands", blurb: "Chart a course from the harbour." },
   cottage: {
     title: "Inside the cottage",
     blurb: "Your great-grandpa's roof. Tea restores heart. You arrived with empty pockets. Ol Pappy is on the dock.",
@@ -147,6 +148,7 @@ function DockhousePanel() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
       <SailingProgress />
+      <button type="button" onClick={() => useGame.getState().enterInterior("chart")} className="min-h-11 rounded-xl bg-gold px-3 text-sm font-bold text-ink">Chart the enemy islands</button>
       <p className="text-xs font-semibold text-bark/70">Skill improves your speed by 1% per level, up to 25%. The rowboat is already yours.</p>
       {BOATS.filter((b) => b.price > 0).map((boat) => {
         const owned = hulls.includes(boat.id);
@@ -419,7 +421,7 @@ export function InteriorView() {
   const cottageHp = useGame((s) => s.buildingHp.cottage);
   const cottageLevel = useGame((s) => s.cottageLevel ?? 0);
   const upgradeCottage = useGame((s) => s.upgradeCottage);
-  if (!interior || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
+  if (!interior || interior === "chart" || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
   const meta = COPY[interior];
   const cottageHurt = cottageHp < BUILDING_MAX.cottage;
 

@@ -2,7 +2,10 @@ import type { SVGProps } from "react";
 
 export type GnomeFacing = "left" | "right" | "up" | "down";
 
-const HATS: Record<string, { peak: string; body: string; tip: string; band: string; kind: "peak" | "straw" | "crown" | "shroom" }> = {
+const HATS: Record<string, { peak: string; body: string; tip: string; band: string; kind: "peak" | "straw" | "crown" | "shroom" | "pirate" }> = {
+  "hat-grubtail": { peak: "#5c7a3a", body: "#3a4a26", tip: "#bca76b", band: "#bca76b", kind: "peak" },
+  "hat-corsair": { peak: "#252a2b", body: "#9f3930", tip: "#eee0bb", band: "#9f3930", kind: "pirate" },
+  "hat-sallow": { peak: "#202526", body: "#caa14b", tip: "#f4e2a3", band: "#caa14b", kind: "pirate" },
   "hat-berry": { peak: "#c24f45", body: "#8a3a32", tip: "#d6a84c", band: "#f4f1ea", kind: "peak" },
   "hat-moss": { peak: "#5c7a54", body: "#35543f", tip: "#d6a84c", band: "#f4f1ea", kind: "peak" },
   "hat-straw": { peak: "#e6d8bc", body: "#c4a574", tip: "#d6a84c", band: "#5b4230", kind: "straw" },
@@ -15,6 +18,7 @@ const HATS: Record<string, { peak: string; body: string; tip: string; band: stri
 
 function Hat({ id, rear }: { id: string; rear?: boolean }) {
   const hat = HATS[id] ?? HATS["hat-berry"]!;
+  if (hat.kind === "pirate") return <g><path d="M17 32 L24 13 L43 20 L51 9 L62 20 L80 13 L85 32 Q50 44 17 32Z" fill={hat.peak} stroke={hat.band} strokeWidth="3"/><circle cx="51" cy="27" r="5" fill={hat.tip}/></g>;
   if (hat.kind === "straw") {
     return (
       <g>

@@ -1,3 +1,4 @@
+import type { BoatId } from "./boats";
 import type { EnemyId } from "../combat";
 
 /**
@@ -41,6 +42,7 @@ export type IsleDef = {
   worldY: number;
   /** Minimum Sailing level to attempt. */
   sailNeed: number;
+  boatNeed: BoatId;
   blurb: string;
   /** Defenders guarding the approach and the yard. */
   defenders: RaidDefender[];
@@ -69,6 +71,7 @@ export const ISLES: IsleDef[] = [
     worldX: 1470,
     worldY: 2100,
     sailNeed: 1,
+    boatNeed: "row",
     blurb:
       "The clan you have been fighting. A staked yard on a flat rock. Grubtail keeps the chieftain's hut at the back. Tutorial raid — bring iron.",
     defenders: [
@@ -102,6 +105,20 @@ export const ISLES: IsleDef[] = [
     raidsWith: "goblin",
   },
 
+  {
+    id: "cutlass", name: "Cutlass Cove", faction: "Redwake Pirates", worldX: -500, worldY: 1100,
+    sailNeed: 3, boatNeed: "sail",
+    blurb: "A stolen sloop, a powder shed, and Captain Brack behind the stockade. Clear the crew to reach the captain. Bronze or iron gear and a few loaves will help.",
+    defenders: [
+      { id: "cc-0", kind: "pirate", x: -90, y: 45, hp: 10, dmg: 2 },
+      { id: "cc-1", kind: "pirate", x: 40, y: 35, hp: 10, dmg: 2 },
+      { id: "cc-2", kind: "gunner", x: -65, y: -65, hp: 14, dmg: 3 },
+      { id: "cc-3", kind: "pirate", x: 90, y: -60, hp: 12, dmg: 2 },
+    ],
+    boss: { id: "brack", name: "Captain Brack", kind: "captain", x: 0, y: -170, hp: 32, dmg: 4, drop: "hat-corsair", bones: 5, coins: 20 },
+    firstCoins: 60, firstBones: 10, repeatCoins: 25, repeatBones: 5, flags: 1, raidsWith: "pirate",
+  },
+
   // ───────────────────────────── 2. The Reed ──────────────────────
   {
     id: "reed",
@@ -110,8 +127,9 @@ export const ISLES: IsleDef[] = [
     worldX: 2600,
     worldY: 1250,
     sailNeed: 5,
+    boatNeed: "fisher",
     blurb:
-      "Dark elves. They hold Haven for ransom — one hundred coins a day the black gown does not rule. Break them and the ledger forgives.",
+      "The Reed Company seizes Haven-bound cargo. Fight through the dark-elf blockade and take Warden Vesh’s ledger.",
     defenders: [
       { id: "rd-0", kind: "darkelf", x: -90, y: 20, hp: 12, dmg: 4 },
       { id: "rd-1", kind: "darkelf", x: -50, y: 0, hp: 12, dmg: 4 },
@@ -130,7 +148,7 @@ export const ISLES: IsleDef[] = [
       y: -190,
       hp: 90,
       dmg: 7,
-      drop: "sword-steel",
+      drop: "weapon-steel",
       bones: 20,
       coins: 60,
     },
@@ -151,25 +169,26 @@ export const ISLES: IsleDef[] = [
     worldX: 3400,
     worldY: 1450,
     sailNeed: 8,
+    boatNeed: "sloop",
     blurb:
       "The end of the map. A triple wall, a harbour gun, and Captain Sallow in the vault. They send pirates, not goblins. Bring adamant or bring a will.",
     defenders: [
-      { id: "sl-0", kind: "darkelf", x: -120, y: 30, hp: 16, dmg: 6 },
-      { id: "sl-1", kind: "darkelf", x: -80, y: 10, hp: 16, dmg: 6 },
-      { id: "sl-2", kind: "darkelf", x: -40, y: 25, hp: 16, dmg: 6 },
-      { id: "sl-3", kind: "darkelf", x: 0, y: 5, hp: 16, dmg: 6 },
-      { id: "sl-4", kind: "darkelf", x: 40, y: 25, hp: 16, dmg: 6 },
-      { id: "sl-5", kind: "darkelf", x: 80, y: 10, hp: 16, dmg: 6 },
-      { id: "sl-6", kind: "darkelf", x: 120, y: 30, hp: 16, dmg: 6 },
-      { id: "sl-7", kind: "darkelf", x: -100, y: -60, hp: 18, dmg: 7 },
-      { id: "sl-8", kind: "darkelf", x: -20, y: -70, hp: 18, dmg: 7 },
-      { id: "sl-9", kind: "darkelf", x: 60, y: -65, hp: 18, dmg: 7 },
-      { id: "sl-10", kind: "darkelf", x: 130, y: -50, hp: 18, dmg: 7 },
+      { id: "sl-0", kind: "pirate", x: -120, y: 30, hp: 16, dmg: 6 },
+      { id: "sl-1", kind: "pirate", x: -80, y: 10, hp: 16, dmg: 6 },
+      { id: "sl-2", kind: "pirate", x: -40, y: 25, hp: 16, dmg: 6 },
+      { id: "sl-3", kind: "pirate", x: 0, y: 5, hp: 16, dmg: 6 },
+      { id: "sl-4", kind: "pirate", x: 40, y: 25, hp: 16, dmg: 6 },
+      { id: "sl-5", kind: "pirate", x: 80, y: 10, hp: 16, dmg: 6 },
+      { id: "sl-6", kind: "pirate", x: 120, y: 30, hp: 16, dmg: 6 },
+      { id: "sl-7", kind: "gunner", x: -100, y: -60, hp: 18, dmg: 7 },
+      { id: "sl-8", kind: "gunner", x: -20, y: -70, hp: 18, dmg: 7 },
+      { id: "sl-9", kind: "gunner", x: 60, y: -65, hp: 18, dmg: 7 },
+      { id: "sl-10", kind: "gunner", x: 130, y: -50, hp: 18, dmg: 7 },
     ],
     boss: {
       id: "sallow",
       name: "Captain Sallow",
-      kind: "darkelf",
+      kind: "captain",
       x: 15,
       y: -200,
       hp: 180,
@@ -187,9 +206,7 @@ export const ISLES: IsleDef[] = [
   },
 ];
 
-export const ISLE_BY_ID: Record<string, IsleDef> = Object.fromEntries(
-  ISLES.map((i) => [i.id, i]),
-);
+export const ISLE_BY_ID: Record<string, IsleDef> = Object.assign(Object.create(null), Object.fromEntries(ISLES.map(i => [i.id, i])));
 
 /**
  * Is the ransom mechanic live for this player? Gated behind cottage
@@ -225,7 +242,7 @@ export function raidLoot(id: string, cleared: number) {
   if (cleared === 0) {
     return { coins: def.firstCoins + def.boss.coins, bones: def.firstBones + def.boss.bones, drop: def.boss.drop ?? null };
   }
-  return { coins: def.repeatCoins + def.boss.coins, bones: def.repeatBones + def.boss.bones, drop: null };
+  return { coins: def.repeatCoins * (1 + repeatTier(cleared)) + def.boss.coins, bones: def.repeatBones + def.boss.bones, drop: null };
 }
 
 /** Bonus multiplier per raid beyond the first. Keeps repeats worth doing. */

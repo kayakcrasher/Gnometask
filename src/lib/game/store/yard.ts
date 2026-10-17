@@ -210,7 +210,7 @@ export function yardSlice(
     travelIsle: (id) => {
       const s = get();
       const isle = FAR_ISLES.find((i) => i.id === id);
-      if (!isle || s.combat) return;
+      if (!isle || s.combat || s.raidVisit || s.abroad) return;
       if (s.coins < isle.fare) {
         sfx("error");
         set({ speech: `${isle.name} is ${isle.fare} coins by the fast chart.` });

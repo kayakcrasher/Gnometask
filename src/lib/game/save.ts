@@ -9,12 +9,13 @@ import { nextNewcomer, supplyDue } from "./data/supply";
 import { growFolk, type Settler } from "./data/folk";
 import { coerceCivic, seedCivic, stepCivic } from "./data/civic";
 import { dailyRoadTax } from "./data/country";
+import { coerceRaidProgress, coerceRaidVisit } from "./raid-state";
 import { boatById } from "./data/boats";
 import { totalDividend } from "./data/market";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -42,6 +43,8 @@ export function defaultSave(): GameSave {
     flagsPlanted: 0,
     clarionReads: 0,
     isles: {},
+    raidProgress: {},
+    raidVisit: null,
     inventory: [],
     placed: [],
     milestonesReached: [],
@@ -296,6 +299,8 @@ export function migrate(raw: unknown): GameSave {
     flagsPlanted: typeof s.flagsPlanted === "number" ? Math.max(0, Math.floor(s.flagsPlanted)) : 0,
     clarionReads: typeof s.clarionReads === "number" ? Math.max(0, Math.floor(s.clarionReads)) : 0,
     isles: s.isles && typeof s.isles === "object" ? s.isles : {},
+    raidProgress: coerceRaidProgress(s.raidProgress),
+    raidVisit: coerceRaidVisit(s.raidVisit),
     inventory: asStringArray(s.inventory, []),
     placed: Array.isArray(s.placed) ? s.placed : [],
     milestonesReached: Array.isArray(s.milestonesReached) ? s.milestonesReached : [],

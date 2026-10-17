@@ -173,6 +173,7 @@ export type CatalogItem = {
   reqLevel?: number;
   reqHall?: number;
   reqWealth?: number;
+  raidOnly?: boolean;
 };
 
 export type TreeSave = {
@@ -210,6 +211,8 @@ export type GameSave = {
   clarionReads: number;
   /** Per-isle: how many times cleared, and the day of the last raid. */
   isles: Record<string, { cleared: number; lastRaidedDay: number }>;
+  raidProgress: Record<string, { defeated: string[]; claimed: boolean }>;
+  raidVisit: { isleId: string; boat: string; returnX: number; returnY: number } | null;
   inventory: string[];
   placed: PlacedItem[];
   milestonesReached: number[];
@@ -307,7 +310,7 @@ export type GameUi = {
   lootFlash: LootFlash | null;
   fishing: FishingCast | null;
   dayPhase: DayPhase;
-  abroad: "mucktooth" | "reed" | "salt" | "holm" | null;
+  abroad: "mucktooth" | "reed" | "salt" | "holm" | "cutlass" | null;
 };
 
 export { BUILDING_MAX, METRICS, PLACES, PLAYER_START } from "./data/places";

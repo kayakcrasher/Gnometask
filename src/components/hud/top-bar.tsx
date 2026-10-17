@@ -1,4 +1,4 @@
-import { Backpack, Heart, Settings2, Shield, Shirt, Sword } from "lucide-react";
+import { Map, Backpack, Heart, Settings2, Shield, Shirt, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import { CATALOG_BY_ID } from "@/lib/game/catalog";
@@ -102,6 +102,7 @@ export function TopBar() {
         </div>
         {!combat ? (
         <div className="flex h-14 items-center gap-1 rounded-[20px] bg-pine/92 p-1.5 shadow-panel">
+          <button type="button" aria-label="Enemy islands" onClick={() => useGame.getState().enterInterior("chart")} className="flex size-11 items-center justify-center rounded-[14px] text-parchment hover:bg-parchment/10"><Map className="size-5" /></button>
           <button
             type="button"
             aria-label="Inventory"

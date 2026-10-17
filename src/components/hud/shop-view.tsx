@@ -51,6 +51,7 @@ export function ShopView({ kinds, compact }: { kinds?: ShopKind[]; compact?: boo
   const active = allowed.includes(kind) ? kind : allowed[0]!;
   const items = CATALOG.filter((i) => {
     if (i.kind !== active) return false;
+    if (i.raidOnly && !ownedHats.includes(i.id)) return false;
     if (i.id === "hat-dragon" && dragonState === "lurking" && !ownedHats.includes(i.id)) return false;
     return true;
   });

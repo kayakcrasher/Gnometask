@@ -1,95 +1,107 @@
-import { X } from "lucide-react";
+import { X, Flag, Skull } from "lucide-react";
 import { useGame } from "@/lib/game/store";
-import { ISLES, isleStands, ransomActive } from "@/lib/game/data/isles";
+import { ISLES, raidLoot } from "@/lib/game/data/isles";
+import { boatById } from "@/lib/game/data/boats";
+import { raidAccess } from "@/lib/game/raid-state";
+import { CATALOG_BY_ID } from "@/lib/game/catalog";
 import { levelFromXp } from "@/lib/game/xp";
 
 export function RaidChart() {
-  const interior = useGame((s) => s.interior);
-  const leave = useGame((s) => s.leaveInterior);
-  const speak = useGame((s) => s.speak);
-  const skills = useGame((s) => s.skills);
-  const isles = useGame((s) => s.isles);
-  const flags = useGame((s) => s.flagsPlanted ?? 0);
-  const cottageLevel = useGame((s) => s.cottageLevel ?? 0);
-  if (interior !== "chart") return null;
-  const sailing = levelFromXp(skills.sailing);
-
+  const s = useGame();
+  if (s.interior !== "chart") return null;
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-pine/88 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:items-center">
-      <div className="flex max-h-[88dvh] w-full max-w-lg flex-col rounded-[28px] bg-parchment p-4 shadow-panel">
-        <div className="mb-2 flex items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-bark/55">Wim's ledger</p>
-            <h2 className="font-display text-2xl font-semibold text-ink">The Chart</h2>
-            <p className="mt-1 text-sm font-semibold text-bark/70">
-              Sailing {sailing}. Flags planted: {flags}.
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-pine/90 p-3 md:items-center">
+      <section
+        aria-label="Enemy islands"
+        className="flex max-h-[88dvh] w-full max-w-xl flex-col rounded-3xl bg-parchment p-4 shadow-panel"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-bark/60">
+              Wim's sea chart
+            </p>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              Enemy islands
+            </h2>
+            <p className="mt-1 text-xs font-semibold text-bark/70">
+              Sailing {levelFromXp(s.skills.sailing)} · {s.flagsPlanted ?? 0}{" "}
+              flags planted
             </p>
           </div>
           <button
             type="button"
-            aria-label="Close"
-            onClick={leave}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-parchment-dark text-ink"
+            aria-label="Close enemy islands"
+            onClick={s.leaveInterior}
+            className="flex size-11 items-center justify-center rounded-full bg-parchment-dark text-ink"
           >
             <X className="size-4" />
           </button>
         </div>
-
-        <ul className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+        <p className="my-3 text-xs leading-relaxed text-bark/75">
+          Sail from the harbour or your own boat. Defeat the crew, challenge
+          their leader, and open the chest. Your progress survives a retreat.
+        </p>
+        <ul className="min-h-0 space-y-3 overflow-y-auto">
           {ISLES.map((isle) => {
-            const cleared = isles?.[isle.id]?.cleared ?? 0;
-            const locked = sailing < isle.sailNeed;
-            const ransoming = isleStands(isle.id, isles) && ransomActive(cottageLevel);
+            const { boat, reason } = raidAccess(s, isle);
+            const cleared = s.isles[isle.id]?.cleared ?? 0;
+            const progress = s.raidProgress[isle.id];
+            const loot = raidLoot(isle.id, cleared);
+            const drop = loot.drop ? CATALOG_BY_ID[loot.drop] : null;
+            const resume =
+              progress && !progress.claimed && progress.defeated.length > 0;
             return (
-              <li key={isle.id} className="rounded-[18px] bg-parchment-dark/60 px-3 py-3">
-                <div className="flex items-baseline justify-between gap-2">
-                  <p className="min-w-0 flex-1 font-display text-base font-semibold text-ink">
+              <li
+                key={isle.id}
+                className="rounded-2xl bg-parchment-dark/60 p-3 text-ink"
+              >
+                <div className="flex items-center gap-2">
+                  {isle.raidsWith === "pirate" ? (
+                    <Skull className="size-4 shrink-0 text-berry" />
+                  ) : (
+                    <Flag className="size-4 shrink-0 text-pine" />
+                  )}
+                  <h3 className="flex-1 font-display text-lg font-semibold">
                     {isle.name}
-                  </p>
-                  <p className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-bark/55">
-                    {isle.faction}
-                  </p>
+                  </h3>
+                  <span className="text-[10px] font-bold text-bark/65">
+                    {cleared ? `Cleared ${cleared}×` : "Unclaimed"}
+                  </span>
                 </div>
-                <p className="mt-1 text-[12px] font-semibold leading-snug text-bark/75">{isle.blurb}</p>
-                <p className="mt-1.5 text-[11px] font-bold uppercase tracking-wide text-bark/55">
-                  {cleared > 0 ? `Cleared ×${cleared}` : "Never cleared"} · Sailing {isle.sailNeed}+
+                <p className="text-[10px] font-bold uppercase tracking-wide text-bark/60">
+                  {isle.faction}
                 </p>
-                {ransoming ? (
-                  <p className="mt-1.5 rounded-[10px] bg-berry/15 px-2 py-1 text-[11px] font-bold text-berry">
-                    ⚠ Ransom {isle.ransomPerDay} coins per day while this stands.
+                <p className="mt-2 text-xs leading-relaxed text-bark/80">
+                  {isle.blurb}
+                </p>
+                <p className="mt-2 text-xs font-semibold">
+                  Sailing {isle.sailNeed} · {boatById(isle.boatNeed)?.name}+ ·{" "}
+                  {isle.defenders.length} crew + leader
+                </p>
+                <p className="mt-1 text-xs font-bold text-moss">
+                  Chest: {loot.coins} coins · {loot.bones} bones
+                  {drop ? ` · ${drop.name}` : ""}
+                </p>
+                {resume && (
+                  <p className="mt-1 text-xs font-semibold text-pine">
+                    Saved progress: {progress.defeated.length}/
+                    {isle.defenders.length + 1} enemies defeated
                   </p>
-                ) : null}
+                )}
                 <button
                   type="button"
-                  disabled={locked}
-                  onClick={() =>
-                    speak(
-                      locked
-                        ? `Wim: Not in this hull. Sailing ${isle.sailNeed} before ${isle.name}.`
-                        : `Wim: ${isle.name} on the board. The crews aren't drilled yet — give me a day.`,
-                    )
-                  }
-                  className={
-                    locked
-                      ? "mt-2 h-10 w-full rounded-[12px] bg-parchment text-[12px] font-semibold text-bark/40"
-                      : "mt-2 h-10 w-full rounded-[12px] bg-gold font-display text-sm font-semibold text-ink"
-                  }
+                  disabled={Boolean(reason)}
+                  onClick={() => s.raidIsle(isle.id)}
+                  className="mt-3 min-h-11 w-full rounded-xl bg-gold px-3 text-sm font-bold disabled:bg-parchment disabled:text-bark/55"
                 >
-                  {locked ? `Sailing ${isle.sailNeed} needed` : `Sail · ${isle.name}`}
+                  {reason ??
+                    `${resume ? "Resume" : "Sail to"} ${isle.name} · ${boat?.name}`}
                 </button>
               </li>
             );
           })}
         </ul>
-
-        <button
-          type="button"
-          onClick={leave}
-          className="mt-3 h-11 rounded-[14px] bg-parchment-dark font-display text-sm font-semibold text-ink"
-        >
-          Roll the chart up
-        </button>
-      </div>
+      </section>
     </div>
   );
 }

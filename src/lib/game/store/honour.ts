@@ -20,24 +20,17 @@ export function honourSlice(
         set({ speech: "No map yet. Goblins sometimes drop a scrap that shows their island." });
         return;
       }
-      if (s.combat) return;
-      set({
-        abroad: "mucktooth",
-        popup: null,
-        interior: null,
-        speech: s.surrendered
-          ? "Mucktooth is quiet. They remember the day the chief fell."
-          : "A squalid island. Mud huts, and a chief who still has his knife.",
-      });
+      get().raidIsle("mucktooth");
     },
 
     leaveIsle: () => {
       const s = get();
-      if (s.combat && s.combat.phase !== "won" && s.combat.phase !== "lost") {
-        set({ speech: "Finish the fight, or flee, before the tide takes you home." });
-        return;
-      }
-      set({ abroad: null, popup: null, speech: "Back on the hollow. The dock smells like home." });
+      if (s.combat) { set({ speech: "Finish the encounter before returning to your ship." }); return; }
+      const visit = s.raidVisit;
+      set({ abroad: null, raidVisit: null, popup: null, interior: null,
+        ...(visit ? { afloat: visit.boat, gnomeX: visit.returnX, gnomeY: visit.returnY } : {}),
+        speech: "Back aboard. Your cleared path on the island is saved." });
+      scheduleWrite(get);
     },
 
     startIsleFight: (which) => {

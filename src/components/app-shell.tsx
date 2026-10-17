@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect } from "react";
 import { LandMap } from "@/components/land/land-map";
+import { EnemyIsland } from "@/components/world/enemy-island";
 import { CombatView } from "@/components/hud/combat-view";
 import { TopBar } from "@/components/hud/top-bar";
 import { Speech } from "@/components/hud/speech";
@@ -86,6 +87,7 @@ export function AppShell() {
             <RaidChart />
             <GoblinIsle />
             <FarIsle />
+            <EnemyIsland />
             <CombatView />
           </>
         ) : null}

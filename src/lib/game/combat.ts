@@ -17,7 +17,10 @@ export type EnemyId =
   | "runt"
   | "raider"
   | "chief"
-  | "darkelf";
+  | "darkelf"
+  | "pirate"
+  | "gunner"
+  | "captain";
 
 export type PackEnemy = Exclude<EnemyId, "dragon" | "absence" | "goblin" | "darkelf">;
 
@@ -27,6 +30,8 @@ export type Splat = number | "miss" | "heal";
 
 export type CombatState = {
   id: number;
+  name: string;
+  islandTarget?: { isleId: string; targetId: string; boss: boolean };
   round: number;
   autoAttack: boolean;
   guarding: boolean;
@@ -116,19 +121,23 @@ export function makeCombat(
     atX?: number;
     atY?: number;
     skills?: Skills;
+    stats?: { hp: number; dmg: number; def: number; coins: number };
+    islandTarget?: { isleId: string; targetId: string; boss: boolean };
   },
 ): CombatState {
   const e = ENEMIES[enemyId];
-  const scaled =
+  const scaled = extra?.stats ?? (
     enemyId === "runt"
       ? { hp: 3, dmg: 1, def: 0, coins: e.coins }
       : extra?.skills
         ? scaleEnemy(enemyId, extra.skills)
-        : { hp: e.hp, dmg: e.dmg, def: e.def, coins: e.coins };
+        : { hp: e.hp, dmg: e.dmg, def: e.def, coins: e.coins });
   const label = extra?.name ?? e.name;
   const playerMax = extra?.playerMax ?? Math.max(PLAYER_MAX_HP, playerHp);
   return {
     id: ++encounterId,
+    name: label,
+    islandTarget: extra?.islandTarget,
     round: 1,
     autoAttack: true,
     guarding: false,
