@@ -1,3 +1,4 @@
+import { Soundtrack } from "./soundtrack";
 import { useEffect, useLayoutEffect } from "react";
 import { LandMap } from "@/components/land/land-map";
 import { EnemyIsland } from "@/components/world/enemy-island";
@@ -68,7 +69,8 @@ export function AppShell() {
   }, [named, atHome]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-pine" onPointerDown={unlockAudio}>
+    <div className="fixed inset-0 overflow-hidden bg-pine" onPointerDown={unlockAudio} onKeyDown={unlockAudio}>
+      <Soundtrack />
       <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>
         <LandMap />
         {named && !atHome ? (

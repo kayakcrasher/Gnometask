@@ -1,3 +1,4 @@
+import { SoundPanel } from "./sound-panel";
 import { X } from "lucide-react";
 import { useGame } from "@/lib/game/store";
 import { METRICS } from "@/lib/game/types";
@@ -39,7 +40,7 @@ export function MenuView() {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center gap-2">
-          <h2 className="flex-1 font-display text-xl font-semibold text-ink">Ember</h2>
+          <h2 className="flex-1 font-display text-xl font-semibold text-ink">Island settings</h2>
           <button
             type="button"
             aria-label="Close"
@@ -49,6 +50,8 @@ export function MenuView() {
             <X className="size-4" />
           </button>
         </div>
+        <SoundPanel />
+        <h3 className="mb-1 font-display text-lg font-bold text-ink">Ember</h3>
         <p className="text-sm font-semibold text-bark/70">
           Ember · {dragon.state} · {dragon.hp} heart. Forts {fortLevel}/5. Guard {guardLevel}/5.
           {absencePending ? " A fat blue dragon is waiting at the dock." : ""}

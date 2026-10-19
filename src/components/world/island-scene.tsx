@@ -1,3 +1,4 @@
+import { GardenWhimsy } from "./garden-whimsy";
 import {engageTarget} from "@/components/land/engage-target";
 import {playerHome} from "@/lib/game/city";
 import { PlayerCity } from "./player-city";
@@ -261,6 +262,7 @@ function SceneBody({
       <EstateHomes /><PlayerCity />
       <RoadCrew />
       <NorthernScenery />
+      <GardenWhimsy />
       <SupplyRunners />
       <Npcs3
         poses={npcPoses}

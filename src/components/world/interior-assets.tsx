@@ -1,3 +1,4 @@
+import { CottageMusicBox } from "./music-box";
 import { useGame } from "@/lib/game/store";
 import { IndoorWalker, IndoorControls, IndoorCamera } from "./indoor-walker";
 import {
@@ -352,6 +353,7 @@ function CozyTouches() {
   });
   return (
     <group>
+      <CottageMusicBox />
       <pointLight
         position={[-2.3, 1, -1.3]}
         intensity={1.8}

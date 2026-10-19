@@ -62,3 +62,11 @@ Choose Attack, Strength or Defence to train that skill through damage dealt. Tak
 Tap ground to retreat and move, or press Retreat to disengage over a short period. You can still be hit while nearby, and retreat preserves your location and health instead of teleporting or healing you. Victories do not grant a free heal. Defeat recovers at your current home. Switching away from the app pauses the encounter without replaying missed attacks on return.
 
 Run `npm run check:combat` for timing, repeated input, food, defence, training, retreat, rewards, respawns and target validation checks.
+
+## A little island music box
+
+Eight original instrumental themes accompany home, gardens, the harbour, woods, village, Sunstep, moonlight and adventures. Soft piano, harp-like strings, flute and bells play alternating verses with gentle transitions. Choose **Menu → The little music box** to follow your surroundings or keep a favourite tune, adjust music / nature / effects separately, or mute everything. Preferences are remembered on this device separately from game saves. Audio begins after a tap or key press and pauses when the game is hidden; no audio downloads or accounts are needed.
+
+A tiny songbird music box sits on the cottage table; tap its note to pause or resume music. Butterflies drift near gardens by day and little fireflies appear near the pond after dusk. These outdoor decorations respect reduced-motion preferences.
+
+Run `npm run check:music` to check compositions, alternate verses, scene choices and stored preference validation.
