@@ -1,3 +1,4 @@
+import {COMBAT_TICK_MS} from "../combat";
 import type { GameSave } from "../types";
 import { writeSave } from "../save";
 import { applyXp, type SkillId, type Skills } from "../xp";
@@ -27,14 +28,15 @@ export function setCombatTimer(fn: () => void, delay: number) {
   }, delay);
 }
 
-export function armAutoAttack(get: StoreGet, delay: number) {
-  const encounter = get().combat;
-  if (!encounter || !encounter.autoAttack || encounter.phase !== "player") return;
-  setCombatTimer(() => {
-    const c = get().combat;
-    if (!c || c.id !== encounter.id || !c.autoAttack || c.phase !== "player") return;
-    get().combatAttack();
-  }, delay);
+// A single encounter clock drives both fighters, even when the player stops attacking.
+export function armAutoAttack(get:StoreGet,_delay=COMBAT_TICK_MS){
+ const encounter=get().combat;if(!encounter||encounter.phase==='won'||encounter.phase==='lost')return;
+ setCombatTimer(()=>{const c=get().combat;if(!c||c.id!==encounter.id||c.phase==='won'||c.phase==='lost')return;
+  // Mobile app switching pauses combat; resuming never applies a burst of missed attacks.
+  if(typeof document!=='undefined'&&document.hidden){armAutoAttack(get);return;}
+  get().combatTick();
+  const next=get().combat;if(next&&next.id===encounter.id&&next.phase!=='won'&&next.phase!=='lost')armAutoAttack(get);
+ },COMBAT_TICK_MS);
 }
 
 export function snap(s: GameSave): GameSave {
@@ -212,6 +214,7 @@ export const UI_SEED: Pick<
   | "coinPopKey"
   | "combat"
   | "clearedPack"
+  | "creatureRespawns"
   | "popup"
   | "interior"
   | "casinoVenue"
@@ -236,6 +239,7 @@ export const UI_SEED: Pick<
   coinPopKey: 0,
   combat: null,
   clearedPack: [],
+  creatureRespawns:{},
   popup: null,
   interior: null,
   casinoVenue: null,

@@ -1,3 +1,4 @@
+import {engageTarget} from "@/components/land/engage-target";
 import { useRef } from "react";
 import { clientToWorld, usePanZoom, VB } from "@/hooks/use-pan-zoom";
 import { nearestPlace, onIsland } from "@/lib/game/world3";
@@ -54,6 +55,7 @@ export function Island2d({
   const raiding = save.lifeDragon.state === "raiding";
 
   const interact = (worldX: number, worldY: number, popup: GamePopup, range = 70) => {
+    if(popup.kind==='enemy'){engageTarget(popup,worldX,worldY,walkTo);return;}
     if (save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost") return;
     save.selectPlace(popup.place ?? nearestPlace(worldX, worldY));
     save.openPopup({ ...popup, x: worldX, y: worldY });
@@ -69,8 +71,10 @@ export function Island2d({
   };
 
   const goFight = (x: number, y: number, start: () => void) => {
-    if (dist(pos.x, pos.y, x, y) < 56) start();
-    else walkTo(x, y, start);
+    const dx=x-pos.x,dy=y-pos.y,d=Math.hypot(dx,dy);
+    if(save.combat?.phase==='won')save.combatEnd();
+    if (d < 55) start();
+    else walkTo(x-dx/d*42,y-dy/d*42,start);
   };
 
   const hoverTip = (_label: string, _x: number, _y: number) => {

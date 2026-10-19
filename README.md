@@ -52,3 +52,13 @@ All 14 building interiors have a walking character. Tap clear floor to find a ro
 Wildlife uses original rounded models with recognizable faces, feet, ears, wings and tails. Rabbits and frogs hop; sheep and deer graze; chickens peck; cats and foxes flick their tails. Animals stop and notice nearby players. Tap them for a small observation; the quest chicken retains its usual interaction. Land animals avoid water and buildings, including new city construction, while ducks stay inside the pond and follow its water height. Wildlife movement pauses while you are indoors, overseas, in combat or at the title screen.
 
 Run `npm run check:cozy` to verify indoor entrances, furniture routing, direction controls, wildlife habitat and construction clearance.
+
+## Point-and-click combat
+
+Tap an enemy once. Your gnome approaches melee range and attacks automatically on a 600 ms combat clock, normally once every four ticks. Each enemy has its own attack rhythm. Nearby opponents have large touch labels; attack timing never speeds up when you tap repeatedly. Regular world creatures keep fixed stats, so better gear and skill training make them easier, and return roughly 45 seconds after defeat while you play. Quest enemies and island defenders keep their existing completion rules.
+
+Choose Attack, Strength or Defence to train that skill through damage dealt. Taking hits does not grant free Defence experience. Eating restores health immediately but delays your next attack for three ticks; the enemy keeps attacking. Power strike queues one stronger hit for the next attack, while Guard softens the next incoming hit and has a cooldown. Stopping your attacks does not stop your opponent.
+
+Tap ground to retreat and move, or press Retreat to disengage over a short period. You can still be hit while nearby, and retreat preserves your location and health instead of teleporting or healing you. Victories do not grant a free heal. Defeat recovers at your current home. Switching away from the app pauses the encounter without replaying missed attacks on return.
+
+Run `npm run check:combat` for timing, repeated input, food, defence, training, retreat, rewards, respawns and target validation checks.

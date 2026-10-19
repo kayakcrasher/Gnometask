@@ -18,7 +18,7 @@ import { WORLD_PACK, ABSENCE_SPOT, DRAGON_RIDGE, TOWER_SLOTS, CATALOG_BY_ID } fr
 import { to3, groundY } from "@/lib/game/world3";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
-import type { EnemyId } from "@/lib/game/combat";
+import {ENEMIES,type EnemyId} from "@/lib/game/combat";
 import type { GamePopup } from "@/lib/game/types";
 
 function useLabels() {
@@ -385,6 +385,7 @@ export function Fights3({
             <FighterMotion striking={fighting && Boolean(combat?.foeSwing)} recoil={recoil}>
               <EnemyMesh kind={p.enemy} />
             </FighterMotion>
+            {!combat&&Math.hypot(gx-p.x,gy-p.y)<170&&<Html position={[0,1.35,0]} center zIndexRange={[15,0]}><button type="button" aria-label={`Attack ${ENEMIES[p.enemy].name}`} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();onEnemy({kind:'enemy',hotspotId:p.id,title:p.enemy,blurb:'It notices you.',place:p.place,enemyId:p.enemy,packId:p.id,x:p.x,y:p.y},p.x,p.y);}} className="min-h-11 min-w-11 rounded-full border border-gold/40 bg-pine/90 px-3 py-2 text-xs font-bold capitalize text-parchment">{ENEMIES[p.enemy].name}</button></Html>}
             {fighting && combat ? (
               <>
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.035, 0]}>

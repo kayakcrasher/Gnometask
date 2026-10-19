@@ -131,6 +131,7 @@ export type GameState = GameSave &
     tradeWith: (npcId: string) => void;
     pickChicken: () => void;
     greetMushrooms: () => void;
+    combatTick: ()=>void;
     combatAttack: (move?: import("../combat").CombatMove) => void;
     combatGuard: () => void;
     setCombatAuto: (on: boolean) => void;

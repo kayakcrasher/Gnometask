@@ -307,6 +307,7 @@ export type GameUi = {
   bounceKey: number;
   coinPopKey: number;
   clearedPack: string[];
+  creatureRespawns:Record<string,number>;
   popup: GamePopup | null;
   interior: InteriorId | null;
   casinoVenue: string | null;

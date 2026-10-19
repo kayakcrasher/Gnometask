@@ -1,3 +1,4 @@
+import {engageTarget} from "@/components/land/engage-target";
 import {playerHome} from "@/lib/game/city";
 import { PlayerCity } from "./player-city";
 import { EstateHomes, RoadCrew, NorthernScenery } from "./development";
@@ -106,12 +107,13 @@ function SceneBody({
 }) {
   const save = useGame();
   const striking = Boolean(save.combat?.striking);
-  const fighting = save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost";
+  const fighting = save.combat && !save.combat.retreating && save.combat.phase !== "won" && save.combat.phase !== "lost";
   const face = fighting ? Math.atan2(save.combat!.atX - pos.x, save.combat!.atY - pos.y) : yaw;
   const villageCount = save.placed.filter((p) => p.slotId.startsWith("v")).length;
   const p3 = to3(pos.x, pos.y, save.afloat ? SEA_LEVEL + 0.68 : groundY(pos.x, pos.y));
 
   const interact = (worldX: number, worldY: number, popup: GamePopup, range = 70) => {
+    if(popup.kind==='enemy'){engageTarget(popup,worldX,worldY,walkTo);return;}
     if (save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost") return;
     save.selectPlace(popup.place ?? nearestPlace(worldX, worldY));
     save.openPopup({ ...popup, x: worldX, y: worldY });

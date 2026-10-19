@@ -241,6 +241,7 @@ function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; 
 }
 export function CivicLife({ poses = {} }: { poses?: Record<string, NpcPose> }) {
   const civic = useGame((s) => s.civic);
+  const inCombat=useGame(s=>Boolean(s.combat));
   const enter = useGame((s) => s.enterCourt);
   const enterPub = useGame((s) => s.enterPub);
   const open = useGame((s) => s.openPopup);
@@ -268,7 +269,7 @@ export function CivicLife({ poses = {} }: { poses?: Record<string, NpcPose> }) {
         </group>
       ))}
       {civic.gnomes.map((g, i) => {
-        const talk = i === speaker || i === (speaker + 1) % civic.gnomes.length || !g.good;
+        const talk = !inCombat&&(i === speaker || i === (speaker + 1) % civic.gnomes.length || !g.good);
         const pose = poses[g.id];
         const x = pose?.x ?? g.x, y = pose?.y ?? g.y;
         const near = Math.hypot(x - gx, y - gy) < 85;
@@ -281,6 +282,7 @@ export function CivicLife({ poses = {} }: { poses?: Record<string, NpcPose> }) {
             position={to3(x, y, groundY(x, y))}
             onClick={(e) => {
               e.stopPropagation();
+              if(inCombat)return;
               speak(g.line);
               open({
                 kind: "npc",

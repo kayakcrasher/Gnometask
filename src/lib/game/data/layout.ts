@@ -43,7 +43,7 @@ export const PLACE_ANCHORS: Record<PlaceId, { x: number; y: number }> = {
 };
 
 export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; place: PlaceId }[] = [
-  { id: "pack-rat", enemy: "rat", x: 460, y: 560, place: "garden" },
+  { id: "pack-rat", enemy: "rat", x: 320, y: 600, place: "garden" },
   { id: "pack-boar-a", enemy: "boar", x: 1560, y: 520, place: "wildlands" },
   { id: "pack-sprite", enemy: "sprite", x: 1680, y: 700, place: "wildlands" },
   { id: "pack-wyrm", enemy: "wyrmling", x: 1940, y: 480, place: "wildlands" },
@@ -52,7 +52,7 @@ export const WORLD_PACK: { id: string; enemy: PackEnemy; x: number; y: number; p
   { id: "pack-bat-b", enemy: "bat", x: 1520, y: 1280, place: "mines" },
   { id: "pack-cobble", enemy: "cobble", x: 2280, y: 180, place: "ruins" },
   { id: "pack-cobble-b", enemy: "cobble", x: 2500, y: 320, place: "ruins" },
-  { id: "pack-crab", enemy: "crab", x: 20, y: 860, place: "dock" },
+  { id: "pack-crab", enemy: "crab", x: 80, y: 860, place: "dock" },
 ];
 
 export const EMPTY_LOTS: { id: string; x: number; y: number }[] = CAPITOL_LOTS;

@@ -28,7 +28,7 @@ const result = await build({
       const prepare=()=>{state.skills.sailing=xpForLevel(3);state.hulls=['sail'];};
       const win=id=>{
         state.fightIsleDefender(id);assert(state.combat,'Target must start a fight: '+id);state.setCombatAuto(false);
-        state.combat.enemyHp=1;state.combatAttack();assert.equal(state.combat.phase,'won');state.combatEnd();
+        state.combat.enemyHp=1;state.combatAttack();state.combatTick();assert.equal(state.combat.phase,'won');state.combatEnd();
       };
       const tests=[];
       const test=(name,fn)=>{try{fn();tests.push(name);}catch(error){throw new Error(name+': '+error.message);}};
@@ -68,7 +68,7 @@ const result = await build({
         test('captain uses named stats and pays only through chest',()=>{
           win('cc-1');win('cc-2');win('cc-3');state.fightIsleDefender('brack');state.setCombatAuto(false);
           assert.equal(state.combat.name,'Captain Brack');assert.equal(state.combat.enemyId,'captain');assert.equal(state.combat.enemyMax,32);assert.equal(state.combat.enemyDmg,4);
-          const coins=state.coins,bones=state.bones;state.combat.enemyHp=1;state.combatAttack();
+          const coins=state.coins,bones=state.bones;state.combat.enemyHp=1;state.combatAttack();state.combatTick();
           assert.equal(state.coins,coins);assert.equal(state.bones,bones);assert(state.raidProgress.cutlass.defeated.includes('brack'));
           state.claimRaidChest();assert.equal(state.coins,coins,'Dismiss the fight before opening the chest');state.combatEnd();
         });

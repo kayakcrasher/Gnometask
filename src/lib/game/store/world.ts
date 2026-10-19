@@ -7,7 +7,7 @@ import { BEERS, caseBrief, stepCivic, type CivicTown } from "../data/civic";
 import { ARBUTHNOT, contextFromSave, rule, rulingText } from "../data/court";
 import { pickStriker, tideShift, watchNames } from "../data/folk";
 import { LANDING_FLAG } from "../data/landing";
-import { ENEMIES, makeCombat, patrolEnemy } from "../combat";
+import { ENEMIES, makeCombat, patrolEnemy, readyCreatureRespawns } from "../combat";
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
 import type { PlaceId } from "../types";
@@ -65,7 +65,8 @@ export function worldSlice(
     startPatrol: (place?: PlaceId) => {
       const s = get();
       if (s.combat) return;
-      const pool = WORLD_PACK.filter(p => (!place || p.place === place) && !s.clearedPack.includes(p.id) && Math.hypot(p.x - s.gnomeX, p.y - s.gnomeY) <= 200);
+      if(s.afloat){set({speech:"Moor before engaging enemies on land."});return;}
+      const pool = WORLD_PACK.filter(p => (!place || p.place === place) && !s.clearedPack.includes(p.id) && Math.hypot(p.x - s.gnomeX, p.y - s.gnomeY) <= 75);
       const pick = pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
       const id = pick ? pick.enemy : patrolEnemy(s.wildWins);
       const at = place ?? pick?.place ?? "wildlands";
@@ -154,7 +155,7 @@ export function worldSlice(
       if (s.combat) return;
       const pack = WORLD_PACK.find((p) => p.id === packId);
       if (!pack || pack.enemy !== enemyId) return;
-      if (s.afloat || Math.hypot(s.gnomeX - pack.x, s.gnomeY - pack.y) > 110) {
+      if (s.afloat || Math.hypot(s.gnomeX - pack.x, s.gnomeY - pack.y) > 75) {
         set({ speech: s.afloat ? "Moor your boat before fighting on land." : "Move closer to the creature before attacking." });
         return;
       }
@@ -177,8 +178,6 @@ export function worldSlice(
         popup: null,
         interior: null,
         panel: "place",
-        gnomeX: (pack?.x ?? s.gnomeX) - 42,
-        gnomeY: pack?.y ?? s.gnomeY,
         speech: "Something on the land wants a word.",
       });
       armAutoAttack(get, 800);
@@ -189,7 +188,7 @@ export function worldSlice(
       if (s.combat) return;
       const raid = s.raids.find((r) => r.id === raidId);
       if (!raid) return;
-      if (s.afloat || Math.hypot(s.gnomeX - raid.x, s.gnomeY - raid.y) > 110) {
+      if (s.afloat || Math.hypot(s.gnomeX - raid.x, s.gnomeY - raid.y) > 75) {
         set({ speech: s.afloat ? "Use the cannon at sea, or moor before fighting on land." : "Move closer to the raider before attacking." });
         return;
       }
@@ -206,8 +205,6 @@ export function worldSlice(
         interior: null,
         panel: "place",
         selectedPlace: "dock",
-        gnomeX: raid.x - 42,
-        gnomeY: raid.y,
         speech: raid.kind === "goblin" ? "A goblin. It came to steal, not to talk." : "A dark elf. The hollow is working, so they came to stop it.",
       });
       armAutoAttack(get, 800);
@@ -218,7 +215,7 @@ export function worldSlice(
       if (s.combat) return;
       const g = s.landing?.goblins.find((x) => x.id === goblinId && x.alive);
       if (!g || !s.landing) return;
-      if (s.afloat || Math.hypot(s.gnomeX - g.x, s.gnomeY - g.y) > 110) {
+      if (s.afloat || Math.hypot(s.gnomeX - g.x, s.gnomeY - g.y) > 75) {
         set({ speech: s.afloat ? "Use the cannon at sea, or moor before fighting on land." : "Move closer to the goblin before attacking." });
         return;
       }
@@ -436,6 +433,7 @@ export function worldSlice(
     },
 
     tickWorld: () => {
+      const respawn=readyCreatureRespawns(get());if(respawn)set(respawn);
       get().advanceRoadCrew?.();
       get().advanceCity?.();
       const s = get();
