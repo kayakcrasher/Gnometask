@@ -1,3 +1,4 @@
+import { inlandWater } from "./data/frontier";
 import { COURTS, PUBS } from "./data/civic";
 import { SUNSTEP_FEATURES } from "./data/sunstep";
 import { onIsland, nobleRise } from "./world3";
@@ -42,7 +43,7 @@ export function npcWalkable(
   return (
     Number.isFinite(x) &&
     Number.isFinite(y) &&
-    onIsland(x, y) &&
+    onIsland(x, y) && !inlandWater(x,y,8) &&
     Math.hypot(x - 520, y - 190) > 99 &&
     Math.hypot(
       x - SUNSTEP_FEATURES.fountain.x,

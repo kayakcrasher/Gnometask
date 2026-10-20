@@ -1,3 +1,5 @@
+import { FRONTIER_SETTLEMENTS } from "@/lib/game/data/frontier";
+import { FrontierMap } from "@/components/land/frontier-map";
 import { useState } from "react";
 import { useGame } from "@/lib/game/store";
 import {
@@ -34,6 +36,8 @@ export function CityPlanner({ onReturn }: { onReturn: () => void }) {
   const parcel = parcelAt(focus),
     viewBox = parcel
       ? `${parcel.x - 110} ${parcel.y - 100} ${parcel.w + 220} ${parcel.h + 200}`
+      : FRONTIER_SETTLEMENTS.some(d=>d.id===focus)
+        ? (()=>{const d=FRONTIER_SETTLEMENTS.find(d=>d.id===focus)!;return `${d.x-520} ${d.y-440} 1100 1000`;})()
       : focus === "north"
         ? "950 -800 1300 1050"
         : focus === "sun"
@@ -145,6 +149,7 @@ export function CityPlanner({ onReturn }: { onReturn: () => void }) {
             <option value="town">Town</option>
             <option value="sun">Sunstep</option>
             <option value="north">Noble Reach</option>
+            {FRONTIER_SETTLEMENTS.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}
             {owned.map((p) => (
               <option key={p.id} value={p.id}>
                 Your deed {p.id}
@@ -190,6 +195,7 @@ export function CityPlanner({ onReturn }: { onReturn: () => void }) {
             strokeWidth={1}
           />
         ))}
+        <FrontierMap/>
         {cityRoads(s).map((r) => (
           <polyline
             key={r.id}

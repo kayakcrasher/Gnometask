@@ -1,3 +1,4 @@
+import { frontierRise, inlandWater } from "./data/frontier";
 import { PLACE_ANCHORS } from "./data/layout";
 import { deckY } from "./data/country";
 import type { PlaceId } from "./types";
@@ -13,17 +14,19 @@ export function to2(x: number, z: number) {
 }
 
 /** Map-space outline (y grows south). Shared by walk collision, 3D mesh, and minimap. */
-export const ISLAND_POLY: [number, number][] = [
+const mainlandOutline: [number, number][] = [
   [80, 420],
   [110, 120],
   [420, 50],
   [720, 70],
   [1000, -80],
-  [1060, -440],
-  [1220, -660],
-  [1560, -760],
-  [1920, -660],
-  [2200, -420],
+  [650,-400], [180,-900], [-600,-1100], [-950,-1600],
+  [-1200,-2400], [-1000,-3100], [-650,-4000], [-100,-4500],
+  [500,-4620], [900,-4300], [1000,-3600], [1200,-3100],
+  [1550,-2870], [1850,-3100], [2000,-3500], [2280,-3700],
+  [2700,-3970], [3300,-3850], [3700,-3500], [4180,-3100],
+  [4350,-2300], [4000,-1900], [3500,-1830], [3150,-1400],
+  [3300,-950], [2900,-520], [2520,-340],
   [2240, -40],
   [2520, 120],
   [2700, 260],
@@ -37,6 +40,14 @@ export const ISLAND_POLY: [number, number][] = [
   [140, 980],
   [50, 620],
 ];
+
+/** Small headlands on the new coast; established southern shore and harbour stay exact. */
+export const ISLAND_POLY:[number,number][]=mainlandOutline.flatMap((a,i)=>{
+ const b=mainlandOutline[(i+1)%mainlandOutline.length]!,dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy);
+ if(a[1]>=-900||b[1]>=-900)return [a];
+ const steps=Math.max(1,Math.ceil(length/85));
+ return Array.from({length:steps},(_,j)=>{const t=j/steps,offset=Math.sin(t*Math.PI)*Math.sin(j*2.3+i*1.7)*32;return [a[0]+dx*t-dy/length*offset,a[1]+dy*t+dx/length*offset] as [number,number];});
+});
 
 function insidePoly(x: number, y: number, poly: [number, number][]) {
   let n = 0;
@@ -144,6 +155,7 @@ export function shapePts(poly: [number, number][]): [number, number][] {
 
 export function groundY(x: number, y: number) {
   if (!onIsland(x, y)) return 0.12;
+  if (inlandWater(x,y)) return .23;
   const pond = Math.hypot(x - 520, y - 190);
   if (pond < 90 && nobleRise(x, y) === 0) return -0.08;
   let h = onDesert(x, y)
@@ -165,6 +177,7 @@ export function groundY(x: number, y: number) {
   if (eastC < 100) h = Math.max(h, 0.1 + (1 - eastC / 100) * 0.4);
   const rise = nobleRise(x, y);
   if (rise > 0) h = Math.max(h, NOBLE_BASE + rise);
+  h = Math.max(h, LAND_TOP + frontierRise(x,y));
   const deck = deckY(x, y);
   if (deck > h) h = deck;
   return h;
@@ -183,3 +196,6 @@ export function nearestPlace(x: number, y: number): PlaceId {
   });
   return best;
 }
+
+/** Freshwater is part of the island, but walking routes must go around it. */
+export const walkableLand=(x:number,y:number)=>Number.isFinite(x)&&Number.isFinite(y)&&onIsland(x,y)&&!inlandWater(x,y,6);

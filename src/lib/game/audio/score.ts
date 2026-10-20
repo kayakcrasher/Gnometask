@@ -217,6 +217,7 @@ export function themeForWorld(s: MusicWorld): MusicTheme {
   if (s.interior) return "village";
   if (s.dayPhase === "night" || s.dayPhase === "dusk") return "moonlight";
   if (s.afloat || s.abroad) return "harbour";
+  if (s.gnomeY < -850) return "woodland";
   if (s.gnomeX > 2500) return "sunstep";
   const home = s.city.buildings.find((b) => b.kind === "home");
   if (home && Math.hypot(home.x - s.gnomeX, home.y - s.gnomeY) < 90)

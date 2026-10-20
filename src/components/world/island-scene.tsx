@@ -1,3 +1,4 @@
+import { FrontierLandscape } from "./frontier-landscape";
 import { GardenWhimsy } from "./garden-whimsy";
 import {engageTarget} from "@/components/land/engage-target";
 import {playerHome} from "@/lib/game/city";
@@ -262,6 +263,7 @@ function SceneBody({
       <EstateHomes /><PlayerCity />
       <RoadCrew />
       <NorthernScenery />
+      <FrontierLandscape onWalk={onWalk} pos={pos} />
       <GardenWhimsy />
       <SupplyRunners />
       <Npcs3

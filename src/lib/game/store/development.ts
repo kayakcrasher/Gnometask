@@ -8,7 +8,7 @@ import {
   insideParcel,
   parcelBuildingSpot,
 } from "../land-planning";
-import { parcelAt } from "../data/parcels";
+import { parcelAt, parcelAccessOpen } from "../data/parcels";
 import { levelFromXp } from "../xp";
 import { scheduleWrite, withXp } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
@@ -84,10 +84,10 @@ export function developmentSlice(
         parcel = parcelAt(id),
         existing = s.estate[id];
       if (!parcel || !s.deeds.includes(id) || s.combat) return;
-      if (parcel.northern && !s.roadWorks.completed.includes("noble-reach")) {
+      if (!parcelAccessOpen(parcel,s.roadWorks.completed)) {
         set({
           speech:
-            "Complete Noble Reach avenue before building in the northern district.",
+            "Complete this district’s road project before building here.",
         });
         return;
       }

@@ -70,3 +70,13 @@ Eight original instrumental themes accompany home, gardens, the harbour, woods, 
 A tiny songbird music box sits on the cottage table; tap its note to pause or resume music. Butterflies drift near gardens by day and little fireflies appear near the pond after dusk. These outdoor decorations respect reduced-motion preferences.
 
 Run `npm run check:music` to check compositions, alternate verses, scene choices and stored preference validation.
+
+## The northern countryside
+
+The main island now extends far beyond Mount Noble, with a western mountain spine, a deep northern bay, three freshwater lakes, forest trails and picnic lookouts. Existing towns, homes, deeds, quests and harbour coordinates stay in place. Open **Atlas** beside the minimap for the full island and walking destinations. Walking routes go around freshwater and coastal inlets; the sailing area and low-power map also cover the expanded world.
+
+Fernmeadow, Willowbank and Bellweather Bay are future neighbourhoods separated by open countryside. Explore their paths immediately, then commission the three additional Road crew projects in order: **1,900 / 3,800 / 7,600 coins**, with Hall and island-wealth requirements. Each project unlocks its own group of nine purchasable deeds and six surveyed NPC home sites. Road corridors stay public and narrow; lakes and mountain slopes are excluded from usable deed land. Choose a district in the land or city planner for a closer view.
+
+Healthy island economies attract up to eighteen new gnome households to unlocked, clear surveyed sites. Families bring savings and pay 200 coins for their first house. They cannot settle on player deeds, streets or existing buildings; normal NPC home upgrades continue afterward. Player city capacity is now 120 buildings and 180 road sections, with existing coin costs and increasingly expensive upgrades. Trees clear around new construction, and nearby forest batches use instancing to limit mobile rendering work.
+
+Run `npm run check:frontier` to verify geography, journeys, lake avoidance, road clearance, district access, construction sites, family arrivals and save migration.

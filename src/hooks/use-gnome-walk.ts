@@ -1,8 +1,10 @@
+import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
+import { landRoute } from "@/lib/game/land-route";
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
 import { clamp } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import type { GnomeFacing } from "@/components/land/gnome";
-import { onIsland } from "@/lib/game/world3";
+import { walkableLand } from "@/lib/game/world3";
 import { HARBOUR_APPROACH, navigableWater, SEA_BOUNDS, seaRoute, sailingSpeed, type SeaPoint } from "@/lib/game/sailing";
 
 const SPEED = 260;
@@ -14,7 +16,7 @@ function facingOf(dx: number, dy: number): GnomeFacing {
 }
 
 function legalAt(sea: boolean, x: number, y: number) {
-  return sea ? navigableWater(x, y) : onIsland(x, y);
+  return sea ? navigableWater(x, y) : walkableLand(x, y);
 }
 
 /** Find a reachable shore point when a ground click lands just outside the beach. */
@@ -136,14 +138,14 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
     if(state.combat&&state.combat.phase!=="won"&&state.combat.phase!=="lost")state.combatFlee();
     if ((state.combat&&!useGame.getState().combat?.retreating) || state.atHome || state.interior || state.abroad || state.fishing) return;
     const sea = Boolean(state.afloat);
-    const nx = clamp(x, sea ? SEA_BOUNDS.minX : 20, sea ? SEA_BOUNDS.maxX : 4550);
-    const ny = clamp(y, sea ? SEA_BOUNDS.minY : -850, sea ? SEA_BOUNDS.maxY : 1560);
+    const nx = clamp(x, sea ? SEA_BOUNDS.minX : WORLD_BOUNDS.minX, sea ? SEA_BOUNDS.maxX : WORLD_BOUNDS.maxX);
+    const ny = clamp(y, sea ? SEA_BOUNDS.minY : WORLD_BOUNDS.minY, sea ? SEA_BOUNDS.maxY : WORLD_BOUNDS.maxY);
     const spot = nearestLegal(sea, nx, ny);
     if (!spot) { stop(); return; }
-    const route = sea ? seaRoute(posRef.current, spot) : [spot];
+    const route = sea ? seaRoute(posRef.current, spot) : landRoute(posRef.current, spot);
     if (!route) {
       stop();
-      state.speak("No clear water route. Choose a point farther from the shore.");
+      state.speak(sea?"No clear water route. Choose a point farther from the shore.":"No clear walking route. Choose a nearby path or clearing.");
       return;
     }
     if (Math.hypot(spot.x - posRef.current.x, spot.y - posRef.current.y) < 1) {

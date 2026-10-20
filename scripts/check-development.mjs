@@ -6,6 +6,7 @@ const bundle = await build({
     resolveDir: root,
     contents: `
 import assert from 'node:assert/strict';
+import {FRONTIER_NEIGHBOURS} from './src/lib/game/data/frontier';
 import {ADVANCED_GEAR} from './src/lib/game/data/catalog/advanced';
 import {CATALOG, CATALOG_BY_ID, bestHatchet, bestRod, harvestYield} from './src/lib/game/data/catalog';
 import {tierOf} from './src/lib/game/data/tiers';
@@ -79,7 +80,7 @@ test('road projects are sequential, paid once, resumable and visible',()=>{
   for(const [x,y] of p.points){assert(onIsland(x,y));assert.equal(nobleRise(x,y),0,'Roads must bypass the mountain');}
  }
  assert.equal(coerceRoadWorks({completed:{},active:{id:'bad',progress:NaN}}).active,null);
- const frontier=openFrontier(state.civic,state.roadWorks.completed);assert.equal(frontier.plots.length,state.civic.plots.length+6);assert.equal(openFrontier(frontier,state.roadWorks.completed).plots.length,frontier.plots.length);
+ const frontier=openFrontier(state.civic,state.roadWorks.completed);assert.equal(frontier.plots.length,state.civic.plots.length+6+FRONTIER_NEIGHBOURS.length);assert.equal(openFrontier(frontier,state.roadWorks.completed).plots.length,frontier.plots.length);
  for(const p of FRONTIER_HOMES){assert(onIsland(p.x,p.y));assert.equal(nobleRise(p.x,p.y),0);}
 });
 test('NPC navigation avoids newly built homes',()=>{

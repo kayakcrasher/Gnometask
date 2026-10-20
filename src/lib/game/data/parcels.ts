@@ -1,3 +1,4 @@
+import { FRONTIER_SETTLEMENTS } from "./frontier";
 import type { MultiPolygon } from "polygon-clipping";
 import { NPCS } from "./npcs";
 import { parcelLand, landArea } from "../land-planning";
@@ -16,6 +17,8 @@ export type Parcel = {
   usableArea?: number;
   land?: MultiPolygon;
   northern?: boolean;
+  requiredRoad?: string;
+  district?: string;
 };
 
 const HOMES: { npc: string; x: number; y: number }[] = [
@@ -78,6 +81,11 @@ function buildParcels(): Parcel[] {
     if(!onGrass(x+80,y+60))continue;
     out.push({id:`n-${x}-${y}`,x,y,w:170,h:130,price:Math.round(180+Math.hypot(x-1500,y+500)/3),owner:null,ownerName:null,northern:true});
   }
+  for(const d of FRONTIER_SETTLEMENTS)for(const dx of [-360,-120,120])for(const dy of [-300,-60,180]){
+    const x=d.x+dx,y=d.y+dy;
+    if(!onGrass(x+110,y+100))continue;
+    out.push({id:`f-${d.id}-${dx}-${dy}`,x,y,w:230,h:230,price:Math.round(d.price*(1+Math.hypot(dx,dy)/900)),owner:null,ownerName:null,northern:true,requiredRoad:d.road,district:d.name});
+  }
   return out.map(p=>{const land=parcelLand(p);return {...p,land,usableArea:landArea(land)};});
 }
 
@@ -86,3 +94,5 @@ export const PARCELS: Parcel[] = buildParcels();
 export function parcelAt(id: string) {
   return PARCELS.find((p) => p.id === id) ?? null;
 }
+
+export const parcelAccessOpen=(p:Parcel,completed:string[])=>!p.northern||completed.includes(p.requiredRoad??"noble-reach");

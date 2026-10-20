@@ -1,3 +1,4 @@
+import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
 import { useCallback, useEffect, useRef, useState, type MutableRefObject, type RefObject } from "react";
 import { clamp } from "@/lib/utils";
 import { SEA_BOUNDS } from "@/lib/game/sailing";
@@ -5,7 +6,7 @@ import { PLAYER_START } from "@/lib/game/types";
 
 export type ViewTransform = { x: number; y: number; k: number };
 
-export const MIN_K = 0.55;
+export const MIN_K = 0.2;
 export const MAX_K = 3.4;
 export const HOME_K = 2.2;
 
@@ -99,7 +100,7 @@ export function usePanZoom(
 
   const fit = useCallback(() => {
     followOnRef.current = false;
-    apply({ x: 0, y: 0, k: 0.62 });
+    apply(viewFor({x:(WORLD_BOUNDS.minX+WORLD_BOUNDS.maxX)/2,y:(WORLD_BOUNDS.minY+WORLD_BOUNDS.maxY)/2},.21));
   }, [apply, followOnRef]);
 
   const reset = home;

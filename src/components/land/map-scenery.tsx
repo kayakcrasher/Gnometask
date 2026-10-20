@@ -1,7 +1,8 @@
+import { FrontierMap } from "./frontier-map";
 import {playerHome} from "@/lib/game/city";
 import { useMemo } from "react";
 import { developedRoads } from "@/lib/game/land-planning";
-import { DESERT_POLY, DESERT_BEACH, ISLAND_POLY } from "@/lib/game/world3";
+import { DESERT_POLY, DESERT_BEACH, BEACH_POLY, ISLAND_POLY } from "@/lib/game/world3";
 import { SUNSTEP_VENUES } from "@/lib/game/data/sunstep";
 import { mixLandColor, regionValue } from "@/lib/game/metrics";
 import { PLACE_ANCHORS } from "@/lib/game/data/layout";
@@ -45,19 +46,11 @@ export function MapScenery({
   const roads=useMemo(()=>[...developedRoads(save.roadWorks,save.estate),...save.city.roads],[save.roadWorks,save.estate,save.city.roads]);
   return (
     <>
-      <ellipse cx="1380" cy="740" rx="1280" ry="680" fill="#4e7370" />
-      <path
-        d="M60 240 C 240 20 760 0 1180 70 C 1600 20 2140 50 2560 180 C 2760 300 2800 560 2720 900 C 2620 1220 2140 1420 1600 1460 C 1060 1500 520 1400 180 1220 C 20 1100 -10 820 20 520 C 30 360 0 290 60 240 Z"
-        fill="url(#islandRim)"
-        filter="url(#soft)"
-      />
-      <path
-        d="M90 270 C 260 50 760 40 1160 100 C 1580 50 2100 80 2520 210 C 2700 320 2740 560 2660 880 C 2560 1180 2100 1380 1580 1420 C 1060 1460 540 1360 210 1180 C 50 1060 20 800 50 520 C 60 370 40 310 90 270 Z"
-        fill="#8cb067"
-      />
-      <polygon points={ISLAND_POLY.map(p=>p.join(",")).join(" ")} fill="#8cb067"/>
-      <polygon points={DESERT_BEACH.map(p => p.join(",")).join(" ")} fill="#ecd3a0" />
-      <polygon points={DESERT_POLY.map(p => p.join(",")).join(" ")} fill="#e3b772" />
+      <polygon points={BEACH_POLY.map(p=>p.join(',')).join(' ')} fill="#eaddb0"/>
+      <polygon points={DESERT_BEACH.map(p=>p.join(',')).join(' ')} fill="#ecd3a0"/>
+      <polygon points={DESERT_POLY.map(p=>p.join(',')).join(' ')} fill="#e3b772"/>
+      <polygon points={ISLAND_POLY.map(p=>p.join(',')).join(' ')} fill="#8cb067"/>
+      <FrontierMap labels/>
       {REGIONS.map((r) => {
         const t = regionValue(save, r.id, save.metric);
         const hovered = save.hoverPlace === r.id;

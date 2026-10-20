@@ -1,3 +1,4 @@
+import { frontierBuildable, FRONTIER_LAKES, FRONTIER_PEAKS } from "./data/frontier";
 import { SUNSTEP_FEATURES } from "./data/sunstep";
 import polygonClipping, { type MultiPolygon } from "polygon-clipping";
 import { ROAD_NETWORK } from "./data/country";
@@ -25,6 +26,7 @@ const corridor = roadFootprint(
 );
 export const publicRoadLand = corridor;
 const titledLand = polygonClipping.union([ISLAND_POLY], [DESERT_POLY]);
+const protectedLand:MultiPolygon=[...FRONTIER_LAKES.map(l=>({x:l.x,y:l.y,rx:l.rx+20,ry:l.ry+20})),...FRONTIER_PEAKS.map(p=>({x:p.x,y:p.y,rx:p.r,ry:p.r}))].map(p=>[Array.from({length:49},(_,i)=>[p.x+Math.cos(i*Math.PI/24)*p.rx,p.y+Math.sin(i*Math.PI/24)*p.ry])]);
 export function parcelLand(rect: LandRect): MultiPolygon {
   const { x, y, w, h } = rect;
   const land = polygonClipping.intersection(
@@ -39,7 +41,7 @@ export function parcelLand(rect: LandRect): MultiPolygon {
     ],
     titledLand,
   );
-  return land.length ? polygonClipping.difference(land, corridor, ...occupiedLand) : [];
+  return land.length ? polygonClipping.difference(land, corridor, ...occupiedLand, ...protectedLand) : [];
 }
 export function landArea(polys: MultiPolygon) {
   return polys.reduce(
@@ -106,6 +108,7 @@ export function buildingSiteClear(
   others: { x: number; y: number }[] = [],
 ) {
   if (
+    !frontierBuildable(x,y) ||
     !Number.isFinite(x) ||
     !Number.isFinite(y) ||
     nobleRise(x, y) > 0.15 ||
@@ -210,7 +213,7 @@ export function developedRoads(
 
 /** Narrow construction clearance for streets, distinct from a house footprint. */
 export function roadSiteClear(x:number,y:number,others:{x:number;y:number}[]=[]){
- if(!Number.isFinite(x)||!Number.isFinite(y)||nobleRise(x,y)>.15)return false;
+ if(!frontierBuildable(x,y,28)||!Number.isFinite(x)||!Number.isFinite(y)||nobleRise(x,y)>.15)return false;
  if(![-13,13].every(dx=>[-13,13].every(dy=>onGrass(x+dx,y+dy)||onDesert(x+dx,y+dy))))return false;
  if(Math.hypot(x-520,y-190)<135)return false;
  return !FIXED_BUILDINGS.some(b=>Math.abs(x-b.x)<b.w+13&&Math.abs(y-b.y)<b.h+13)&&!others.some(b=>Math.abs(x-b.x)<39&&Math.abs(y-b.y)<37);

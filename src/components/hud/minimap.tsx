@@ -1,3 +1,6 @@
+import { IslandAtlas } from "./island-atlas";
+import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
+import { FrontierMap } from "@/components/land/frontier-map";
 import {playerHome} from "@/lib/game/city";
 import { developedRoads } from "@/lib/game/land-planning";
 import { useMemo, useState } from "react";
@@ -12,8 +15,8 @@ import { DeedMap } from "./deed-map";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
-const VW = 4700;
-const VH = 2800;
+const VW = WORLD_BOUNDS.maxX-WORLD_BOUNDS.minX;
+const VH = WORLD_BOUNDS.maxY-WORLD_BOUNDS.minY;
 
 function poly(pts: [number, number][]) {
   return pts.map(([x, y]) => `${x},${y}`).join(" ");
@@ -36,6 +39,7 @@ export function Minimap({
   const roads=useMemo(()=>[...developedRoads(works,estate),...city.roads],[works,estate,city.roads]);
   const travel = useGame((s) => s.travelIsle);
   const [deedsOpen, setDeedsOpen] = useState(false);
+  const [atlasOpen,setAtlasOpen]=useState(false);
   const cleared = useGame((s) => s.clearedPack);
   const dragon = useGame((s) => s.lifeDragon);
   const hall = useGame((s) => s.townHallLevel);
@@ -43,8 +47,8 @@ export function Minimap({
   const onClick = (e: ReactMouseEvent<SVGSVGElement>) => {
     const svg = e.currentTarget;
     const r = svg.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * VW;
-    const y = ((e.clientY - r.top) / r.height) * VH - 900;
+    const x = ((e.clientX - r.left) / r.width) * VW + WORLD_BOUNDS.minX;
+    const y = ((e.clientY - r.top) / r.height) * VH + WORLD_BOUNDS.minY;
     walkTo(x, y);
   };
   return (
@@ -63,7 +67,7 @@ export function Minimap({
         </div>
       </div>
       <svg
-        viewBox={`0 -900 ${VW} ${VH}`}
+        viewBox={`${WORLD_BOUNDS.minX} ${WORLD_BOUNDS.minY} ${VW} ${VH}`}
         className="h-20 w-20 cursor-pointer rounded-full bg-water-deep shadow-panel ring-2 ring-parchment md:h-28 md:w-28"
         onClick={onClick}
         preserveAspectRatio="none"
@@ -72,6 +76,7 @@ export function Minimap({
         <polygon points={poly(BEACH_POLY)} fill="#eaddb0" />
         <polygon points={poly(DESERT_POLY)} fill="#e2b15a" />
         <polygon points={poly(ISLAND_POLY)} fill="#6f8f66" />
+        <FrontierMap />
         {roads.map((road) => (
           <polyline
             key={road.id}
@@ -127,6 +132,8 @@ export function Minimap({
       >
         Deeds
       </button>
+      <button type="button" onClick={()=>setAtlasOpen(true)} className="min-h-11 rounded-full bg-parchment px-3 text-[11px] font-bold text-ink shadow-panel">Atlas</button>
+      {atlasOpen&&<IslandAtlas pos={pos} walkTo={walkTo} onClose={()=>setAtlasOpen(false)}/>}
       {deedsOpen ? <DeedMap onClose={() => setDeedsOpen(false)} /> : null}
     </div>
   );

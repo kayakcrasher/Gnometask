@@ -1,3 +1,5 @@
+import { WORLD_VIEW, FRONTIER_SETTLEMENTS } from "@/lib/game/data/frontier";
+import { FrontierMap } from "@/components/land/frontier-map";
 import {CityPlanner} from "./city-planner";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -7,7 +9,7 @@ import {
   ISLAND_POLY,
   MOUNT_NOBLE,
 } from "@/lib/game/world3";
-import { PARCELS } from "@/lib/game/data/parcels";
+import { PARCELS, parcelAccessOpen } from "@/lib/game/data/parcels";
 import { ROAD_PROJECTS } from "@/lib/game/data/expansion";
 import {
   DEVELOPMENT_LABELS,
@@ -25,7 +27,10 @@ import { levelFromXp } from "@/lib/game/xp";
 const poly = (points: [number, number][]) =>
   points.map((p) => p.join(",")).join(" ");
 const VIEWS = {
-  All: "0 -900 4700 2800",
+  All: WORLD_VIEW,
+  Fernmeadow: "750 -1850 1100 950",
+  Willowbank: "1700 -2670 1100 1000",
+  Bellweather: "2290 -3630 1100 1000",
   Town: "0 80 2050 1400",
   Sunstep: "2500 100 2100 1500",
   "Noble Reach": "950 -800 1300 1050",
@@ -165,6 +170,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                       Commission {p.name}
                     </button>
                   )}
+                  {FRONTIER_SETTLEMENTS.some(d=>d.road===p.id)&&<p className="mt-2 text-xs">Opens new settlement land and six home sites for incoming families.</p>}
                   {p.id === "noble-reach" && (
                     <p className="mt-2 text-xs">
                       Opens northern home construction and six NPC settlement
@@ -225,6 +231,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
             >
               Mount Noble
             </text>
+            <FrontierMap labels/>
             {roads.map((r) => (
               <polyline
                 key={r.id}
@@ -302,7 +309,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                     : owner
                       ? `${owner}'s ground`
                       : tile.northern
-                        ? "Noble Reach parcel"
+                        ? `${tile.district??"Noble Reach"} parcel`
                         : "Roadside parcel"}
                 </h2>
                 <button
@@ -356,8 +363,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                         s.townHallLevel < quote.hall ||
                         levelFromXp(s.skills.crafting) < quote.crafting ||
                         Boolean(
-                          tile.northern &&
-                          !s.roadWorks.completed.includes("noble-reach"),
+                          !parcelAccessOpen(tile,s.roadWorks.completed),
                         )
                       }
                       onClick={() => s.buildParcelHome(tile.id)}
@@ -371,7 +377,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                     <p className="mt-1 text-[11px]">
                       Hall {quote.hall} · Crafting {quote.crafting}
                       {tile.northern
-                        ? " · Noble Reach avenue must be finished"
+                        ? " · District road must be finished"
                         : ""}
                     </p>
                   )}

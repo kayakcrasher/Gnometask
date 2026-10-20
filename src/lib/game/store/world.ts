@@ -1,5 +1,5 @@
 import { developmentLevel } from "../development";
-import { npcBuildAllowed, openFrontier } from "../town-planning";
+import { npcBuildAllowed, openFrontier, settleFrontier } from "../town-planning";
 import { clamp, uid } from "@/lib/utils";
 import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
 import { rolledChart } from "../data/honour";
@@ -535,6 +535,7 @@ export function worldSlice(
       let civic = openFrontier(s.civic,s.roadWorks.completed);
       const CIVIC_BATCH = 3;
       for (let i = 0; i < CIVIC_BATCH; i++) civic = stepCivic(civic, s.daysPlayed, developmentLevel(s), p=>npcBuildAllowed({...s,civic},p));
+      if(developmentLevel(s)>=2)civic=settleFrontier({...s,civic});
       const loud = /timber|story|lantern|jar|rental|still|household|cruise|back room/;
       const newsChanged = civic.news !== s.civic.news && loud.test(civic.news);
       if (newsChanged) speech = civic.news;

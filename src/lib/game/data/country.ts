@@ -1,3 +1,4 @@
+import { FRONTIER_TRAILS } from "./frontier";
 import { PLANNED_ROADS } from "./expansion";
 import { CAPITOL_GATE, CAPITOL_HALL, CAPITOL_SHOPS, capitolStreets, cellsOf, townGate, townGrid, townStreets, TOWN_GRIDS } from "./grids";
 import { nearRoad, softenRoad, type RoadRoute } from "./road-layout";
@@ -126,6 +127,7 @@ export const ROADS: { id: string; points: [number, number][] }[] = [
 
 /** One map-space network for rendering, standing height, and the fallback map. Widths are world units. */
 export const ROAD_NETWORK: RoadRoute[] = [
+  ...FRONTIER_TRAILS.map(r=>({...r,points:softenRoad(r.points,24),width:.45,surface:"dirt" as const})),
   ...PLANNED_ROADS.map(r => ({...r, width:0.45, surface:"dirt" as const})),
   ...ROADS.map(r => ({ ...r, width: 2.1, surface: "cobble" as const })),
   ...TOWN_GRIDS.flatMap(grid => townStreets(grid).map((s, i) => ({

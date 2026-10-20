@@ -1,7 +1,7 @@
 import { PLACE_ANCHORS } from "./data/layout";
 import { PLAYER_START } from "./types";
 import type { GameSave } from "./types";
-import { parcelAt } from "./data/parcels";
+import { parcelAt, parcelAccessOpen } from "./data/parcels";
 import {
   buildingSiteClear,
   civicParcelOwner,
@@ -123,8 +123,8 @@ export function citySiteError(
         p && insideParcel(p, x - 27, y - 25) && insideParcel(p, x + 27, y + 25),
     );
   if (!p) return "Choose a clear footprint wholly inside land you own.";
-  if (p.northern && !s.roadWorks.completed.includes("noble-reach"))
-    return "Finish Noble Reach avenue before building here.";
+  if (!parcelAccessOpen(p,s.roadWorks.completed))
+    return "Finish this district’s road project before building here.";
   if (civicParcelOwner(p, s.civic))
     return "A resident already holds ground in this parcel.";
   if (
@@ -140,8 +140,8 @@ export function citySiteError(
     return "Lay a road closer first; buildings need road access within 75 map units.";
   if (s.townHallLevel < CITY_BUILDINGS[kind].hall)
     return `Requires Town Hall ${CITY_BUILDINGS[kind].hall}.`;
-  if (s.city.buildings.length >= 40)
-    return "This city has reached its 40-building limit.";
+  if (s.city.buildings.length >= 120)
+    return "This city has reached its 120-building limit.";
   return null;
 }
 export function snapCityRoad(s: GameSave, p: RoadPoint): RoadPoint {
@@ -178,8 +178,8 @@ export function cityRoadError(
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
   if (!Number.isFinite(len) || len < 20 || len > 600)
     return "Road sections must be 20–600 map units long.";
-  if (s.city.roads.length >= 60)
-    return "This city has reached its 60-road limit.";
+  if (s.city.roads.length >= 180)
+    return "This city has reached its 180-road limit.";
   const roads = cityRoads(s);
   if (
     !roads.some(
@@ -202,7 +202,7 @@ export function cityRoadError(
         (p) =>
           p &&
           !civicParcelOwner(p, s.civic) &&
-          (!p.northern || s.roadWorks.completed.includes("noble-reach")),
+          parcelAccessOpen(p,s.roadWorks.completed),
       );
     const owned = [-13, 13].every((dx) =>
       [-13, 13].every((dy) =>
@@ -496,7 +496,7 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
   out.delivered = whole(r.delivered);
   out.beat = whole(r.beat, 9);
   const state = { ...s, city: out };
-  for (const road of Array.isArray(r.roads) ? r.roads.slice(0, 60) : []) {
+  for (const road of Array.isArray(r.roads) ? r.roads.slice(0, 180) : []) {
     if (!road || !Array.isArray(road.points) || road.points.length !== 2)
       continue;
     const [a, b] = road.points;
@@ -517,7 +517,7 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
     });
   }
   const ids = new Set<string>();
-  for (const b of Array.isArray(r.buildings) ? r.buildings.slice(0, 40) : []) {
+  for (const b of Array.isArray(r.buildings) ? r.buildings.slice(0, 120) : []) {
     if (
       !b ||
       !Object.prototype.hasOwnProperty.call(CITY_BUILDINGS, b.kind) ||
@@ -555,7 +555,7 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
     });
     ids.add(b.id);
   }
-  for (const c of Array.isArray(r.carts) ? r.carts.slice(0, 40) : []) {
+  for (const c of Array.isArray(r.carts) ? r.carts.slice(0, 120) : []) {
     if (!c || out.carts.some((a) => a.factory === c.factory)) continue;
     const f = out.buildings.find(
         (b) =>
