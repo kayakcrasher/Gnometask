@@ -13,6 +13,8 @@ const groves = [
 export function FrontierMap({ labels = false }: { labels?: boolean }) {
   return (
     <g pointerEvents="none">
+      <circle cx={2020} cy={-3140} r={36} fill="#efd59b" stroke="#335d57" strokeWidth={10}/>
+      {labels&&<text x={2110} y={-3330} fontSize={105} fill="#fff0cd" paintOrder="stroke" stroke="#47624c" strokeWidth={10}>Thimblehaven · Port frontier</text>}
       <circle cx={SUNSTEP_DOCK.x} cy={SUNSTEP_DOCK.y} r={30} fill="#80b9bd" stroke="#e8d8a8" strokeWidth={8}/>
       {groves.map((g) => (
         <g key={g.x}>

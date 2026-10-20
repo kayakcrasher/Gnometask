@@ -222,7 +222,7 @@ export function ClickPopup() {
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3 pb-[env(safe-area-inset-bottom)] md:bottom-5">
       <div
-        className="pointer-events-auto w-full max-w-md rounded-[20px] bg-parchment p-3 shadow-panel slide-up"
+        className="pointer-events-auto max-h-[80dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-[20px] bg-parchment p-3 shadow-panel slide-up"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >

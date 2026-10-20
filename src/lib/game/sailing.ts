@@ -8,8 +8,8 @@ export const DOCKING_RANGE = 100;
 export const SAILING_XP_DISTANCE = 600;
 export const SEA_BOUNDS = { minX: -3000, maxX: 6200, minY: -6300, maxY: 3000 };
 
-export function sailingSpeed(id: string, xp: number) {
-  return (boatById(id)?.speed ?? 180) * (1 + Math.min(0.25, (levelFromXp(xp) - 1) * 0.01));
+export function sailingSpeed(id: string, xp: number, parts:readonly string[]=[]) {
+  return (1+(parts.includes("engine")?.2:0)+(parts.includes("rigging")?.12:0)) * (boatById(id)?.speed ?? 180) * (1 + Math.min(0.25, (levelFromXp(xp) - 1) * 0.01));
 }
 
 /** Leave clearance for the hull instead of letting its centre scrape the beach. */

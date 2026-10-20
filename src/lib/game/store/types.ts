@@ -18,6 +18,15 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    plotPortCourse:(id:string)=>void;
+    chooseStarterLoan:(amount:number)=>void;
+    repayBank:(amount:number)=>void;
+    buyPortPlot:(id:string)=>void;
+    upgradeDock:(id:string)=>void;
+    styleDock:(id:string,style:import("../ports").DockStyle)=>void;
+    buyBoatPart:(boat:string,part:string)=>void;
+    dispatchShipment:(origin:string,destination:string,boat:string)=>void;
+    tickMaritime:(dt:number)=>void;
     restyleHome:(style:import("../home-design").HomeStyle)=>void;
     contributeRelief:()=>void;
     charterNorthGateway:()=>void;

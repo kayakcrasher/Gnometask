@@ -20,7 +20,7 @@ export const TOWN_SHOPS: {
   { id: "townhall", x: shopAt("townhall").x, y: shopAt("townhall").y, label: "Town Hall", interior: "townhall", roof: "pine", tall: true, sign: "Hall", building: "village", face: Math.PI },
   { id: "bakery", x: shopAt("bakery").x, y: shopAt("bakery").y, label: "Bakery", interior: "bakery", roof: "berry", sign: "Pies", building: "village", face: Math.PI },
   { id: "general", x: shopAt("general").x, y: shopAt("general").y, label: "Farm Supply", interior: "general", roof: "moss", sign: "Yard", building: "village", face: Math.PI },
-  { id: "bank", x: shopAt("bank").x, y: shopAt("bank").y, label: "The Bank", interior: "bank", roof: "gold", tall: true, sign: "Bank", building: "village", face: Math.PI },
+  { id: "bank", x: shopAt("bank").x, y: shopAt("bank").y, label: "Mossroot Consolidated Bank", interior: "bank", roof: "gold", tall: true, sign: "Mossroot", building: "village", face: Math.PI },
 ];
 
 export const NPCS: {

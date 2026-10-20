@@ -111,3 +111,19 @@ Deeds now have live purchase and sale quotes. Value responds to the market, secu
 The dock case now includes passionate openings, discovered evidence and closing addresses from both sides, with Justice Arbuthnot framing the stakes. **Pause hearing**, **Next statement** and **Hear ruling** let you read at your own pace. The speeches do not change evidence unlocks or verdict weights.
 
 Run `npm run check:economy` for market/security conditions, live trade quotes, dividends, raid persistence, land appreciation, homelessness, recovery, crime, northern purchases, relief, charters and court framing.
+
+### Mossroot banking and Thimblehaven ports
+
+New games open **Mossroot Consolidated Bank**'s starter-loan ledger before the tutorial: choose **25,000, 50,000 or 105,000 coins**, co-signed by Ol Pappy. The full amount is added to the starting purse once. Interest is **0.6% per seven in-game market days**, rounded up to whole coins and added to the outstanding balance; the confirmation screen explains this compounding. Make partial or full repayments through **Bank & harbour → Mossroot bank** or Quill's bank counter, with no repayment fees. Paying off the account never opens another starter loan. Existing saves receive no automatic money or debt; an unused starter loan can be chosen in the bank ledger. Interest does not run on a real-world timer.
+
+**Thimblehaven** starts on the rugged northern shore of Thimble Bay, with two cottages, a harbour office / Mossroot branch and a free public landing. Board a boat at Tideham, then choose **Bank & harbour → Ports & freight → Sail to Thimblehaven public landing**. The atlas labels the settlement. Waterfront deeds require a visit to the plot and cost 18,000 or 24,000 coins in the north, or 12,000 at Tideham's South Reach. Their water easements are separate from public roads and town deeds. A seventh paid road-crew project connects the northern wharves; two adjoining Thimblehaven residential lots open when the crew completes it.
+
+Build a **15,000-coin finger pier**, upgrade for **45,000** to a twin-berth cargo wharf, then for **180,000** to a three-berth crane harbour. Pick timber, mint or slate finishes; each refit costs 2,500 coins per dock level. Owned piers support boarding and mooring, while the public northern landing remains free.
+
+The **Little Acorn Coaster** (14,000 coins, Sailing 8) and **Pinewake Packet** (65,000, Sailing 14) are coastal freighters. The premium fleet includes the **Moonpetal Yacht** (1.25 million, Sailing 25), **Aurora Explorer** (4.8 million, Sailing 40) and **Gilded Acorn** (12 million, Sailing 60), each with an original 3D hull and deck design. Rotate their models in the fleet showroom. Existing boats retain their prices and skill gates.
+
+Cargo-capable hulls can run paid freight from an owned wharf to the public harbour or another owned dock. Buy cargo and pay crew costs on dispatch; the displayed economy-sensitive sale price locks then. Recessions can make a contract unprofitable. Boats follow surveyed clear-water routes, pay once when unloading and remain reserved while sailing home. Berth capacity, cargo payments, voyage legs, elapsed travel and settlement receipts survive saving. Voyages pause when the tab is hidden, during combat, abroad and at the title screen; there is no automatic offline freight income.
+
+Six visible, hull-specific fittings add 12% sailing speed (rigging), 20% speed (acorn drive), 50% cargo capacity (expanded hold), faster casts (tackle rack), navigation lamps or an aft canopy. Fit them at a public landing or owned wharf. **Fish from boat** works on every player hull with a rod; rowboats and beginners catch shallow-water species until their hull and Fishing skill allow deep-water fish.
+
+Run `npm run check:banking-ports` for loan-credit, compounding, repayment, waterfront gates, navigable shipping lanes, saved round trips, fitting bonuses, boat-fishing and old-save checks.

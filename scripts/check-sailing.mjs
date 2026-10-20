@@ -7,6 +7,7 @@ const result = await build({
     resolveDir: root,
     contents: `
       import assert from "node:assert/strict";
+      import { FISH_BY_ID } from "./src/lib/game/data/fish";
       import { BOATS } from "./src/lib/game/data/boats";
       import { PLACE_ANCHORS } from "./src/lib/game/data/layout";
       import { clearSeaSegment, HARBOUR_APPROACH, navigableWater, seaRoute, sailingSpeed } from "./src/lib/game/sailing";
@@ -88,8 +89,9 @@ const result = await build({
       // A rowboat cannot borrow the capabilities of a better owned hull.
       state.afloat="row";state.boatRank=5;state.hulls=["sail","sloop"];
       state.castLine("sea",-50,470,"sloop");
-      assert.equal(state.fishing,null);
-      assert.match(state.speech,/rowboat/);
+      assert(state.fishing,"Rowboats can now fish for shallow-water species");
+      assert.equal(FISH_BY_ID[state.fishing.fishId].sea,false,"Owning a sloop must not unlock deep-water catches from a rowboat");
+      state.fishing=null;
       const afloatX = state.gnomeX;
       state.castLine("shore",96,548);
       assert.equal(state.gnomeX,afloatX,"Shore fishing must not teleport a boat onto land");

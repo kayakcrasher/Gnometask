@@ -86,6 +86,7 @@ function buildParcels(): Parcel[] {
     if(!onGrass(x+110,y+100))continue;
     out.push({id:`f-${d.id}-${dx}-${dy}`,x,y,w:230,h:230,price:Math.round(d.price*(1+Math.hypot(dx,dy)/900)),owner:null,ownerName:null,northern:true,requiredRoad:d.road,district:d.name});
   }
+  for(const y of [-3500,-3300])out.push({id:`thimble-${y}`,x:2140,y,w:200,h:180,price:2200,owner:null,ownerName:null,northern:true,requiredRoad:"thimble-road",district:"Thimblehaven"});
   return out.map(p=>{const land=parcelLand(p);return {...p,land,usableArea:landArea(land)};});
 }
 

@@ -1,3 +1,5 @@
+import {MarineControls} from "./hud/marine-controls";
+import {StarterLoanChoice} from "./hud/mossroot-bank";
 import { TransportControls } from "./hud/transport-controls";
 import { Soundtrack } from "./soundtrack";
 import { useEffect, useLayoutEffect } from "react";
@@ -29,6 +31,8 @@ export function AppShell() {
   const atHome = useGame((s) => s.atHome);
   const interior = useGame((s) => s.interior);
   const tickWorld = useGame((s) => s.tickWorld);
+  const tickMaritime=useGame(s=>s.tickMaritime);
+  useEffect(()=>{const id=window.setInterval(()=>tickMaritime(.25),250);return()=>window.clearInterval(id);},[tickMaritime]);
   const tickTransport=useGame(s=>s.tickTransport);
   useEffect(()=>{const id=window.setInterval(()=>tickTransport(.25),250);return()=>window.clearInterval(id);},[tickTransport]);
   const tickClock = useGame((s) => s.tickClock);
@@ -75,6 +79,8 @@ export function AppShell() {
     <div className="fixed inset-0 overflow-hidden bg-pine" onPointerDown={unlockAudio} onKeyDown={unlockAudio}>
       <Soundtrack />
       <TransportControls />
+      <MarineControls/>
+      <StarterLoanChoice/>
       <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>
         <LandMap />
         {named && !atHome ? (

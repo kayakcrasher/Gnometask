@@ -68,7 +68,7 @@ test('homes require a deed and resources, preserve ownership, and survive reload
  const loaded=migrate(snap(state));assert.deepEqual(loaded.estate,state.estate);assert.deepEqual(loaded.deeds,state.deeds);
 });
 test('road projects are sequential, paid once, resumable and visible',()=>{
- reset();state.coins=20000;state.logs=0;state.townHallLevel=5;
+ reset();state.coins=ROAD_PROJECTS.reduce((n,p)=>n+p.coins,0)+30000;state.logs=0;state.townHallLevel=5;
  state.commissionRoad('noble-reach');assert.equal(state.roadWorks.active,null);state.commissionRoad('bad-id');assert.equal(state.roadWorks.active,null);
  for(const p of ROAD_PROJECTS){
   const worth=developmentWorth(state),coins=state.coins,logs=state.logs;state.commissionRoad(p.id);assert.equal(developmentWorth(state),worth,"Investing in public roads preserves development value");assert.equal(state.coins,coins-p.coins);assert.equal(state.logs,logs-p.logs);

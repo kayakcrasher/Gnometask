@@ -92,6 +92,8 @@ export function snap(s: GameSave): GameSave {
     deeds: s.deeds,
     city: s.city,
     economy:{...s.economy,threats:(s as GameSave&{raids?:import("../types").Raid[]}).raids??s.economy?.threats??[]},
+    bank:s.bank,
+    ports:s.ports,
     transport:s.transport,
     estate: s.estate,
     roadWorks: s.roadWorks,
@@ -225,6 +227,7 @@ export const UI_SEED: Pick<
   | "raids"
   | "followWalk"
   | "sailHome"
+  | "portCourse"
   | "praying"
   | "lootFlash"
   | "fishing"
@@ -250,6 +253,7 @@ export const UI_SEED: Pick<
   raids: [],
   followWalk: true,
   sailHome: false,
+  portCourse:null,
   praying: false,
   lootFlash: null,
   fishing: null,

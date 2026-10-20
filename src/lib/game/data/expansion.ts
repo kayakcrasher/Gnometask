@@ -57,7 +57,8 @@ export const ROAD_PROJECTS = [
   },
  {id:'fernmeadow-road',name:'Fernmeadow country road',coins:1900,logs:0,hall:4,wealth:6500,points:softenRoad([[1930,-470],[2040,-850],[1650,-1100],[1270,-1360],[1000,-1580]],32)},
  {id:'willowbank-road',name:'Willowbank lakeside road',coins:3800,logs:0,hall:4,wealth:11000,points:softenRoad([[1270,-1360],[1550,-1700],[1900,-1940],[2170,-2140],[2300,-2220]],32)},
- {id:'bellweather-road',name:'Bellweather coast road',coins:7600,logs:0,hall:5,wealth:18000,points:softenRoad([[2170,-2140],[2020,-2500],[2150,-2850],[2470,-3020],[2780,-3100],[2960,-3060]],32)}
+ {id:'bellweather-road',name:'Bellweather coast road',coins:7600,logs:0,hall:5,wealth:18000,points:softenRoad([[2170,-2140],[2020,-2500],[2150,-2850],[2470,-3020],[2780,-3100],[2960,-3060]],32)},
+ {id:'thimble-road',name:'Thimblehaven harbour road',coins:14000,logs:0,hall:5,wealth:30000,points:softenRoad([[2470,-3020],[2330,-3050],[2290,-3200],[2250,-3390],[2130,-3470]],26)}
 
 ];
 export const FRONTIER_HOMES = [

@@ -1,3 +1,4 @@
+import { PORT_SITES, NORTH_LANDING, shipmentPosition } from "@/lib/game/ports";
 import { useGame } from "@/lib/game/store";
 import { HOME_PALETTES, homeStyle } from "@/lib/game/home-design";
 import { wagonPoint } from "@/lib/game/transport";
@@ -6,6 +7,74 @@ export function MapLiving({ pos }: { pos: { x: number; y: number } }) {
   return (
     <>
       <g pointerEvents="none">
+        {[
+          { site: NORTH_LANDING, dock: { level: 1, style: "mint" } },
+          ...s.ports.docks.map((d) => ({
+            site: PORT_SITES.find((p) => p.id === d.site)!,
+            dock: d,
+          })),
+        ].map(({ site: p, dock: d }) => (
+          <g key={p.id}>
+            <line
+              x1={p.x}
+              y1={p.y}
+              x2={p.water.x}
+              y2={p.water.y}
+              stroke={
+                d.style === "mint"
+                  ? "#9cc3ac"
+                  : d.style === "slate"
+                    ? "#8b9c9d"
+                    : "#b8976b"
+              }
+              strokeWidth={26}
+            />
+            <rect
+              x={p.water.x - 20}
+              y={p.water.y - 16}
+              width={40}
+              height={32 + d.level * 16}
+              fill={
+                d.style === "mint"
+                  ? "#9cc3ac"
+                  : d.style === "slate"
+                    ? "#8b9c9d"
+                    : "#b8976b"
+              }
+              stroke="#675942"
+              strokeWidth={3}
+            />
+            {d.level >= 2 && (
+              <rect
+                x={p.x + 30}
+                y={p.y - 25}
+                width={36}
+                height={40}
+                fill="#d7c09b"
+                stroke="#556f65"
+                strokeWidth={4}
+              />
+            )}
+          </g>
+        ))}
+        {s.ports.shipments.map((t) => {
+          const p = shipmentPosition(t);
+          return p ? (
+            <g
+              key={t.boat}
+              transform={`translate(${p.x} ${p.y}) rotate(${(-p.heading * 180) / Math.PI})`}
+            >
+              <path
+                d="M0 -30 Q-18 -18 -18 22L18 22Q18 -18 0 -30Z"
+                fill="#e4d5af"
+                stroke="#426c72"
+                strokeWidth={4}
+              />
+              <rect x={-11} y={-2} width={22} height={19} fill="#ac8456" />
+            </g>
+          ) : null;
+        })}
+
         {s.civic.plots
           .filter((p) => p.stories > 0)
           .map((p) => {

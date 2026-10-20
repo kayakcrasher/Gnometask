@@ -434,6 +434,7 @@ export function worldSlice(
     },
 
     tickWorld: () => {
+      if(get().bank?.pending)return;
       const respawn=readyCreatureRespawns(get());if(respawn)set(respawn);
       get().advanceRoadCrew?.();
       get().advanceCity?.();

@@ -226,6 +226,8 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  bank:import("./bank").BankAccount;
+  ports:import("./ports").Ports;
   economy:import("./island-economy").EconomyState;
   transport: import("./transport").Transport;
   roadWorks: import("./data/expansion").RoadWorks;
@@ -318,6 +320,7 @@ export type GameUi = {
   raids: Raid[];
   followWalk: boolean;
   sailHome: boolean;
+  portCourse:string|null;
   praying: boolean;
   lootFlash: LootFlash | null;
   fishing: FishingCast | null;

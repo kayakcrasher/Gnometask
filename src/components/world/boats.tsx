@@ -3,7 +3,12 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { BOATS, type BoatId } from "@/lib/game/data/boats";
-import { NEWCOMERS, SUPPLY_BERTH, SUPPLY_PIER, supplyDue } from "@/lib/game/data/supply";
+import {
+  NEWCOMERS,
+  SUPPLY_BERTH,
+  SUPPLY_PIER,
+  supplyDue,
+} from "@/lib/game/data/supply";
 import { useGame } from "@/lib/game/store";
 import { groundY, to3 } from "@/lib/game/world3";
 import { SEA_LEVEL } from "@/lib/game/data/water";
@@ -15,7 +20,15 @@ const WOOD = "#c4894a";
 const WOOD_DARK = "#8a5a32";
 const SAIL = "#f4efe4";
 
-function Bob({ children, amp = 0.05, speed = 0.9 }: { children: ReactNode; amp?: number; speed?: number }) {
+function Bob({
+  children,
+  amp = 0.05,
+  speed = 0.9,
+}: {
+  children: ReactNode;
+  amp?: number;
+  speed?: number;
+}) {
   const ref = useRef<THREE.Group>(null);
   const phase = useMemo(() => Math.random() * Math.PI * 2, []);
   useFrame(({ clock }) => {
@@ -31,7 +44,12 @@ function Bob({ children, amp = 0.05, speed = 0.9 }: { children: ReactNode; amp?:
 function hullOutline(length: number, width: number) {
   const shape = new THREE.Shape();
   shape.moveTo(0, -length * 0.55);
-  shape.quadraticCurveTo(width * 0.5, -length * 0.38, width * 0.5, -length * 0.08);
+  shape.quadraticCurveTo(
+    width * 0.5,
+    -length * 0.38,
+    width * 0.5,
+    -length * 0.08,
+  );
   shape.lineTo(width * 0.44, length * 0.4);
   shape.quadraticCurveTo(0, length * 0.5, -width * 0.44, length * 0.4);
   shape.lineTo(-width * 0.5, -length * 0.08);
@@ -39,31 +57,80 @@ function hullOutline(length: number, width: number) {
   return shape;
 }
 
-function Hull({ length, width, color, lip = "#6b5340" }: { length: number; width: number; color: string; lip?: string }) {
+function Hull({
+  length,
+  width,
+  color,
+  lip = "#6b5340",
+}: {
+  length: number;
+  width: number;
+  color: string;
+  lip?: string;
+}) {
   const geometry = useMemo(() => {
     const hull = new THREE.ExtrudeGeometry(hullOutline(length, width), {
-      depth: 0.14, bevelEnabled: true, bevelThickness: 0.025, bevelSize: 0.025, bevelSegments: 1, steps: 1, curveSegments: 8,
+      depth: 0.14,
+      bevelEnabled: true,
+      bevelThickness: 0.025,
+      bevelSize: 0.025,
+      bevelSegments: 1,
+      steps: 1,
+      curveSegments: 8,
     });
     hull.rotateX(-Math.PI / 2);
     hull.translate(0, 0.02, 0);
     const edge = hullOutline(length + 0.04, width + 0.04);
-    edge.holes.push(new THREE.Path(hullOutline(length - 0.1, Math.max(0.1, width - 0.09)).getPoints(24)));
-    const rim = new THREE.ExtrudeGeometry(edge, { depth: 0.055, bevelEnabled: false, curveSegments: 8 });
+    edge.holes.push(
+      new THREE.Path(
+        hullOutline(length - 0.1, Math.max(0.1, width - 0.09)).getPoints(24),
+      ),
+    );
+    const rim = new THREE.ExtrudeGeometry(edge, {
+      depth: 0.055,
+      bevelEnabled: false,
+      curveSegments: 8,
+    });
     rim.rotateX(-Math.PI / 2);
     rim.translate(0, 0.18, 0);
     return { hull, rim };
   }, [length, width]);
-  useEffect(() => () => { geometry.hull.dispose(); geometry.rim.dispose(); }, [geometry]);
+  useEffect(
+    () => () => {
+      geometry.hull.dispose();
+      geometry.rim.dispose();
+    },
+    [geometry],
+  );
   return (
     <group>
-      <mesh geometry={geometry.hull} castShadow receiveShadow><meshStandardMaterial color={color} roughness={0.85} /></mesh>
-      <mesh geometry={geometry.rim} castShadow><meshStandardMaterial color={lip} roughness={0.85} /></mesh>
-      {[-0.22, 0.1].map(z => <mesh key={z} position={[0, 0.19, z * length]}><boxGeometry args={[width * 0.8, 0.035, 0.09]} /><meshStandardMaterial color={lip} /></mesh>)}
+      <mesh geometry={geometry.hull} castShadow receiveShadow>
+        <meshStandardMaterial color={color} roughness={0.85} />
+      </mesh>
+      <mesh geometry={geometry.rim} castShadow>
+        <meshStandardMaterial color={lip} roughness={0.85} />
+      </mesh>
+      {[-0.22, 0.1].map((z) => (
+        <mesh key={z} position={[0, 0.19, z * length]}>
+          <boxGeometry args={[width * 0.8, 0.035, 0.09]} />
+          <meshStandardMaterial color={lip} />
+        </mesh>
+      ))}
     </group>
   );
 }
 
-function Mast({ h, sailW, z = 0, tint = SAIL }: { h: number; sailW: number; z?: number; tint?: string }) {
+function Mast({
+  h,
+  sailW,
+  z = 0,
+  tint = SAIL,
+}: {
+  h: number;
+  sailW: number;
+  z?: number;
+  tint?: string;
+}) {
   const cloth = useRef<THREE.Mesh>(null);
   const geometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -75,12 +142,22 @@ function Mast({ h, sailW, z = 0, tint = SAIL }: { h: number; sailW: number; z?: 
   }, [h, sailW]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   useFrame(({ clock }) => {
-    if (cloth.current) cloth.current.rotation.y = Math.sin(clock.elapsedTime * 1.5 + z) * 0.06;
+    if (cloth.current)
+      cloth.current.rotation.y = Math.sin(clock.elapsedTime * 1.5 + z) * 0.06;
   });
   return (
     <group position={[0, 0.2, z]}>
-      <mesh position={[0, h / 2, 0]} castShadow><cylinderGeometry args={[0.018, 0.025, h, 8]} /><meshStandardMaterial color={WOOD_DARK} /></mesh>
-      <mesh ref={cloth} geometry={geometry} castShadow><meshStandardMaterial color={tint} roughness={0.95} side={THREE.DoubleSide} /></mesh>
+      <mesh position={[0, h / 2, 0]} castShadow>
+        <cylinderGeometry args={[0.018, 0.025, h, 8]} />
+        <meshStandardMaterial color={WOOD_DARK} />
+      </mesh>
+      <mesh ref={cloth} geometry={geometry} castShadow>
+        <meshStandardMaterial
+          color={tint}
+          roughness={0.95}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
     </group>
   );
 }
@@ -91,20 +168,32 @@ function Oars({ rowing }: { rowing?: boolean }) {
   useFrame(({ clock }) => {
     const stroke = rowing ? Math.sin(clock.elapsedTime * 4.5) * 0.55 : 0;
     const dip = rowing ? Math.cos(clock.elapsedTime * 4.5) * 0.16 : 0;
-    if (left.current) { left.current.rotation.y = stroke; left.current.rotation.z = dip; }
-    if (right.current) { right.current.rotation.y = -stroke; right.current.rotation.z = -dip; }
+    if (left.current) {
+      left.current.rotation.y = stroke;
+      left.current.rotation.z = dip;
+    }
+    if (right.current) {
+      right.current.rotation.y = -stroke;
+      right.current.rotation.z = -dip;
+    }
   });
   return (
     <group>
       <group ref={left} position={[-0.2, 0.22, 0.02]}>
-        <mesh position={[-0.5, 0, 0]}><boxGeometry args={[0.2, 0.035, 0.12]} /><meshStandardMaterial color={WOOD_DARK} /></mesh>
+        <mesh position={[-0.5, 0, 0]}>
+          <boxGeometry args={[0.2, 0.035, 0.12]} />
+          <meshStandardMaterial color={WOOD_DARK} />
+        </mesh>
         <mesh position={[-0.22, 0, 0]} rotation={[0, 0, 0.45]}>
           <boxGeometry args={[0.48, 0.03, 0.045]} />
           <meshStandardMaterial color="#6b4428" />
         </mesh>
       </group>
       <group ref={right} position={[0.2, 0.22, 0.02]}>
-        <mesh position={[0.5, 0, 0]}><boxGeometry args={[0.2, 0.035, 0.12]} /><meshStandardMaterial color={WOOD_DARK} /></mesh>
+        <mesh position={[0.5, 0, 0]}>
+          <boxGeometry args={[0.2, 0.035, 0.12]} />
+          <meshStandardMaterial color={WOOD_DARK} />
+        </mesh>
         <mesh position={[0.22, 0, 0]} rotation={[0, 0, -0.45]}>
           <boxGeometry args={[0.48, 0.03, 0.045]} />
           <meshStandardMaterial color="#6b4428" />
@@ -118,16 +207,396 @@ function Cannon() {
   return (
     <group>
       {[-1, 1].map((side) => (
-        <mesh key={side} position={[side * 0.18, 0.28, 0.22]} rotation={[Math.PI / 2, side * -0.25, 0]} castShadow>
+        <mesh
+          key={side}
+          position={[side * 0.18, 0.28, 0.22]}
+          rotation={[Math.PI / 2, side * -0.25, 0]}
+          castShadow
+        >
           <cylinderGeometry args={[0.04, 0.055, 0.28, 8]} />
-          <meshStandardMaterial color="#2c2926" metalness={0.45} roughness={0.4} />
+          <meshStandardMaterial
+            color="#2c2926"
+            metalness={0.45}
+            roughness={0.4}
+          />
         </mesh>
       ))}
     </group>
   );
 }
 
-export function BoatMesh({ kind, rowing, cannon }: { kind: BoatId | "goblin"; rowing?: boolean; cannon?: boolean }) {
+function ShipBox({
+  at,
+  size,
+  color,
+}: {
+  at: [number, number, number];
+  size: [number, number, number];
+  color: string;
+}) {
+  return (
+    <mesh position={at} castShadow receiveShadow>
+      <boxGeometry args={size} />
+      <meshStandardMaterial color={color} roughness={0.48} />
+    </mesh>
+  );
+}
+/** Original premium fleet: working coastal hulls and three distinct stepped-deck yachts. */
+function PremiumShip({ kind }: { kind: BoatId }) {
+  const cargo = kind === "coaster" || kind === "packet",
+    mega = kind === "megayacht",
+    explorer = kind === "expedition",
+    packet = kind === "packet";
+  const length = cargo ? 2.9 : mega ? 4.1 : 3.5,
+    width = cargo ? 1 : mega ? 1.4 : 1.2,
+    accent = mega
+      ? "#cda74b"
+      : explorer
+        ? "#426c72"
+        : cargo
+          ? "#a85935"
+          : "#5d9fa7";
+  return (
+    <group>
+      <Hull
+        length={length}
+        width={width}
+        color={cargo ? "#385f68" : explorer ? "#526c74" : "#f3ecda"}
+        lip={accent}
+      />
+      <ShipBox
+        at={[0, 0.28, 0]}
+        size={[width * 0.88, 0.1, length * 0.8]}
+        color="#bf9965"
+      />
+      <ShipBox
+        at={[0, 0.57, cargo ? -0.65 : -0.3]}
+        size={[width * 0.72, 0.5, cargo ? 0.65 : 1.7]}
+        color="#eee7d4"
+      />
+      <ShipBox
+        at={[0, 0.66, cargo ? -0.29 : 0.57]}
+        size={[width * 0.66, 0.22, 0.04]}
+        color="#305f72"
+      />
+      {[-1, 1].map((side) => (
+        <ShipBox
+          key={side}
+          at={[side * width * 0.367, 0.64, -0.25]}
+          size={[0.025, 0.2, cargo ? 0.5 : 1.3]}
+          color="#497f90"
+        />
+      ))}
+      <ShipBox
+        at={[0, 0.88, cargo ? -0.65 : -0.4]}
+        size={[width * 0.82, 0.07, cargo ? 0.8 : 1.85]}
+        color={accent}
+      />
+      {!cargo && (
+        <>
+          <ShipBox
+            at={[0, 1.13, -0.55]}
+            size={[width * 0.57, 0.43, 1.18]}
+            color="#f7f0df"
+          />
+          <ShipBox
+            at={[0, 1.2, 0.05]}
+            size={[width * 0.52, 0.19, 0.035]}
+            color="#3c7086"
+          />
+          <ShipBox
+            at={[0, 1.37, -0.58]}
+            size={[width * 0.66, 0.06, 1.4]}
+            color={accent}
+          />
+        </>
+      )}
+      {explorer && (
+        <>
+          <ShipBox
+            at={[-0.5, 0.95, -1.22]}
+            size={[0.08, 1.5, 0.08]}
+            color="#c9a262"
+          />
+          <ShipBox
+            at={[-0.15, 1.68, -1.22]}
+            size={[0.8, 0.08, 0.08]}
+            color="#c9a262"
+          />
+          <ShipBox
+            at={[0.2, 1.25, -1.22]}
+            size={[0.025, 0.8, 0.025]}
+            color="#667b7c"
+          />
+          <mesh position={[-0.35, 0.6, 0.8]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.15, 0.15, 0.34, 12]} />
+            <meshStandardMaterial color="#89a6a4" />
+          </mesh>
+          <mesh position={[0.57, 0.6, -0.8]} rotation={[0, Math.PI / 2, 0]}>
+            <torusGeometry args={[0.13, 0.04, 6, 16]} />
+            <meshStandardMaterial color="#d8834d" />
+          </mesh>
+          <mesh position={[0, 1.82, -0.8]} rotation={[-0.6, 0, 0]}>
+            <sphereGeometry
+              args={[0.22, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]}
+            />
+            <meshStandardMaterial color="#e5e2d5" side={THREE.DoubleSide} />
+          </mesh>
+        </>
+      )}
+      {mega && (
+        <>
+          <ShipBox
+            at={[0, 1.58, -0.8]}
+            size={[0.62, 0.38, 0.75]}
+            color="#eee7d4"
+          />
+          <ShipBox
+            at={[0, 1.66, -0.41]}
+            size={[0.56, 0.18, 0.035]}
+            color="#3c7086"
+          />
+          <ShipBox
+            at={[0, 1.8, -0.82]}
+            size={[0.78, 0.07, 0.9]}
+            color="#cda74b"
+          />
+          <ShipBox
+            at={[0, 0.39, 1.05]}
+            size={[0.62, 0.08, 0.65]}
+            color="#7cc4cf"
+          />
+          {[-1, 1].map((side) => (
+            <group key={side}>
+              <ShipBox
+                at={[side * 0.43, 1.48, -0.3]}
+                size={[0.16, 0.16, 0.24]}
+                color="#b89462"
+              />
+              <mesh position={[side * 0.43, 1.69, -0.3]}>
+                <sphereGeometry args={[0.18, 8, 6]} />
+                <meshStandardMaterial color="#759a58" />
+              </mesh>
+            </group>
+          ))}
+        </>
+      )}
+      {cargo ? (
+        <>
+          {Array.from({ length: packet ? 6 : 3 }, (_, i) => (
+            <ShipBox
+              key={i}
+              at={[((i % 2) - 0.5) * 0.4, 0.43, 0.2 + Math.floor(i / 2) * 0.38]}
+              size={[0.34, 0.3, 0.32]}
+              color={["#b98f59", "#6b8d76", "#b97152"][i % 3]!}
+            />
+          ))}
+          {packet && (
+            <ShipBox
+              at={[0.28, 1, -0.8]}
+              size={[0.18, 0.4, 0.22]}
+              color="#b37a45"
+            />
+          )}
+          <ShipBox
+            at={[-0.32, 0.95, 0.5]}
+            size={[0.06, 1.3, 0.06]}
+            color="#b29867"
+          />
+          <ShipBox
+            at={[-0.02, 1.55, 0.5]}
+            size={[0.7, 0.06, 0.06]}
+            color="#b29867"
+          />
+        </>
+      ) : (
+        <>
+          <ShipBox
+            at={[0.37, 0.43, -1.15]}
+            size={[0.36, 0.18, 0.7]}
+            color="#e5d3ae"
+          />
+          <mesh position={[0.37, 0.56, -1.15]}>
+            <boxGeometry args={[0.24, 0.08, 0.42]} />
+            <meshStandardMaterial color="#477b83" />
+          </mesh>
+          {[-1, 1].map((side) => (
+            <ShipBox
+              key={side}
+              at={[side * width * 0.3, 0.43, 0.85]}
+              size={[0.2, 0.12, 0.48]}
+              color="#e8d6a8"
+            />
+          ))}
+        </>
+      )}
+      <ShipBox
+        at={[0, cargo ? 1.07 : mega ? 1.95 : 1.55, -0.8]}
+        size={[0.045, 0.5, 0.045]}
+        color="#d6b972"
+      />
+      <mesh position={[0, cargo ? 1.32 : mega ? 2.21 : 1.81, -0.8]}>
+        <sphereGeometry args={[explorer ? 0.16 : 0.09, 10, 8]} />
+        <meshStandardMaterial color="#edeada" />
+      </mesh>
+      {Array.from({ length: 5 }, (_, i) =>
+        [-1, 1].map((side) => (
+          <ShipBox
+            key={`${i}-${side}`}
+            at={[side * width * 0.44, 0.5, ((i - 2) * length) / 6]}
+            size={[0.025, 0.42, 0.025]}
+            color={mega ? "#cda74b" : "#d5d8d1"}
+          />
+        )),
+      )}
+      {[-1, 1].map((side) => (
+        <ShipBox
+          key={side}
+          at={[side * width * 0.44, 0.71, 0]}
+          size={[0.025, 0.025, length * 0.78]}
+          color={mega ? "#cda74b" : "#d5d8d1"}
+        />
+      ))}
+    </group>
+  );
+}
+function BoatFittings({
+  parts,
+  large,
+}: {
+  parts: readonly string[];
+  large: boolean;
+}) {
+  const scale = large ? 1.5 : 1;
+  return (
+    <group scale={scale}>
+      {parts.includes("rigging") && (
+        <>
+          <ShipBox
+            at={[0.18, 0.7, -0.22]}
+            size={[0.025, 1, 0.025]}
+            color="#bd9d6a"
+          />
+          <mesh position={[0.31, 1.13, -0.22]}>
+            <boxGeometry args={[0.25, 0.16, 0.02]} />
+            <meshStandardMaterial color="#82baa9" />
+          </mesh>
+        </>
+      )}
+      {parts.includes("engine") && (
+        <>
+          <ShipBox
+            at={[0, 0.13, -0.57]}
+            size={[0.22, 0.22, 0.2]}
+            color="#bb8b51"
+          />
+          <mesh position={[0, 0.02, -0.68]} rotation={[0, 0, Math.PI / 4]}>
+            <boxGeometry args={[0.32, 0.045, 0.04]} />
+            <meshStandardMaterial color="#ae8c57" metalness={0.65} />
+          </mesh>
+        </>
+      )}
+      {parts.includes("hold") && (
+        <>
+          {[-1, 1].map((v) => (
+            <ShipBox
+              key={v}
+              at={[v * 0.14, 0.38, 0.3]}
+              size={[0.22, 0.24, 0.22]}
+              color="#9e754b"
+            />
+          ))}
+        </>
+      )}
+      {parts.includes("rack") && (
+        <>
+          {[-1, 1].map((v) => (
+            <ShipBox
+              key={v}
+              at={[v * 0.32, 0.56, 0.1]}
+              size={[0.02, 0.7, 0.02]}
+              color="#a99b76"
+            />
+          ))}
+          <ShipBox
+            at={[0, 0.34, 0.1]}
+            size={[0.68, 0.035, 0.035]}
+            color="#779c91"
+          />
+        </>
+      )}
+      {parts.includes("lantern") && (
+        <>
+          {[-1, 1].map((v) => (
+            <mesh key={v} position={[v * 0.3, 0.45, -0.2]}>
+              <sphereGeometry args={[0.065, 8, 6]} />
+              <meshStandardMaterial
+                color="#ffe1a0"
+                emissive="#f8c56c"
+                emissiveIntensity={1.2}
+              />
+            </mesh>
+          ))}
+        </>
+      )}
+      {parts.includes("canopy") && (
+        <>
+          <ShipBox
+            at={[0, 0.85, -0.35]}
+            size={[0.7, 0.05, 0.48]}
+            color="#89b3a4"
+          />
+          {[-1, 1].map((v) => (
+            <ShipBox
+              key={v}
+              at={[v * 0.3, 0.55, -0.5]}
+              size={[0.025, 0.6, 0.025]}
+              color="#ab8e63"
+            />
+          ))}
+        </>
+      )}
+    </group>
+  );
+}
+export function BoatMesh({
+  kind,
+  rowing,
+  cannon,
+  parts = [],
+}: {
+  kind: BoatId | "goblin";
+  rowing?: boolean;
+  cannon?: boolean;
+  parts?: readonly string[];
+}) {
+  return (
+    <group>
+      <BaseBoatMesh kind={kind} rowing={rowing} cannon={cannon} />
+      <BoatFittings
+        parts={parts}
+        large={!["row", "sail", "goblin"].includes(kind)}
+      />
+    </group>
+  );
+}
+
+function BaseBoatMesh({
+  kind,
+  rowing,
+  cannon,
+}: {
+  kind: BoatId | "goblin";
+  rowing?: boolean;
+  cannon?: boolean;
+}) {
+  if (["coaster", "packet", "yacht", "expedition", "megayacht"].includes(kind))
+    return (
+      <group>
+        <PremiumShip kind={kind as BoatId} />
+        {cannon && <Cannon />}
+      </group>
+    );
   if (kind === "row") {
     return (
       <group>
@@ -155,7 +624,8 @@ export function BoatMesh({ kind, rowing, cannon }: { kind: BoatId | "goblin"; ro
       </group>
     );
   }
-  if (kind === "fisher" || kind === "barge") return <LargeShip kind={kind} cannon={cannon} />;
+  if (kind === "fisher" || kind === "barge")
+    return <LargeShip kind={kind} cannon={cannon} />;
   if (kind === "goblin") {
     return (
       <group>
@@ -238,12 +708,24 @@ export function PirateRig() {
   );
 }
 
-function Gull({ radius, speed, lift }: { radius: number; speed: number; lift: number }) {
+function Gull({
+  radius,
+  speed,
+  lift,
+}: {
+  radius: number;
+  speed: number;
+  lift: number;
+}) {
   const ref = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
     if (!ref.current) return;
     const a = clock.elapsedTime * speed;
-    ref.current.position.set(Math.cos(a) * radius, lift + Math.sin(a * 3) * 0.12, Math.sin(a) * radius);
+    ref.current.position.set(
+      Math.cos(a) * radius,
+      lift + Math.sin(a * 3) * 0.12,
+      Math.sin(a) * radius,
+    );
     ref.current.rotation.y = -a + Math.PI / 2;
     ref.current.rotation.z = Math.sin(a * 8) * 0.35;
   });
@@ -281,7 +763,11 @@ function Pier() {
       </mesh>
       <mesh position={[-5.6, 0.86, 0.32]}>
         <sphereGeometry args={[0.07, 8, 8]} />
-        <meshStandardMaterial color="#e7c56a" emissive="#e7c56a" emissiveIntensity={0.35} />
+        <meshStandardMaterial
+          color="#e7c56a"
+          emissive="#e7c56a"
+          emissiveIntensity={0.35}
+        />
       </mesh>
       <mesh position={[-0.2, 0.34, 0.08]} castShadow>
         <boxGeometry args={[0.36, 0.24, 0.36]} />
@@ -340,15 +826,26 @@ function Dockhouse({ onEnter }: { onEnter: () => void }) {
         <boxGeometry args={[0.16, 0.4, 0.16]} />
         <meshStandardMaterial color="#8a7a68" />
       </mesh>
-      <Html position={[0, 2.3, 0.7]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-        <p className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">Dockhouse</p>
+      <Html
+        position={[0, 2.3, 0.7]}
+        center
+        distanceFactor={16}
+        style={{ pointerEvents: "none" }}
+      >
+        <p className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
+          Dockhouse
+        </p>
       </Html>
     </group>
   );
 }
 
 function SupplyHull() {
-  return <group scale={3.2}><LargeShip kind="supply" /></group>;
+  return (
+    <group scale={3.2}>
+      <LargeShip kind="supply" />
+    </group>
+  );
 }
 
 function SupplyPier() {
@@ -383,8 +880,15 @@ function SupplyPier() {
         <boxGeometry args={[0.32, 0.24, 0.32]} />
         <meshStandardMaterial color="#d6a84c" />
       </mesh>
-      <Html position={[0, 0.9, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-        <p className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">Supply</p>
+      <Html
+        position={[0, 0.9, 0]}
+        center
+        distanceFactor={16}
+        style={{ pointerEvents: "none" }}
+      >
+        <p className="rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
+          Supply
+        </p>
       </Html>
     </group>
   );
@@ -407,16 +911,22 @@ function SupplyShip() {
     const eased = 1 - Math.pow(1 - t.current, 3);
     const x = -220 + eased * (SUPPLY_BERTH.x - -220);
     const p = to3(x, SUPPLY_BERTH.y, 0);
-    ref.current.position.set(p[0], SEA_LEVEL + 0.08 + Math.sin(eased * 8) * 0.03, p[2]);
+    ref.current.position.set(
+      p[0],
+      SEA_LEVEL + 0.08 + Math.sin(eased * 8) * 0.03,
+      p[2],
+    );
     ref.current.rotation.y = 0;
     if (!spoke.current && t.current > 0.92) {
       spoke.current = true;
       const name = useGame.getState().newcomer;
-      useGame.getState().speak(
-        name
-          ? `Supply ship tied up. Crates on the south pier, and ${name} is coming ashore.`
-          : "Supply ship tied up on the south pier. The mainland sent crates.",
-      );
+      useGame
+        .getState()
+        .speak(
+          name
+            ? `Supply ship tied up. Crates on the south pier, and ${name} is coming ashore.`
+            : "Supply ship tied up on the south pier. The mainland sent crates.",
+        );
     }
   });
   if (!due) return null;
@@ -433,7 +943,11 @@ function SupplyShip() {
         </group>
       </group>
       <mesh
-        position={to3((SUPPLY_PIER.x + SUPPLY_BERTH.x) / 2, (SUPPLY_PIER.y + SUPPLY_BERTH.y) / 2, 0.35)}
+        position={to3(
+          (SUPPLY_PIER.x + SUPPLY_BERTH.x) / 2,
+          (SUPPLY_PIER.y + SUPPLY_BERTH.y) / 2,
+          0.35,
+        )}
         rotation={[0.4, 0, 0]}
         castShadow
       >
@@ -454,14 +968,23 @@ function SupplyShip() {
       </group>
       {who ? (
         <group
-          position={to3(SUPPLY_PIER.x - 10, SUPPLY_PIER.y + 18, groundY(SUPPLY_PIER.x, SUPPLY_PIER.y))}
+          position={to3(
+            SUPPLY_PIER.x - 10,
+            SUPPLY_PIER.y + 18,
+            groundY(SUPPLY_PIER.x, SUPPLY_PIER.y),
+          )}
           onClick={(e) => {
             e.stopPropagation();
             welcome();
           }}
         >
           <GnomeRig hat={who.hat} scale={1.15} beard={false} />
-          <Html position={[0, 1.6, 0]} center distanceFactor={14} style={{ pointerEvents: "none" }}>
+          <Html
+            position={[0, 1.6, 0]}
+            center
+            distanceFactor={14}
+            style={{ pointerEvents: "none" }}
+          >
             <p className="whitespace-nowrap rounded-full bg-ink/80 px-2 py-0.5 font-display text-[11px] font-semibold text-parchment">
               {who.name}
             </p>
@@ -477,17 +1000,28 @@ export function Harbor3({
   onCaptain,
   onHouse,
 }: {
-  onBoat: (id: BoatId, x: number, y: number, title: string, blurb: string) => void;
+  onBoat: (
+    id: BoatId,
+    x: number,
+    y: number,
+    title: string,
+    blurb: string,
+  ) => void;
   onCaptain: () => void;
   onHouse: () => void;
 }) {
   const yard = to3(90, 430, 0);
   const afloat = useGame((s) => s.afloat);
   const cannons = useGame((s) => s.cannons);
+  const ports = useGame((s) => s.ports);
   return (
     <group>
       {BOATS.map((boat) => {
-        if (afloat === boat.id) return null;
+        if (
+          afloat === boat.id ||
+          ports.shipments.some((t) => t.boat === boat.id)
+        )
+          return null;
         const p = to3(boat.x, boat.y, SEA_LEVEL + 0.06);
         return (
           <group
@@ -501,7 +1035,11 @@ export function Harbor3({
           >
             <Bob speed={0.7 + boat.need * 0.05}>
               <group scale={2.4}>
-                <BoatMesh kind={boat.id} cannon={cannons} />
+                <BoatMesh
+                  kind={boat.id}
+                  cannon={cannons}
+                  parts={ports.parts[boat.id]}
+                />
               </group>
             </Bob>
           </group>

@@ -1,5 +1,6 @@
+import { PORT_SITES, DOCK_UPGRADES, BOAT_PARTS } from "./ports";
 import { CART_PRICE, WAGON_PRICE } from "./transport";
-import {CITY_BUILDINGS,routeLength} from "./city";
+import { CITY_BUILDINGS, routeLength } from "./city";
 import { ROAD_PROJECTS } from "./data/expansion";
 import { CATALOG_BY_ID, bestCraft } from "./data/catalog";
 import { BOATS } from "./data/boats";
@@ -7,17 +8,57 @@ import type { GameSave } from "./types";
 export function developmentWorth(
   s: Pick<
     GameSave,
-    "coins" | "ownedGear" | "hulls" | "deeds" | "estate" | "roadWorks" | "city" | "transport"
-  >,
+    | "coins"
+    | "ownedGear"
+    | "hulls"
+    | "deeds"
+    | "estate"
+    | "roadWorks"
+    | "city"
+    | "transport"
+  > &
+    Partial<Pick<GameSave, "ports">>,
 ) {
   return (
+    (s.ports?.plots.reduce(
+      (n, id) => n + (PORT_SITES.find((p) => p.id === id)?.price ?? 0),
+      0,
+    ) ?? 0) +
+    (s.ports?.docks.reduce(
+      (n, d) => n + DOCK_UPGRADES.slice(0, d.level).reduce((a, b) => a + b, 0),
+      0,
+    ) ?? 0) +
+    Object.values(s.ports?.parts ?? {}).reduce(
+      (n, parts) =>
+        n +
+        parts.reduce(
+          (a, id) => a + (BOAT_PARTS.find((p) => p.id === id)?.price ?? 0),
+          0,
+        ),
+      0,
+    ) +
     ROAD_PROJECTS.filter(
       (p) =>
         s.roadWorks.completed.includes(p.id) || s.roadWorks.active?.id === p.id,
     ).reduce((n, p) => n + p.coins, 0) +
-    s.city.buildings.reduce((n,b)=>n+(b.invested??CITY_BUILDINGS[b.kind].coins*(1+Array.from({length:b.level-1},(_,i)=>(i+1)**2).reduce((a,b)=>a+b,0))),0) +
-    s.city.roads.reduce((n,r)=>n+Math.ceil(routeLength(r.points)/2),0)+s.city.carts.length*180+
-    (s.transport?.cart?CART_PRICE:0)+(s.transport?.wagons.filter(w=>w.owned).reduce((n,_,i)=>n+WAGON_PRICE*(i+1)**2,0)??0)+
+    s.city.buildings.reduce(
+      (n, b) =>
+        n +
+        (b.invested ??
+          CITY_BUILDINGS[b.kind].coins *
+            (1 +
+              Array.from(
+                { length: b.level - 1 },
+                (_, i) => (i + 1) ** 2,
+              ).reduce((a, b) => a + b, 0))),
+      0,
+    ) +
+    s.city.roads.reduce((n, r) => n + Math.ceil(routeLength(r.points) / 2), 0) +
+    s.city.carts.length * 180 +
+    (s.transport?.cart ? CART_PRICE : 0) +
+    (s.transport?.wagons
+      .filter((w) => w.owned)
+      .reduce((n, _, i) => n + WAGON_PRICE * (i + 1) ** 2, 0) ?? 0) +
     s.coins +
     s.ownedGear.reduce((n, id) => n + (CATALOG_BY_ID[id]?.price ?? 0), 0) +
     s.hulls.reduce(

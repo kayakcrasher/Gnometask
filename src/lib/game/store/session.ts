@@ -124,6 +124,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       const seeded = seedQuests({ quests: [], chicken: null, landing: null });
       set({
         ...fresh,
+        bank:{...fresh.bank,pending:true},
         gnomeName: trimmed,
         named: true,
         atHome: false,
@@ -133,6 +134,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         landing: seeded.landing,
         lifeDragon: { ...fresh.lifeDragon, name: "Ember" },
         combat: null,
+        portCourse:null,
         popup: null,
         coach: 1,
         afloat: null,

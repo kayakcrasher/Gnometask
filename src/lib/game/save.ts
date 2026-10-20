@@ -1,3 +1,5 @@
+import {emptyBank,coerceBank} from "./bank";
+import {emptyPorts,coercePorts} from "./ports";
 import { emptyEconomy, coerceEconomy, economicClimate,economicDividend } from "./island-economy";
 import { HOME_STYLES } from "./home-design";
 import { emptyTransport, coerceTransport } from "./transport";
@@ -93,6 +95,8 @@ export function defaultSave(): GameSave {
     saplings: 0,
     deeds: [],
     city: emptyCity(),
+    bank:emptyBank(),
+    ports:emptyPorts(),
     economy:emptyEconomy(),
     transport:emptyTransport(),
     estate: {},
@@ -352,6 +356,8 @@ export function migrate(raw: unknown): GameSave {
     logs: typeof s.logs === "number" ? s.logs : 0,
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: asStringArray(s.deeds, []),
+    bank:coerceBank(s.bank),
+    ports:coercePorts(s.ports,asStringArray(s.hulls,[])),
     economy:coerceEconomy(s.economy,asStringArray(s.deeds,[])),
     roadWorks: coerceRoadWorks(s.roadWorks),
     transport:coerceTransport(s.transport,coerceRoadWorks(s.roadWorks).completed),
@@ -364,7 +370,7 @@ export function migrate(raw: unknown): GameSave {
     fishBag: cleanFishBag(s.fishBag),
     tank: cleanFishBag(s.tank),
     aquariumLevel:aquariumLevel(s.aquariumLevel,s.tank),
-    boatRank: typeof s.boatRank === "number" ? Math.max(1, Math.min(5, s.boatRank)) : 1,
+    boatRank: typeof s.boatRank === "number" ? Math.max(1, Math.min(10, s.boatRank)) : 1,
     plots: asPlots(s.plots),
     seeds: s.seeds == null ? { carrot: 2 } : asFishBag(s.seeds),
     produce: asFishBag(s.produce),

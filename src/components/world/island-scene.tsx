@@ -1,3 +1,5 @@
+import {PlayerHarbours} from "./player-harbours";
+import {boatById} from "@/lib/game/data/boats";
 import { FutureSunstepHarbour,NorthernWaystation } from "./future-harbour";
 import { PassengerWagons, TravelCartAsset } from "./passenger-wagons";
 import { FrontierLandscape } from "./frontier-landscape";
@@ -264,7 +266,7 @@ function SceneBody({
       <CountryRoads />
       <EstateHomes /><PlayerCity />
       <PassengerWagons pos={pos} />
-      <FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
+      <PlayerHarbours/><FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
       <RoadCrew />
       <NorthernScenery />
       <FrontierLandscape onWalk={onWalk} pos={pos} />
@@ -366,11 +368,8 @@ function SceneBody({
         <group position={to3(pos.x, pos.y, SEA_LEVEL + 0.06)} rotation={[0, face, 0]}>
           <group scale={2.4}>
             <BoatMesh
-              kind={
-                save.afloat === "sail" || save.afloat === "fisher" || save.afloat === "barge" || save.afloat === "sloop"
-                  ? save.afloat
-                  : "row"
-              }
+              kind={boatById(save.afloat)?.id??"row"}
+              parts={save.ports.parts[save.afloat]}
               rowing={walking}
               cannon={save.cannons}
             />

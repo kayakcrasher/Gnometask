@@ -1,3 +1,4 @@
+import {PUBLIC_PORT,NORTH_LANDING,portSite} from "../ports";
 import { bestHatchet, bestRod, CATALOG_BY_ID, gearStats } from "../catalog";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS, logsFor, treeSize } from "../data/trees";
 import { sfx } from "../juice";
@@ -125,20 +126,22 @@ export function gatherSlice(
 
     sailTo: (dest, boatId) => {
       const s = get();
-      if (s.combat || s.fishing) return;
+      if (s.combat || s.fishing || s.bank.pending || s.transport.ride) return;
+      const harbours=[PUBLIC_PORT,NORTH_LANDING,...s.ports.docks.map(d=>portSite(d.site)!)];
       if (dest === "dock") {
         if (!s.afloat) {
           set({ speech: "You are already ashore.", popup: null });
           return;
         }
-        if (Math.hypot(s.gnomeX - HARBOUR_APPROACH.x, s.gnomeY - HARBOUR_APPROACH.y) > DOCKING_RANGE) {
+        const near=[...harbours].sort((a,b)=>Math.hypot(s.gnomeX-a.water.x,s.gnomeY-a.water.y)-Math.hypot(s.gnomeX-b.water.x,s.gnomeY-b.water.y)).find(p=>Math.hypot(s.gnomeX-p.water.x,s.gnomeY-p.water.y)<=DOCKING_RANGE);
+        if (!near) {
           set({ sailHome: true, popup: null, speech: "Sailing back to the town harbour. Tap another patch of water to change course." });
           return;
         }
         set({
-          gnomeX: PLACE_ANCHORS.dock.x, gnomeY: PLACE_ANCHORS.dock.y,
+          gnomeX: near.id==='capital'?PLACE_ANCHORS.dock.x:near.x, gnomeY: near.id==='capital'?PLACE_ANCHORS.dock.y:near.y,
           afloat: null, sailHome: false, popup: null, interior: null,
-          selectedPlace: "dock", speech: "Moored safely. Back on the town dock.",
+          selectedPlace: "dock", speech: `Moored safely at ${near.name}.`,
         });
         sfx("open");
         scheduleWrite(get);
@@ -148,12 +151,14 @@ export function gatherSlice(
         set({ speech: "Return to the harbour before changing boats.", popup: null });
         return;
       }
-      if (Math.hypot(s.gnomeX - PLACE_ANCHORS.dock.x, s.gnomeY - PLACE_ANCHORS.dock.y) > 130) {
-        set({ speech: "Come to the town dock to board a boat." });
+      const boarding=[...harbours].sort((a,b)=>Math.hypot(s.gnomeX-a.x,s.gnomeY-a.y)-Math.hypot(s.gnomeX-b.x,s.gnomeY-b.y)).find(p=>Math.hypot(s.gnomeX-p.x,s.gnomeY-p.y)<=130);
+      if (!boarding) {
+        set({ speech: "Come to a public landing or your own wharf to board a boat." });
         return;
       }
       const boat = boatById(boatId ?? "row");
       if (!boat) return;
+      if(s.ports.shipments.some(t=>t.boat===boat.id)){set({speech:"That boat is away on a freight contract."});return;}
       if (boat.id !== "row" && !s.hulls.includes(boat.id)) {
         set({ speech: `${boat.name} isn't yours. Wim sells her at the dockhouse.`, popup: null });
         return;
@@ -164,7 +169,7 @@ export function gatherSlice(
         return;
       }
       set({
-        gnomeX: boat.x, gnomeY: boat.y, afloat: boat.id, sailHome: false,
+        gnomeX: boarding.id==='capital'?boat.x:boarding.water.x, gnomeY: boarding.id==='capital'?boat.y:boarding.water.y, afloat: boat.id, sailHome: false,
         selectedPlace: "dock", boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
         popup: null, interior: null,
         speech: `The ${boat.name.toLowerCase()} casts off. Tap the water to sail. Distance travelled earns Sailing XP.`,
@@ -363,14 +368,7 @@ export function gatherSlice(
         return;
       }
       const rank = activeBoat ? BOAT_RANK[activeBoat.id] : 1;
-      if (where === "sea" && rank < 2) {
-        set({
-          speech: "The rowboat stays in the shallows. Sail a skiff or bigger, then cast in the open water.",
-          popup: null,
-        });
-        return;
-      }
-      const fish = rollFish(where, lv, rank, rod);
+      const fish = rollFish(where === "sea" && rank < 2 ? "shore" : where, lv, rank, rod) ?? (where === "sea" ? rollFish("shore",lv,rank,rod) : null);
       if (!fish) {
         set({
           speech:
@@ -412,7 +410,7 @@ export function gatherSlice(
         });
         sfx("buy");
         scheduleWrite(get);
-      }, 2600);
+      }, activeBoat&&s.ports.parts[activeBoat.id]?.includes("rack")?2000:2600);
     },
 
     sellFish: (id) => {

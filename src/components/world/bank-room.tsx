@@ -1,3 +1,4 @@
+import {BankLedger} from "../hud/mossroot-bank";
 import {useIndoor} from "@/lib/game/indoor-state";
 import { InteriorCanvas as Canvas, RoomDecor } from "./interior-assets";
 import { Html } from "@react-three/drei";
@@ -116,9 +117,9 @@ export function BankRoom() {
       </Canvas>
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-3">
         <div className="pointer-events-auto max-w-sm rounded-[16px] bg-parchment/95 px-3 py-2 shadow-panel">
-          <p className="font-display text-lg font-semibold text-ink">Bram's Bank</p>
+          <p className="font-display text-lg font-semibold text-ink">Mossroot Consolidated Bank</p>
           <p className="text-xs font-semibold text-bark/70">
-            Quill Bram kept the purse on the old ferries. He sleeps above the vault and only takes the steps on the weekend.
+            Deep roots. Long ledgers. Quill Bram manages the Tideham branch.
           </p>
         </div>
         <button type="button" onClick={leave} className="pointer-events-auto rounded-full bg-parchment px-3 py-2 text-xs font-semibold text-ink">
@@ -129,7 +130,7 @@ export function BankRoom() {
       {desk === "teller" && !weekend ? (
         <div className="absolute inset-x-0 bottom-0 z-10 p-3">
           <div className="mx-auto max-h-[70dvh] max-w-lg overflow-y-auto rounded-[20px] bg-parchment p-4 shadow-panel">
-            <p className="font-display text-lg font-semibold text-ink">Quill Bram</p>
+            <BankLedger/><p className="mt-4 font-display text-lg font-semibold text-ink">Quill Bram · Other services</p>
             <p className="mt-1 text-sm font-semibold text-bark/70">
               I counted fares while the boats were still wild. The new capital needs a ledger, not a rumour. Private ground stays private. The pale parcels, I can sell.
             </p>
