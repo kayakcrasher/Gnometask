@@ -6,22 +6,11 @@ import {
   contextFromSave,
   rule,
   rulingText,
-  type CourtArgument,
+  hearingLines,
   type Verdict,
 } from "@/lib/game/data/court";
 import { useGame } from "@/lib/game/store";
 import { GnomeRig } from "./gnome-rig";
-
-/** Alternating sides for drama. Defense opens, crown answers. */
-function interleave(sunstep: CourtArgument[], crown: CourtArgument[]): CourtArgument[] {
-  const out: CourtArgument[] = [];
-  const max = Math.max(sunstep.length, crown.length);
-  for (let i = 0; i < max; i++) {
-    if (sunstep[i]) out.push(sunstep[i]!);
-    if (crown[i]) out.push(crown[i]!);
-  }
-  return out;
-}
 
 function Tier({ r, y, tint }: { r: number; y: number; tint: string }) {
   return (
@@ -160,7 +149,9 @@ export function CourtRoom() {
 
   const [phase, setPhase] = useState<Phase>(stage >= 3 ? "ruled" : "idle");
   const [argIndex, setArgIndex] = useState(0);
-  const [verdict, setVerdict] = useState<Verdict | null>(null);
+  const [paused,setPaused]=useState(false);
+  useEffect(()=>{const pause=()=>{if(document.hidden)setPaused(true);};document.addEventListener("visibilitychange",pause);return()=>document.removeEventListener("visibilitychange",pause);},[]);
+  const [verdict, setVerdict] = useState<Verdict | null>(()=>stage>=3?{...rule(contextFromSave({bonds,clarionReads,caseStage:stage,daysPlayed:days,isles})),side:civic.courtVerdict??"crown"}:null);
 
   // Begin the trial: compute the verdict up front, then reveal arguments one
   // at a time. The outcome never depends on the reveal — only on what the
@@ -180,11 +171,11 @@ export function CourtRoom() {
   }
 
   const sequence = verdict
-    ? interleave(verdict.sunstepArgs, verdict.crownArgs)
+    ? hearingLines(verdict)
     : [];
 
   useEffect(() => {
-    if (phase !== "streaming") return;
+    if (phase !== "streaming"||paused) return;
     if (argIndex >= sequence.length) {
       const id = setTimeout(() => {
         setPhase("ruled");
@@ -195,7 +186,7 @@ export function CourtRoom() {
     const id = setTimeout(() => setArgIndex((i) => i + 1), 3000);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, argIndex, sequence.length]);
+  }, [phase, argIndex, sequence.length,paused]);
 
   const current = phase === "streaming" ? sequence[argIndex] : null;
 
@@ -203,7 +194,7 @@ export function CourtRoom() {
     if (!supreme) return null;
     if (phase === "idle" && stage < 3) return "Hear the case";
     if (phase === "idle" && stage >= 3) return "The bench has ruled";
-    if (phase === "streaming") return `Argument ${argIndex + 1} of ${sequence.length}`;
+    if (phase === "streaming") return `Statement ${Math.min(argIndex + 1,sequence.length)} of ${sequence.length}`;
     return "The bench has ruled";
   })();
 
@@ -241,12 +232,12 @@ export function CourtRoom() {
           <div
             className={
               current.side === "sunstep"
-                ? "pointer-events-none max-w-lg rounded-[16px] bg-[#F2C230]/95 px-4 py-3 shadow-panel"
-                : "pointer-events-none max-w-lg rounded-[16px] bg-parchment/95 px-4 py-3 shadow-panel"
+                ? "pointer-events-auto max-w-lg rounded-[16px] bg-[#F2C230]/95 px-4 py-3 shadow-panel"
+                : "pointer-events-auto max-w-lg rounded-[16px] bg-parchment/95 px-4 py-3 shadow-panel"
             }
           >
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-bark/70">
-              {current.side === "sunstep" ? "For Sunstep · Wim" : "For the Crown · Stoic"} ·{" "}
+              {current.side === "bench"?"Justice Arbuthnot":current.side === "sunstep" ? "For Sunstep · Wim" : "For the Crown · Stoic"} ·{" "}
               {current.pleading}
             </p>
             <p className="mt-1 font-display text-base font-semibold leading-snug text-ink">
@@ -261,7 +252,7 @@ export function CourtRoom() {
 
       {phase === "ruled" && verdict ? (
         <div className="pointer-events-none absolute inset-x-0 top-24 z-10 flex justify-center px-3">
-          <div className="pointer-events-none max-w-lg rounded-[18px] bg-ink/95 px-4 py-3 shadow-panel">
+          <div className="pointer-events-auto max-w-lg rounded-[18px] bg-ink/95 px-4 py-3 shadow-panel">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-parchment/60">
               {ARBUTHNOT.name} · ruling
             </p>
@@ -289,6 +280,7 @@ export function CourtRoom() {
               ? rulingText(verdict)
               : caseBrief(Math.min(stage, 3), town)}
           </p>
+          {phase==="streaming"&&<div className="mt-2 flex gap-2"><button type="button" onClick={()=>setPaused(!paused)} className="min-h-11 flex-1 rounded-xl bg-parchment-dark text-xs font-bold">{paused?"Resume hearing":"Pause hearing"}</button><button type="button" disabled={argIndex>=sequence.length} onClick={()=>{if(argIndex+1>=sequence.length){setPhase("ruled");advance();}else setArgIndex(i=>i+1);}} className="min-h-11 flex-1 rounded-xl bg-pine text-xs font-bold text-parchment">{argIndex+1>=sequence.length?"Hear ruling":"Next statement"}</button></div>}
           {footer ? (
             <button
               type="button"

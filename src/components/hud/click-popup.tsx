@@ -241,6 +241,7 @@ export function ClickPopup() {
           </button>
         </div>
         <p className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-bark/75">{popup.blurb}</p>
+        {popup.hotspotId==="sunstep-future-dock"&&<details className="mt-2 max-h-[35dvh] overflow-y-auto text-sm text-ink"><summary className="min-h-11 cursor-pointer rounded-xl bg-parchment-dark px-3 py-2 font-bold">Read harbour plans</summary><p className="mt-2 leading-relaxed">{popup.blurb}</p></details>}
         {npc && NPC_STATS[npc.id] ? (
           <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-bark/55">
             Heart {NPC_STATS[npc.id]!.hp} · Attack {NPC_STATS[npc.id]!.atk} · Defence {NPC_STATS[npc.id]!.def} · Valor {NPC_STATS[npc.id]!.valor}

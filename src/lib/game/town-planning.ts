@@ -18,6 +18,8 @@ export function npcBuildAllowed(
     })
   )
     return false;
+  const titled=s.civic.gnomes.find(g=>g.northDeeds?.some(id=>{const land=parcelAt(id);return land&&insideParcel(land,p.x,p.y);}));
+  if(titled&&p.owner!==titled.id&&!p.shares.includes(titled.id))return false;
   if (s.city.roads.some((r) => nearRoad(p.x, p.y, r, 28))) return false;
   return buildingSiteClear(p.x, p.y, [
     ...Object.values(s.estate),

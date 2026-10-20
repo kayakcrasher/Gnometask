@@ -53,9 +53,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         raids:
           current.named && current.raids.length
             ? current.raids
-            : loaded.named
-              ? current.raids
-              : [],
+            : loaded.economy.threats,
         popup: current.named ? current.popup : null,
         interior: current.named ? current.interior : null,
         speech: named

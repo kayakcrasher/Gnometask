@@ -1,3 +1,4 @@
+import { IslandOutlook } from "./island-outlook";
 import { SoundPanel } from "./sound-panel";
 import { X } from "lucide-react";
 import { useGame } from "@/lib/game/store";
@@ -50,6 +51,7 @@ export function MenuView() {
             <X className="size-4" />
           </button>
         </div>
+        <IslandOutlook/>
         <SoundPanel />
         <h3 className="mb-1 font-display text-lg font-bold text-ink">Ember</h3>
         <p className="text-sm font-semibold text-bark/70">

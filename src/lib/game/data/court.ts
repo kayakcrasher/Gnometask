@@ -69,7 +69,7 @@ export const ARGUMENTS: CourtArgument[] = [
     side: "crown",
     pleading: "text",
     weight: 5,
-    text: "The charter grants the crown all cruise revenue on these shores.",
+    text: "The charter grants the Crown cruise revenue on these shores. Those words paid for watchfires through bitter winters. We cannot erase them because a new harbour promises a brighter summer.",
     source: "the charter plaque at the Town Hall",
     when: (ctx) => ctx.visitedCourt,
   },
@@ -87,7 +87,7 @@ export const ARGUMENTS: CourtArgument[] = [
     side: "crown",
     pleading: "commerce",
     weight: 5,
-    text: "Port Victoria funds the watch, the roads, the courts. Sunstep funds nothing.",
+    text: "Port Victoria funds the watch, the roads and this court. When goblins come ashore, it is our guards who stand there. Sunstep asks to share their protection; it must share their burden.",
     source: "Watcher Greg",
     when: (ctx) => (ctx.bonds.greg ?? 0) >= 4,
   },
@@ -125,7 +125,7 @@ export const ARGUMENTS: CourtArgument[] = [
     side: "sunstep",
     pleading: "text",
     weight: 5,
-    text: "The Sunstep charter says 'in perpetuity'. That word is not decorative.",
+    text: "The Sunstep charter says “in perpetuity”. Families built their futures on that promise. That word is not decorative, my lord, and neither are the lives beneath it.",
     source: "Wim, on the charter",
     when: (ctx) => (ctx.bonds.wim ?? 0) >= 12,
   },
@@ -161,7 +161,7 @@ export const ARGUMENTS: CourtArgument[] = [
     side: "sunstep",
     pleading: "morality",
     weight: 5,
-    text: "The people of Sunstep asked to be free. That is the whole charter, said aloud.",
+    text: "The people of Sunstep asked to be free. Not free of their neighbours—free to build something their children could keep. That is the whole charter, said aloud.",
     source: "Nettie",
     when: (ctx) => (ctx.bonds.nettie ?? 0) >= 8,
   },
@@ -170,7 +170,7 @@ export const ARGUMENTS: CourtArgument[] = [
     side: "sunstep",
     pleading: "morality",
     weight: 3,
-    text: "If a free port is punished, no new town will ever agree to be one.",
+    text: "If a free port is punished for prospering, what do we tell the gnomes walking North with a deed and a hammer? Build bravely, but do not build too well?",
     source: "Miller",
     when: (ctx) => (ctx.bonds.miller ?? 0) >= 12,
   },
@@ -244,7 +244,21 @@ export function progress(ctx: CourtContext): { found: number; total: number } {
 /** Boilerplate ruling text, decided by the algorithm. */
 export function rulingText(v: Verdict): string {
   if (v.side === "crown") {
-    return `The bench rules for the Crown. Sunstep's dock is granted, and every cruise ship tying up there pays fourteen percent. Port Victoria keeps its authority. The rattlesnake flies at half-mast.`;
+    return `The bench rules for the Crown. Sunstep's dock is granted, and every cruise ship tying up there pays fourteen percent. Port Victoria keeps its authority. That authority now carries a duty: protect the work this harbour brings, and do not let its families bear the whole burden. The rattlesnake flies at half-mast.`;
   }
-  return `The bench rules for Sunstep. The charter's word "perpetuity" is held to be literal. Cruise ships tying up at the eastern dock pay half of one percent, and no more. Port Victoria keeps its 7%. The rattlesnake flies full.`;
+  return `The bench rules for Sunstep. The charter's word "perpetuity" is held to be literal. Cruise ships tying up at the eastern dock pay half of one percent, and no more. Port Victoria keeps its 7%. Sunstep must now prove that a promise honoured can become a harbour that welcomes its neighbours. The rattlesnake flies full.`;
+}
+
+export type CourtLine={id:string;side:CourtSide|'bench';pleading:string;text:string;source:string};
+/** Drama frames the discovered evidence; it never changes weights or the judge's decision. */
+export function hearingLines(v:Verdict):CourtLine[]{
+ const out:CourtLine[]=[
+ {id:'bench-open',side:'bench',pleading:'Opening the hearing',source:'Justice Arbuthnot',text:'A harbour is never only a harbour. It is a promise of work, a road home, and a duty to those left behind. Speak plainly. I will hear the charter—and I will hear the people who must live beneath it.'},
+ {id:'wim-open',side:'sunstep',pleading:'Opening address',source:'Wim, for Sunstep',text:'My lord, I have watched our young gnomes leave with everything they own tied in a cloth. We are asking for a dock so they might come home with work waiting. Do not call that hope a threat to the Crown.'},
+ {id:'crown-open',side:'crown',pleading:'Opening address',source:'Stoic, for the Crown',text:'And I have watched a guard stand on a broken wall while the treasury counted its last coins. Freedom cannot mean enjoying a safe coast while another town buries the cost. The charter binds all of us, especially when it is inconvenient.'},
+ ];
+ for(let i=0;i<Math.max(v.sunstepArgs.length,v.crownArgs.length);i++){for(const a of [v.sunstepArgs[i],v.crownArgs[i]])if(a)out.push(a);}
+ out.push({id:'wim-close',side:'sunstep',pleading:'Closing address',source:'Wim, for Sunstep',text:'If “in perpetuity” can be taken back the moment it becomes valuable, what promise can a new town trust? Think of the families buying land in the North. We ask them to build a life on our word. Let that word be worth something.'},
+ {id:'crown-close',side:'crown',pleading:'Closing address',source:'Stoic, for the Crown',text:'I will not pretend a tax feels like bread on an empty table. But neither will I pretend that roads mend themselves or enemies stop at a customs gate. Give Sunstep its harbour with a duty it can bear, and give the rest of this island a reason to stand beside it.'},
+ {id:'bench-close',side:'bench',pleading:'Before judgment',source:'Justice Arbuthnot',text:'You have both spoken of families. Remember them after this room is empty. The victorious party inherits a responsibility, not permission to gloat. I will now give the judgment this charter and this evidence require.'});return out;
 }

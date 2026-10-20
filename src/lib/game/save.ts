@@ -1,8 +1,8 @@
+import { emptyEconomy, coerceEconomy, economicClimate,economicDividend } from "./island-economy";
 import { HOME_STYLES } from "./home-design";
 import { emptyTransport, coerceTransport } from "./transport";
 import {aquariumLevel,cleanFishBag} from "./data/fish";
 import { emptyCity, coerceCity } from "./city";
-import { developmentLevel } from "./development";
 import { npcBuildAllowed, openFrontier } from "./town-planning";
 import { coerceRoadWorks } from "./data/expansion";
 import { parcelAt } from "./data/parcels";
@@ -21,7 +21,6 @@ import { coerceCivic, seedCivic, stepCivic } from "./data/civic";
 import { dailyRoadTax } from "./data/country";
 import { coerceRaidProgress, coerceRaidVisit } from "./raid-state";
 import { boatById } from "./data/boats";
-import { totalDividend } from "./data/market";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
@@ -94,6 +93,7 @@ export function defaultSave(): GameSave {
     saplings: 0,
     deeds: [],
     city: emptyCity(),
+    economy:emptyEconomy(),
     transport:emptyTransport(),
     estate: {},
     roadWorks: {completed:[],active:null},
@@ -352,6 +352,7 @@ export function migrate(raw: unknown): GameSave {
     logs: typeof s.logs === "number" ? s.logs : 0,
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: asStringArray(s.deeds, []),
+    economy:coerceEconomy(s.economy,asStringArray(s.deeds,[])),
     roadWorks: coerceRoadWorks(s.roadWorks),
     transport:coerceTransport(s.transport,coerceRoadWorks(s.roadWorks).completed),
     estate: Object.fromEntries(Object.entries(s.estate && typeof s.estate === "object" ? s.estate : {}).filter(([id,h]) => {
@@ -519,11 +520,11 @@ export function applyDailyRollover(save: GameSave): GameSave {
   ),
   );
   const grown = growFolk(rolled, true);
-  let civic = stepCivic(openFrontier(rolled.civic,rolled.roadWorks.completed), rolled.daysPlayed, developmentLevel(rolled), p=>npcBuildAllowed(rolled,p));
+  let civic = stepCivic(openFrontier(rolled.civic,rolled.roadWorks.completed), rolled.daysPlayed, economicClimate(rolled).jobs, p=>npcBuildAllowed(rolled,p));
   const extra = Math.min(2, Math.max(0, missed - 1));
-  for (let i = 0; i < extra; i++) civic = stepCivic(civic, rolled.daysPlayed, developmentLevel(rolled), p=>npcBuildAllowed({...rolled,civic},p));
-  const dividend = totalDividend(rolled.daysPlayed, rolled.shares);
-    return { ...rolled, coins: rolled.coins + grown.wage + dividend, settlers: grown.settlers, placed: grown.placed, civic };
+  for (let i = 0; i < extra; i++) civic = stepCivic(civic, rolled.daysPlayed, economicClimate(rolled).jobs, p=>npcBuildAllowed({...rolled,civic},p));
+  const dividend = economicDividend({...rolled,civic});
+    return { ...rolled, coins: rolled.coins + grown.wage + dividend.pay,economy:dividend.economy, settlers: grown.settlers, placed: grown.placed, civic };
 }
 
 export function loadSave(): GameSave {

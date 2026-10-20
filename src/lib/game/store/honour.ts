@@ -1,3 +1,5 @@
+import { economicClimate, quoteDay } from "../island-economy";
+import { landQuote } from "../land-market";
 import {cityDeedDeveloped} from "../city";
 import { civicParcelOwner } from "../land-planning";
 import { BOAT_LOANS, LAND_OFFERS, rolledChart } from "../data/honour";
@@ -110,16 +112,19 @@ export function honourSlice(
         });
         return;
       }
-      if (s.coins < tile.price) {
+      if((tile.usableArea??0)<1000){set({speech:"There is not enough available land here to register a new deed."});return;}
+      const quote=landQuote(s,tile);
+      if (s.coins < quote.buy) {
         sfx("error");
-        set({ speech: `That parcel is ${tile.price} coins.` });
+        set({ speech: `That parcel is ${quote.buy} coins at today’s market value.` });
         return;
       }
       set({
         deeds: [...s.deeds, id],
-        coins: s.coins - tile.price,
+        coins: s.coins - quote.buy,
+        economy:{...s.economy,deedBasis:{...s.economy.deedBasis,[id]:{paid:quote.buy,day:quoteDay(s)}}},
         coinPopKey: s.coinPopKey + 1,
-        speech: `Unclaimed hollow. ${tile.price} coins. The deed is in your name. A gnome's own ground is never on this list.`,
+        speech: `Unclaimed hollow. ${quote.buy} coins. The deed is in your name. A gnome's own ground is never on this list.`,
       });
       sfx("buy");
       scheduleWrite(get);
@@ -137,10 +142,11 @@ export function honourSlice(
         return;
       }
       if(s.estate[id]){set({speech:"This deed has your home on it. Built homes are not sold with bare land."});return;}
-      const pay = Math.max(1, Math.floor(tile.price * 0.7));
+      const quote=landQuote(s,tile),pay=quote.sell,basis={...s.economy.deedBasis};delete basis[id];
       set({
         deeds: s.deeds.filter((d) => d !== id),
         coins: s.coins + pay,
+        economy:{...s.economy,deedBasis:basis,landProfit:s.economy.landProfit+pay-quote.basis},
         coinPopKey: s.coinPopKey + 1,
         speech: `Quill takes the deed back for the hollow. ${pay} coins, and the ground is no longer yours.`,
       });
@@ -151,7 +157,7 @@ export function honourSlice(
     buyShare: (id, quantity = 1) => {
       const s = get();
       const stock = STOCKS.find((row) => row.id === id);
-      const order = quoteShareTrade(id, s.daysPlayed, s.coins, s.shares, "buy", quantity);
+      const order = quoteShareTrade(id, quoteDay(s), s.coins, s.shares, "buy", quantity, economicClimate(s).factor);
       if (!stock || !order) {
         sfx("error");
         set({ speech: "Order declined. Choose whole shares you can afford." });
@@ -170,7 +176,7 @@ export function honourSlice(
     sellShare: (id, quantity = 1) => {
       const s = get();
       const stock = STOCKS.find((row) => row.id === id);
-      const order = quoteShareTrade(id, s.daysPlayed, s.coins, s.shares, "sell", quantity);
+      const order = quoteShareTrade(id, quoteDay(s), s.coins, s.shares, "sell", quantity, economicClimate(s).factor);
       if (!stock || !order) {
         sfx("error");
         set({ speech: "Order declined. Choose whole shares from your holdings." });

@@ -19,7 +19,8 @@
     "check:cozy": "node scripts/check-cozy-world.mjs",
     "check:music": "node scripts/check-music.mjs",
     "check:frontier": "node scripts/check-frontier.mjs",
-    "check:living-towns": "node scripts/check-living-towns.mjs"
+    "check:living-towns": "node scripts/check-living-towns.mjs",
+    "check:economy": "node scripts/check-economy-north.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

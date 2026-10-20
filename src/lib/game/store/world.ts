@@ -1,4 +1,5 @@
-import { developmentLevel } from "../development";
+import { economicClimate,advanceEconomy,economicDividend } from "../island-economy";
+import { residentEconomy } from "../resident-economy";
 import { npcBuildAllowed, openFrontier, settleFrontier } from "../town-planning";
 import { clamp, uid } from "@/lib/utils";
 import { ABSENCE_SPOT, DRAGON_RIDGE, WORLD_PACK } from "../catalog";
@@ -437,7 +438,7 @@ export function worldSlice(
       get().advanceRoadCrew?.();
       get().advanceCity?.();
       const s = get();
-      if (!s.named || s.combat) return;
+      if (!s.named || s.combat || s.atHome || s.interior || s.abroad || (typeof document!=="undefined"&&document.hidden)) return;
       let buildingHp = s.buildingHp;
       let speech = s.speech;
       let raids = s.raids;
@@ -532,16 +533,19 @@ export function worldSlice(
       const hp = s.hp < max ? Math.min(max, s.hp + 1) : s.hp;
       if (hp !== s.hp) changed = true;
 
+      const economy=advanceEconomy(s),climate=economicClimate({...s,economy,raids,buildingHp});
       let civic = openFrontier(s.civic,s.roadWorks.completed);
       const CIVIC_BATCH = 3;
-      for (let i = 0; i < CIVIC_BATCH; i++) civic = stepCivic(civic, s.daysPlayed, developmentLevel(s), p=>npcBuildAllowed({...s,civic},p));
-      if(developmentLevel(s)>=2)civic=settleFrontier({...s,civic});
-      const loud = /timber|story|lantern|jar|rental|still|household|cruise|back room/;
+      for (let i = 0; i < CIVIC_BATCH; i++) civic = stepCivic(civic, s.daysPlayed, climate.jobs, p=>npcBuildAllowed({...s,civic},p));
+      if(climate.jobs>=2)civic=settleFrontier({...s,civic,economy});
+      const households=residentEconomy({...s,civic,economy,raids,buildingHp,coins:get().coins});civic=households.civic;
+      const dividend=economicDividend({...s,...households});
+      const loud = /timber|story|lantern|jar|rental|still|household|cruise|back room|savings|stole|contraband|home|northern/;
       const newsChanged = civic.news !== s.civic.news && loud.test(civic.news);
       if (newsChanged) speech = civic.news;
       void changed;
 
-      set({ buildingHp, raids, speech, chicken, hp, waveDay, civic });
+      set({ buildingHp, raids, speech, chicken, hp, waveDay, civic,economy:dividend.economy,coins:households.coins+dividend.pay });
       scheduleWrite(get);
     },
   };

@@ -95,3 +95,19 @@ Town owners with a city home and trade depot can buy wagon services. The first c
 The sailing bounds now extend beyond the expanded island on every side. The atlas and minimap zoom out while afloat to include the offshore water. Boats still avoid land and use the existing sailing skill progression.
 
 Run `npm run check:living-towns` for boarding, fares, ownership, vehicle migration, household departures, neighbourhood growth and offshore sailing.
+
+## The Exchange, hard times and the northern land market
+
+The island economy now follows live Exchange confidence and town security, rather than the player’s wallet. One market day passes after forty active nine-second world ticks (about six minutes). Market cycles affect every displayed and executable share quote. Raids, the beachhead and badly damaged buildings reduce confidence; clearing enemies and repairing towns helps restore it. Stable and booming conditions support jobs, immigration and housebuilding; recessions and depressions slow factories and reduce worker-cottage populations. Market-week dividends use live prices and are recorded so a saved payout cannot repeat. Active raids are saved with the economy so reloading does not remove their effect on prices.
+
+Households hold small Exchange investments, use savings in hard times and can sell unused northern land before losing their home. Sustained hardship can leave a family at the northern waystation. Some seek honest work, some leave for another island, and some resort to theft or unlicensed moonshine. Crime transfers coins between real NPC purses. Houses and their improvements remain after a departure. Work, savings and the player-funded relief pool can help a homeless family return to a vacant home. Open **Menu → Island outlook** to see conditions and contribute 30 coins to relief.
+
+Gnomes with sufficient savings can purchase unowned northern deeds beside completed roads and plan homes there. They respect player deeds and other residents’ property. The player can charter their city as the **Gateway to the Rugged North** from **Deeds → Your city**: 1,200 coins, Hall 4, a city home, a northern trade depot, Noble Reach avenue and a stable economy are required. The charter raises northern demand; northbound land buyers pay a 2-coin arrival levy from their own savings.
+
+Deeds now have live purchase and sale quotes. Value responds to the market, security, completed access roads, nearby homes and northern demand. Empty plots can be held and resold after appreciation, or sold at a loss in a downturn. The land board’s sale offer has a 15% spread, preventing an immediate profitable round trip. Purchase cost, realised gains/losses and ownership survive saving; developed city land and homes still cannot be sold as empty plots.
+
+**Sunstep Crescent Harbour** is a visible future-dock concept on the southeastern coast: twin cruise berths, a shaded customs pavilion, cargo handling, a ferry landing, a wagon plaza and a beacon behind a breakwater. Tap **Sunstep harbour plans** to inspect it. The translucent planning models do not claim existing land or provide a working port; final land purchase and construction funding are future work, following the court decision.
+
+The dock case now includes passionate openings, discovered evidence and closing addresses from both sides, with Justice Arbuthnot framing the stakes. **Pause hearing**, **Next statement** and **Hear ruling** let you read at your own pace. The speeches do not change evidence unlocks or verdict weights.
+
+Run `npm run check:economy` for market/security conditions, live trade quotes, dividends, raid persistence, land appreciation, homelessness, recovery, crime, northern purchases, relief, charters and court framing.

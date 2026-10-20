@@ -8,10 +8,11 @@ export function quoteShareTrade(
   shares: Record<string, number>,
   side: "buy" | "sell",
   quantity = 1,
+  factor=1,
 ) {
   if (!STOCKS.some((stock) => stock.id === id) || !Number.isSafeInteger(quantity) || quantity < 1) return null;
   const held = shares[id] ?? 0;
-  const price = sharePrice(id, day);
+  const price = Math.max(1,Math.round(sharePrice(id, day)*factor));
   const total = price * quantity;
   const nextCoins = coins + (side === "buy" ? -total : total);
   const nextHeld = held + (side === "buy" ? quantity : -quantity);

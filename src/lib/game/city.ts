@@ -1,3 +1,4 @@
+import { economicClimate } from "./island-economy";
 import { PLACE_ANCHORS } from "./data/layout";
 import { PLAYER_START } from "./types";
 import type { GameSave } from "./types";
@@ -471,9 +472,10 @@ export function stepCity(s: GameSave): {
         (d) => d.kind === "depot" && cityPath({ ...s, city }, b, d),
       );
       if (!connected) continue;
-      b.residents = Math.min(b.level * 4, b.residents + 1);
-      coins += b.residents;
-      city.earned += b.residents;
+      const jobs=economicClimate(s).jobs;
+      b.residents = jobs>=2?Math.min(b.level*4,b.residents+1):Math.max(0,b.residents-1);
+      const tax=jobs>0?b.residents:0;
+      coins += tax;city.earned += tax;
     }
   }
   return { city, coins };

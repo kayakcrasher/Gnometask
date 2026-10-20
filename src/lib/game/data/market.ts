@@ -16,7 +16,7 @@ export type Stock = {
 export const QUARTER_DAYS = 90;
 
 export const STOCKS: Stock[] = [
-  { id: "g500", name: "Gnome500 ETF", start: 8, sector: "broad", yield: 0.015, sure: true, climb: true, blurb: "The whole hollow, in one share. It has red days. The year still climbs." },
+  { id: "g500", name: "Gnome500 ETF", start: 8, sector: "broad", yield: 0.015, sure: true, climb: true, blurb: "A slice of the whole hollow. Jobs, raids and market cycles shape what it is worth." },
   { id: "hull", name: "Hull & Keel", start: 14, sector: "shipping", yield: 0.02, blurb: "Shipwrights. Feast and famine with the tide." },
   { id: "pie", name: "Pie & Tide", start: 9, sector: "food", yield: 0.025, blurb: "Bakeries on three islands. Smells better than it balances." },
   { id: "salt", name: "Saltglass", start: 16, sector: "food", yield: 0.02, blurb: "Salt pans and bottles. A sharp stock." },

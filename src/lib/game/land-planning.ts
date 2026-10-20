@@ -162,7 +162,8 @@ export function parcelBuildingSpot(
     }
   return candidates.sort((a, b) => a.distance - b.distance)[0] ?? null;
 }
-export function civicParcelOwner(rect: LandRect, civic: CivicState) {
+export function civicParcelOwner(rect: LandRect & {id?:string}, civic: CivicState) {
+  const deedOwner=rect.id?civic.gnomes.find(g=>g.northDeeds?.includes(rect.id!)):null;if(deedOwner)return deedOwner.name;
   const plot = civic.plots.find(
     (p) =>
       (p.stories > 0 || p.shares.length > 0) && insideParcel(rect, p.x, p.y),

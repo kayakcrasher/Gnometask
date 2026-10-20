@@ -91,6 +91,7 @@ export function snap(s: GameSave): GameSave {
     saplings: s.saplings,
     deeds: s.deeds,
     city: s.city,
+    economy:{...s.economy,threats:(s as GameSave&{raids?:import("../types").Raid[]}).raids??s.economy?.threats??[]},
     transport:s.transport,
     estate: s.estate,
     roadWorks: s.roadWorks,

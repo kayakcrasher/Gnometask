@@ -1,6 +1,7 @@
+import { economicClimate, liveSharePrice, marketCycle } from "@/lib/game/island-economy";
 import { useMemo, useState } from "react";
 import { useGame } from "@/lib/game/store";
-import { latestEvent, priceSeries, sharePrice, STOCKS, type Sector } from "@/lib/game/data/market";
+import { latestEvent, STOCKS, type Sector } from "@/lib/game/data/market";
 import { quoteShareTrade } from "@/lib/game/trading";
 
 const SECTORS: Record<Sector, string> = {
@@ -12,7 +13,9 @@ const movement = (n: number) => n > 0 ? "text-moss" : n < 0 ? "text-berry" : "te
 const control = "min-h-11 rounded-xl bg-parchment-dark px-3 text-xs font-semibold text-ink disabled:opacity-40";
 
 function PriceChart({ id, day, range }: { id: string; day: number; range: number }) {
-  const prices = priceSeries(id, day, range);
+  const world=useGame(),current=economicClimate(world);
+  const first=Math.max(0,day-range+1);
+  const prices=Array.from({length:day-first+1},(_,i)=>{const d=first+i;return liveSharePrice(id,d,d===day?current.factor:world.economy.history[String(d)]?.factor??marketCycle(d));});
   const low = Math.min(...prices);
   const high = Math.max(...prices);
   const spread = Math.max(2, high - low);
@@ -42,7 +45,7 @@ function PriceChart({ id, day, range }: { id: string; day: number; range: number
 
 /** The bank and Exchange share the same quotes, controls, and portfolio view. */
 export function StockMarket() {
-  const days = useGame(s => s.daysPlayed);
+  const world=useGame(),climate=economicClimate(world),days=climate.day;
   const coins = useGame(s => s.coins);
   const shares = useGame(s => s.shares);
   const buy = useGame(s => s.buyShare);
@@ -54,11 +57,11 @@ export function StockMarket() {
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState("");
   const rows = useMemo(() => STOCKS.map(stock => {
-    const price = sharePrice(stock.id, days);
-    const change = price - sharePrice(stock.id, Math.max(0, days - 1));
+    const price = liveSharePrice(stock.id, days,climate.factor);
+    const change = price - liveSharePrice(stock.id, Math.max(0,days-1),world.economy.history[String(days-1)]?.factor??marketCycle(days-1));
     const held = shares[stock.id] ?? 0;
     return { ...stock, price, change, held };
-  }), [days, shares]);
+  }), [days, shares,climate.factor,world.economy.history]);
   const stock = rows.find(s => s.id === selected)!;
   const value = rows.reduce((sum, row) => sum + row.price * row.held, 0);
   const daily = rows.reduce((sum, row) => sum + row.change * row.held, 0);
@@ -69,8 +72,8 @@ export function StockMarket() {
   const visible = rows.filter(row => (filter === "all" || (filter === "held" ? row.held > 0 : row.sector === filter))
     && `${row.name} ${row.id}`.toLowerCase().includes(search.toLowerCase().trim()));
   const count = Number(quantity);
-  const canBuy = quoteShareTrade(stock.id, days, coins, shares, "buy", count);
-  const canSell = quoteShareTrade(stock.id, days, coins, shares, "sell", count);
+  const canBuy = quoteShareTrade(stock.id, days, coins, shares, "buy", count,climate.factor);
+  const canSell = quoteShareTrade(stock.id, days, coins, shares, "sell", count,climate.factor);
   const validCount = Number.isSafeInteger(count) && count > 0;
   const trade = (side: "buy" | "sell") => {
     (side === "buy" ? buy : sell)(stock.id, count);
@@ -80,8 +83,9 @@ export function StockMarket() {
     <section aria-label="Stock market" className="text-ink">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-display text-xl font-semibold">The Gnome Exchange</h2>
-        <p className="text-xs font-semibold text-bark/60">Day {days} · Quotes update each game day</p>
+        <p className="text-xs font-semibold text-bark/60">Market day {days} · Quotes follow trade and town safety</p>
       </div>
+      <div className="mt-3 rounded-xl bg-gold/20 p-3 text-xs" role="status"><strong className="capitalize">{climate.phase} · Island index {climate.index}</strong><p>{climate.headline}</p><p className="mt-1">Markets shape wages, housebuilding and land demand. Clearing raids and repairing towns restores confidence. One market day passes after roughly six minutes of active island play.</p></div>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[["Available coins", coins.toLocaleString()], ["Portfolio value", value.toLocaleString()], ["Holdings today", `${signed(daily)} coins`], ["Weekly income est.", `${estimatedDividend} coins`]].map(([label, number]) => (
           <div key={label} className="rounded-xl bg-parchment-dark/60 p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-bark/60">{label}</p><p className={`mt-1 text-lg font-bold tabular-nums ${label === "Holdings today" ? movement(daily) : ""}`}>{number}</p></div>

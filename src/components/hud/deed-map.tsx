@@ -1,3 +1,4 @@
+import { landQuote } from "@/lib/game/land-market";
 import { WORLD_VIEW, FRONTIER_SETTLEMENTS } from "@/lib/game/data/frontier";
 import { FrontierMap } from "@/components/land/frontier-map";
 import {CityPlanner} from "./city-planner";
@@ -44,6 +45,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
     owned = tile ? s.deeds.includes(tile.id) : false;
   const home = tile ? s.estate[tile.id] : undefined,
     quote = homeBuildQuote(home?.level ?? 0, s.ownedGear);
+  const valuation=tile?landQuote(s,tile):null;
   const resident = tile ? civicParcelOwner(tile, s.civic) : null,
     owner = tile?.ownerName ?? resident;
   const others = useMemo(
@@ -325,6 +327,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                 % of this parcel is available land outside roads and existing buildings. Roads
                 never become private property.
               </p>
+              {valuation&&<p className="mt-2 text-xs font-bold">Market value {valuation.buy} · Sale offer {valuation.sell} coins {owned?`· Paid ${valuation.basis} · Gain/loss ${valuation.sell-valuation.basis}`:""}<span className="mt-1 block font-normal">Land can rise or fall with the market, safety, road access and nearby growth. Resales include a 15% spread.</span></p>}
               {!owned && !owner && (
                 <p className="mt-2 text-xs font-bold">
                   {spot
@@ -338,12 +341,12 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                 <button
                   type="button"
                   disabled={
-                    s.coins < tile.price || (tile.usableArea ?? 0) < 1000
+                    s.coins < valuation!.buy || (tile.usableArea ?? 0) < 1000
                   }
                   onClick={() => s.buyParcel(tile.id)}
                   className={`${button} mt-2 w-full bg-gold`}
                 >
-                  Buy deed · {tile.price} coins
+                  Buy deed · {valuation!.buy} coins
                 </button>
               ) : (
                 <>
@@ -388,7 +391,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                       className={`${button} mt-2 w-full bg-parchment-dark`}
                     >
                       Sell empty deed ·{" "}
-                      {Math.max(1, Math.floor(tile.price * 0.7))} coins
+                      {valuation!.sell} coins
                     </button>
                   )}
                 </>

@@ -1,3 +1,4 @@
+import { FutureSunstepHarbour,NorthernWaystation } from "./future-harbour";
 import { PassengerWagons, TravelCartAsset } from "./passenger-wagons";
 import { FrontierLandscape } from "./frontier-landscape";
 import { GardenWhimsy } from "./garden-whimsy";
@@ -263,6 +264,7 @@ function SceneBody({
       <CountryRoads />
       <EstateHomes /><PlayerCity />
       <PassengerWagons pos={pos} />
+      <FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
       <RoadCrew />
       <NorthernScenery />
       <FrontierLandscape onWalk={onWalk} pos={pos} />

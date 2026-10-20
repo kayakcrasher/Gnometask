@@ -19,6 +19,8 @@ export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
     restyleHome:(style:import("../home-design").HomeStyle)=>void;
+    contributeRelief:()=>void;
+    charterNorthGateway:()=>void;
     buyTravelCart:()=>void;
     toggleTravelCart:()=>void;
     buyPassengerWagon:(route:string)=>void;

@@ -226,6 +226,7 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  economy:import("./island-economy").EconomyState;
   transport: import("./transport").Transport;
   roadWorks: import("./data/expansion").RoadWorks;
   estate: Record<string, import("./data/expansion").EstateHome>;

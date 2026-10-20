@@ -1,3 +1,4 @@
+import { economicClimate } from "../island-economy";
 import {
   CITY_BUILDINGS,
   citySetupCost,
@@ -277,6 +278,7 @@ export function citySlice(
     advanceCity: () => {
       const s = get();
       if (
+        (typeof document!=="undefined"&&document.hidden)||
         !s.named ||
         s.atHome ||
         s.combat ||
@@ -285,6 +287,7 @@ export function citySlice(
         !s.city.buildings.length
       )
         return;
+      const jobs=economicClimate(s).jobs;if(jobs===0&&s.economy.beat%4!==0||jobs===1&&s.economy.beat%2!==0)return;
       set(stepCity(s));
       scheduleWrite(get);
     },

@@ -1,3 +1,4 @@
+import { SUNSTEP_DOCK } from "@/lib/game/data/sunstep-dock";
 import {
   FRONTIER_LAKES,
   FRONTIER_PEAKS,
@@ -12,6 +13,7 @@ const groves = [
 export function FrontierMap({ labels = false }: { labels?: boolean }) {
   return (
     <g pointerEvents="none">
+      <circle cx={SUNSTEP_DOCK.x} cy={SUNSTEP_DOCK.y} r={30} fill="#80b9bd" stroke="#e8d8a8" strokeWidth={8}/>
       {groves.map((g) => (
         <g key={g.x}>
           <ellipse

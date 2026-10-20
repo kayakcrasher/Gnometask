@@ -22,6 +22,10 @@ export type CivicGnome = {
   fainted?: number;
   archetype?: string;
   hardship?: number;
+  housing?:"housed"|"homeless";
+  crime?:"none"|"theft"|"contraband";
+  northDeeds?:string[];
+  portfolio?:Record<string,number>;
 };
 
 export type CivicPlot = {
@@ -234,6 +238,7 @@ function makePlots(): CivicPlot[] {
 }
 
 function placeGnome(g: CivicGnome, plots: CivicPlot[]) {
+  if(g.housing==='homeless'){g.x=1130+(hash(g.id)%4)*22;g.y=-710;return;}
   const home = plots.find((p) => p.owner === g.id && !p.rental) ?? plots.find((p) => p.shares.includes(g.id));
   if (home) {
     const seat = Math.max(0, home.shares.indexOf(g.id));
@@ -586,7 +591,7 @@ export function stepCivic(state: CivicState, days: number, economy = 1, canBuild
     news = news ?? `A cruise ship tied up at ${TOWN_LABEL[g.town]}. One passenger came ashore.`;
   }
 
-  if(actor.id.startsWith('settler-')&&(actor.hardship??0)>=8){
+  if(actor.id.startsWith('settler-')&&(actor.hardship??0)>=20){
     for(const p of plots){p.shares=p.shares.filter(id=>id!==actor.id);if(p.owner===actor.id){p.owner=p.shares[0]??null;p.rental=false;}}
     const index=gnomes.findIndex(g=>g.id===actor.id);if(index>=0)gnomes.splice(index,1);
     news=`${actor.name}'s family moved away after a long spell of tight finances. Their home remains for future neighbours.`;
@@ -648,7 +653,7 @@ export function civicBlurb(g: CivicGnome, state: CivicState) {
   const rental = state.plots.find((p) => p.owner === g.id && p.rental);
   const plot = state.plots.find((p) => p.shares.includes(g.id));
   const mates = (plot?.shares ?? []).length;
-  const kind = g.good ? "Upstanding. One of the ninety-five." : "Cruise-ship troublemaker. One of the five.";
+  const kind = g.housing==='homeless'?`Seeking a home. ${g.crime==='theft'?'The watch is investigating a theft.':g.crime==='contraband'?'Selling unlicensed contraband.':'Looking for honest work.'}`:g.good ? "Upstanding. One of the ninety-five." : "Cruise-ship troublemaker. One of the five.";
   const rooms = homes.length ? homes.map((h) => `${h.stories} stor${h.stories === 1 ? "y" : "ies"}`).join(", ") : "no house yet";
   return `${kind} ${g.job} in ${TOWN_LABEL[g.town]}. Purse ${g.purse}. Family ${g.family}. Homes ${homes.length}/2 (${rooms}).${rental ? " Lets one house to vacationers." : " No rental yet."} ${mates ? `Shares a plot with ${mates}.` : ""} ${g.good ? "" : `Jars on the still: ${g.moonshine}.`} ${g.line}`;
 }
@@ -666,7 +671,7 @@ export function caseBrief(stage: number, town: CivicTown) {
   if (stage === 2) {
     return "The bench offers a bargain. Sunstep may build the dock if every cruise ship pays Port Victoria a tax to tie up.";
   }
-  return "Agreed. Sunstep pays the cruise tax. The dock stands on the eastern water.";
+  return "The court has authorised Sunstep’s harbour. Surveyors may plan the berths; land purchase and construction funding come next.";
 }
 
 const TOWNS = new Set<CivicTown>(["capitol", "tideham", "greenlane", "haven", "sunstep"]);
@@ -698,6 +703,9 @@ export function coerceCivic(raw: unknown, days: number): CivicState {
         y: typeof g.y === "number" ? g.y : 0,
         line: typeof g.line === "string" ? g.line : "",
         departsAt: typeof g.departsAt === "number" ? g.departsAt : undefined,
+        housing:(g.housing==='homeless'?'homeless':'housed') as CivicGnome['housing'],crime:(g.crime==='theft'||g.crime==='contraband'?g.crime:'none') as CivicGnome['crime'],
+        northDeeds:Array.isArray(g.northDeeds)?g.northDeeds.filter(id=>typeof id==='string').slice(0,12):[],
+        portfolio:{g500:typeof g.portfolio?.g500==='number'&&Number.isFinite(g.portfolio.g500)?Math.max(0,Math.min(10000,Math.floor(g.portfolio.g500))):0},
         hardship:typeof g.hardship==="number"&&Number.isFinite(g.hardship)?Math.max(0,Math.min(8,Math.floor(g.hardship))):0,
         archetype: typeof g.archetype === "string" ? g.archetype : undefined,
       },

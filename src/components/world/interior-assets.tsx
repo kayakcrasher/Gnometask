@@ -34,7 +34,7 @@ export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
   const { children, ...canvasProps } = props;
   return (
     <InteriorBoundary>
-      <div className="relative h-full w-full" aria-label="Walkable interior">
+      <div className="relative isolate h-full w-full" aria-label="Walkable interior">
         <Canvas
           dpr={[1, 1.5]}
           {...canvasProps}
