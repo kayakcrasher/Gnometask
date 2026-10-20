@@ -18,8 +18,8 @@ export function TransportControls() {
   const routes = transportRoutes(s.roadWorks.completed),
     price = wagonQuote(t),
     owner =
-      s.city.buildings.some((b) => b.kind === "home") &&
-      s.city.buildings.some((b) => b.kind === "depot"),
+      (s.city.buildings.some((b) => b.kind === "home") || !!s.thimble) &&
+      (s.city.buildings.some((b) => b.kind === "depot") || s.thimble.projects.includes("depot")),
     button =
       "min-h-11 rounded-xl px-3 py-2 text-xs font-bold disabled:opacity-45";
   return (

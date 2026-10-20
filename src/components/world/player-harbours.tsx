@@ -1,3 +1,7 @@
+import { navigableWater } from "@/lib/game/sailing";
+import { thimbleRemark, THIMBLE_HOME } from "@/lib/game/thimblehaven";
+import { GnomeRig } from "./gnome-rig";
+import { shipFit } from "@/lib/game/naval";
 import { Html } from "@react-three/drei";
 import { useGame } from "@/lib/game/store";
 import {
@@ -115,7 +119,11 @@ export function DockAsset({
     </group>
   );
 }
-export function PlayerHarbours() {
+export function PlayerHarbours({
+  walkTo,
+}: {
+  walkTo?: (x: number, y: number, arrive?: () => void) => void;
+}) {
   const s = useGame();
   return (
     <group>
@@ -147,19 +155,135 @@ export function PlayerHarbours() {
           </p>
         </Html>
       </group>
-      {[
-        [2100, -3230],
-        [2210, -3100],
-      ].map(([x, y], i) => (
-        <group key={i} position={to3(x!, y!, groundY(x!, y!))}>
-          <HomeAsset
-            id={`thimble-starter-${i}`}
-            level={1}
-            style={i ? "stone" : "harbour"}
-            lantern
-          />
+      {s.thimble.residents.map((r, i) => {
+        const spots = [
+            [2100, -3230],
+            [2370, -3150],
+            [2390, -3350],
+            [2190, -3520],
+            [2420, -3550],
+            [2050, -2850],
+            [2300, -2850],
+            [2500, -2900],
+          ],
+          p = spots[i]!;
+        return (
+          <group
+            key={r.id}
+            position={to3(p[0]!, p[1]!, groundY(p[0]!, p[1]!))}
+            onClick={(e) => {
+              e.stopPropagation();
+              s.speak(`${r.name}: ${thimbleRemark(s)}`);
+            }}
+          >
+            <HomeAsset
+              id={r.id}
+              level={s.thimble.projects.includes("hall") ? 2 : 1}
+              style="harbour"
+              lantern={s.thimble.projects.includes("well")}
+            />
+            <group position={[1.2, 0, 1.3]}>
+              <GnomeRig hat="hat-moss" beard />
+            </group>
+          </group>
+        );
+      })}
+      {s.thimble.projects.includes("well") && (
+        <group position={to3(2150, -3010, groundY(2150, -3010))}>
+          <Beam at={[0, 0.3, 0]} size={[1, 0.6, 1]} color="#b4b7a1" />
+          <Beam at={[0, 1.4, 0]} size={[1.6, 0.15, 1.5]} color="#608b80" />
         </group>
-      ))}
+      )}
+      {s.thimble.projects.includes("market") && (
+        <group position={to3(2280, -2950, groundY(2280, -2950))}>
+          <Beam at={[0, 0.5, 0]} size={[2, 1, 1.1]} color="#a88657" />
+          <Beam at={[0, 1.7, 0]} size={[2.5, 0.15, 1.8]} color="#aeb88a" />
+        </group>
+      )}
+      {s.thimble.projects.includes("depot") && (
+        <group position={to3(2410, -3000, groundY(2410, -3000))}>
+          <HomeAsset id="thimble-depot" level={1} style="meadow" />
+        </group>
+      )}
+      {s.thimble.projects.includes("hall") && (
+        <group position={to3(2520, -3190, groundY(2520, -3190))}>
+          <HomeAsset id="thimble-town-hall" level={3} style="stone" lantern />
+        </group>
+      )}
+      {s.naval.vessels
+        .filter((v) => v.hp > 0)
+        .map((v) => (
+          <group
+            key={v.id}
+            position={to3(v.x, v.y, SEA_LEVEL + 0.06)}
+            scale={2.4}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (v.side === "enemy") {
+                if (!s.afloat) {
+                  s.speak(
+                    "Board a cannon-equipped boat before challenging a ship.",
+                  );
+                  return;
+                }
+                const distance = Math.hypot(s.gnomeX - v.x, s.gnomeY - v.y);
+                if (distance <= 350) s.engageShip(v.id);
+                else {
+                  const target = {
+                    x: v.x + ((s.gnomeX - v.x) / distance) * 240,
+                    y: v.y + ((s.gnomeY - v.y) / distance) * 240,
+                  };
+                  if (navigableWater(target.x, target.y))
+                    walkTo?.(target.x, target.y, () =>
+                      useGame.getState().engageShip(v.id),
+                    );
+                }
+              } else
+                s.speak(
+                  `${v.name}: Fair winds, Thimblehaven. Your colours are safe with us.`,
+                );
+            }}
+          >
+            <BoatMesh kind={v.kind} guns={v.guns} faction={v.side} />
+          </group>
+        ))}
+      {s.naval.battle &&
+        (() => {
+          const target = s.naval.vessels.find((v) => v.id === s.naval.battle);
+          if (!target) return null;
+          return [false, true].map((incoming) => {
+            const cooldown = incoming
+              ? s.naval.enemyCooldown
+              : s.naval.cooldown;
+            if (cooldown < 5.2 || cooldown >= 6) return null;
+            const t = (6 - cooldown) / 0.8,
+              a = incoming ? target : { x: s.gnomeX, y: s.gnomeY },
+              b = incoming ? { x: s.gnomeX, y: s.gnomeY } : target;
+            return (
+              <group
+                key={String(incoming)}
+                position={to3(
+                  a.x + (b.x - a.x) * t,
+                  a.y + (b.y - a.y) * t,
+                  SEA_LEVEL + 0.6 + Math.sin(t * Math.PI) * 1.3,
+                )}
+              >
+                <mesh>
+                  <sphereGeometry args={[0.11, 8, 6]} />
+                  <meshStandardMaterial color="#322f2a" />
+                </mesh>
+                <mesh position={[-0.12, 0.05, 0]}>
+                  <sphereGeometry args={[0.13, 8, 6]} />
+                  <meshStandardMaterial
+                    color="#b3b0a2"
+                    transparent
+                    opacity={0.4}
+                  />
+                </mesh>
+              </group>
+            );
+          });
+        })()}
       <DockAsset
         dock={{ site: "north-landing", level: 1, style: "mint" }}
         {...NORTH_LANDING}
@@ -184,7 +308,11 @@ export function PlayerHarbours() {
             rotation={[0, p.heading, 0]}
             scale={2.4}
           >
-            <BoatMesh kind={boat.id} parts={s.ports.parts[t.boat]} />
+            <BoatMesh
+              kind={boat.id}
+              parts={s.ports.parts[t.boat]}
+              guns={shipFit(s.naval, boat.id).guns}
+            />
           </group>
         ) : null;
       })}

@@ -1,3 +1,5 @@
+import {emptyThimble,coerceThimble,THIMBLE_HOME,starterThimbleHome} from "./thimblehaven";
+import {emptyNaval,coerceNaval} from "./naval";
 import {emptyBank,coerceBank} from "./bank";
 import {emptyPorts,coercePorts} from "./ports";
 import { emptyEconomy, coerceEconomy, economicClimate,economicDividend } from "./island-economy";
@@ -93,8 +95,10 @@ export function defaultSave(): GameSave {
     woodsGreeted: false,
     logs: 0,
     saplings: 0,
-    deeds: [],
+    deeds: ["thimble-home"],
     city: emptyCity(),
+    thimble:emptyThimble(),
+    naval:emptyNaval(),
     bank:emptyBank(),
     ports:emptyPorts(),
     economy:emptyEconomy(),
@@ -193,6 +197,7 @@ function asSkills(raw: unknown): Skills {
     farming: typeof s.farming === "number" ? s.farming : base.farming,
     prayer: typeof s.prayer === "number" ? s.prayer : base.prayer,
     barter: typeof s.barter === "number" ? s.barter : base.barter,
+    navalWarfare: typeof s.navalWarfare==="number"&&Number.isFinite(s.navalWarfare)?Math.max(0,s.navalWarfare):0,
     sailing: typeof s.sailing === "number" ? s.sailing : base.sailing,
     fishing: typeof s.fishing === "number" ? s.fishing : base.fishing,
   };
@@ -356,6 +361,8 @@ export function migrate(raw: unknown): GameSave {
     logs: typeof s.logs === "number" ? s.logs : 0,
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: asStringArray(s.deeds, []),
+    thimble:coerceThimble(s.thimble),
+    naval:coerceNaval(s.naval,asStringArray(s.hulls,[]),Boolean(s.cannons)),
     bank:coerceBank(s.bank),
     ports:coercePorts(s.ports,asStringArray(s.hulls,[])),
     economy:coerceEconomy(s.economy,asStringArray(s.deeds,[])),
@@ -399,7 +406,10 @@ export function migrate(raw: unknown): GameSave {
     civic: coerceCivic(s.civic, typeof s.daysPlayed === "number" ? s.daysPlayed : 1),
   });
   if(result.afloat){result.transport={...result.transport,mounted:false,ride:null};}
-  return {...result,city:coerceCity(s.city,result)};
+  const city=coerceCity(s.city,result);
+  if(!s.thimble){city.name='Thimblehaven';if(city.buildings.some(b=>b.kind==='home'))city.buildings=city.buildings.map(b=>b.kind==='home'?{...b,x:THIMBLE_HOME.x,y:THIMBLE_HOME.y,parcel:'thimble-home'}:b);else city.buildings.push(starterThimbleHome());}
+  if(!result.afloat)result.naval.battle=null;
+  return {...result,deeds:[...new Set([...result.deeds,'thimble-home'])],city};
 }
 
 function asHerd(raw: unknown): GameSave["herd"] {

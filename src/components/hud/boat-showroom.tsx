@@ -25,9 +25,11 @@ class PreviewBoundary extends Component<
 export function BoatShowroom({
   kind,
   parts,
+  guns = 0,
 }: {
   kind: BoatId;
   parts: readonly string[];
+  guns?: number;
 }) {
   return (
     <div
@@ -46,7 +48,7 @@ export function BoatShowroom({
         >
           <ambientLight intensity={1.4} />
           <directionalLight position={[3, 5, 2]} intensity={2.5} />
-          <BoatMesh kind={kind} parts={parts} />
+          <BoatMesh kind={kind} parts={parts} guns={guns} />
           <OrbitControls
             enablePan={false}
             enableZoom={false}

@@ -1,3 +1,4 @@
+import { shipFit } from "@/lib/game/naval";
 import { BoatShowroom } from "./boat-showroom";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -24,6 +25,7 @@ export function MarineControls() {
   if (
     !s.named ||
     s.bank.pending ||
+    s.naval.battle ||
     s.atHome ||
     s.interior ||
     s.abroad ||
@@ -132,9 +134,16 @@ export function MarineControls() {
                       ))}
                     </select>
                   </label>
-                  <BoatShowroom kind={boat.id} parts={parts} />
+                  <BoatShowroom
+                    kind={boat.id}
+                    parts={parts}
+                    guns={shipFit(s.naval, boat.id).guns}
+                  />
                   <p className="text-sm">{boat.blurb}</p>
                   <p className="text-xs">
+                    {boat.warfare
+                      ? `Naval Warfare ${boat.warfare} required · `
+                      : ""}
                     {boat.speed} sailing speed ·{" "}
                     {boat.cargo
                       ? `${boat.cargo} freight crates`
@@ -149,7 +158,12 @@ export function MarineControls() {
                   {!owned ? (
                     <button
                       type="button"
-                      disabled={level < boat.need || s.coins < boat.price}
+                      disabled={
+                        level < boat.need ||
+                        levelFromXp(s.skills.navalWarfare) <
+                          (boat.warfare ?? 1) ||
+                        s.coins < boat.price
+                      }
                       className={`${btn} bg-pine text-parchment`}
                       onClick={() => s.buyBoat(hull)}
                     >
@@ -227,6 +241,19 @@ export function MarineControls() {
                       Sail to Thimblehaven public landing
                     </button>
                   )}
+                  {s.afloat && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        s.plotPortCourse("capital");
+                        setOpen(false);
+                      }}
+                      className={`${btn} bg-pine text-parchment`}
+                    >
+                      Sail to Tideham public harbour
+                    </button>
+                  )}
+
                   <p className="text-xs">
                     Dock levels: finger pier (1 berth), cargo wharf (2), crane
                     harbour (3). Construction costs 15,000 → 45,000 → 180,000

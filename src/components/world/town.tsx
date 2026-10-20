@@ -1,3 +1,4 @@
+import {THIMBLE_HOME} from "@/lib/game/thimblehaven";
 import { HomeAsset } from "./home-asset";
 import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
@@ -338,7 +339,7 @@ export function Cottage3({
   upgrades: string[];
   onEnter: () => void;
 }) {
-  const cottageLevel=useGame(s=>s.cottageLevel??0),home=useGame(s=>s.city.buildings.find(b=>b.kind==='home')),style=useGame(s=>s.playerHomeStyle),spot=home??PLACE_ANCHORS.cottage;
+  const cottageLevel=useGame(s=>s.cottageLevel??0),home=useGame(s=>s.city.buildings.find(b=>b.kind==='home')),style=useGame(s=>s.playerHomeStyle),spot=home??THIMBLE_HOME;
   return <group position={to3(spot.x,spot.y,groundY(spot.x,spot.y))} onClick={e=>{e.stopPropagation();onEnter();}}><HomeAsset id="player-home" level={cottageLevel+1} style={style} trim={upgrades.map(id=>id.replace('house-',''))} lantern={upgrades.includes('house-lanterns')}/><Html position={[0,(cottageLevel+1)*.9+1.2,0]} center style={{pointerEvents:'none'}}><span className="rounded-full bg-parchment px-2 text-xs font-bold text-pine">Home</span></Html></group>;
 }
 

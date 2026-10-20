@@ -226,6 +226,8 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  thimble:import("./thimblehaven").Thimblehaven;
+  naval:import("./naval").Naval;
   bank:import("./bank").BankAccount;
   ports:import("./ports").Ports;
   economy:import("./island-economy").EconomyState;

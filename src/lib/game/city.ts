@@ -1,3 +1,4 @@
+import {THIMBLE_HOME} from "./thimblehaven";
 import { economicClimate } from "./island-economy";
 import { PLACE_ANCHORS } from "./data/layout";
 import { PLAYER_START } from "./types";
@@ -92,7 +93,7 @@ export type PlayerCity = {
   spent: number;
 };
 export const emptyCity = (): PlayerCity => ({
-  name: "New Hollow",
+  name: "Thimblehaven",
   nextId: 1,
   buildings: [],
   roads: [],
@@ -530,7 +531,7 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
     )
       continue;
     // Saved buildings retain their progression even if the Hall is later reset.
-    if (citySiteError({ ...state, townHallLevel: 5 }, b.kind, b.x, b.y))
+    if (!(b.kind==='home'&&b.parcel==='thimble-home'&&b.x===THIMBLE_HOME.x&&b.y===THIMBLE_HOME.y)&&citySiteError({ ...state, townHallLevel: 5 }, b.kind, b.x, b.y))
       continue;
     const p = s.deeds.map(parcelAt).find((p) => p && insideParcel(p, b.x, b.y));
     if (!p) continue;
@@ -597,12 +598,12 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
 export const CITY_SUPPLY_PRICE = 3;
 export function playerHome(s: Pick<GameSave, "city">) {
   return (
-    s.city.buildings.find((b) => b.kind === "home") ?? PLACE_ANCHORS.cottage
+    s.city.buildings.find((b) => b.kind === "home") ?? THIMBLE_HOME
   );
 }
 export function playerHomeDoor(s: Pick<GameSave, "city">) {
   const h = s.city.buildings.find((b) => b.kind === "home");
-  return h ? { x: h.x, y: h.y + 34 } : PLAYER_START;
+  return h ? { x: h.x, y: h.y + 34 } : {x:THIMBLE_HOME.x,y:THIMBLE_HOME.y+34};
 }
 
 export function cityDeedDeveloped(

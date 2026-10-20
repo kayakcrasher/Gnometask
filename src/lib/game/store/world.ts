@@ -1,3 +1,4 @@
+import {shipFit} from "../naval";
 import { economicClimate,advanceEconomy,economicDividend } from "../island-economy";
 import { residentEconomy } from "../resident-economy";
 import { npcBuildAllowed, openFrontier, settleFrontier } from "../town-planning";
@@ -12,7 +13,7 @@ import { ENEMIES, makeCombat, patrolEnemy, readyCreatureRespawns } from "../comb
 import { sfx } from "../juice";
 import { maxHitpoints } from "../xp";
 import type { PlaceId } from "../types";
-import { armAutoAttack, clearCombatTimer, rememberLoot, scheduleWrite } from "./persist";
+import { armAutoAttack, clearCombatTimer, rememberLoot, scheduleWrite, withXp } from "./persist";
 import { winCombat } from "./combat";
 import type { GameState, StoreGet, StoreSet } from "./types";
 
@@ -279,8 +280,9 @@ export function worldSlice(
 
     fireCannon: () => {
       const s = get();
+      if(s.naval?.battle){get().fireBroadside();return;}
       const landing = s.landing;
-      if (!s.cannons) {
+      if (!s.afloat || !shipFit(s.naval,s.afloat).guns) {
         set({ speech: "No cannon. Wim sells one at the dock for 45 coins." });
         return;
       }
@@ -288,7 +290,7 @@ export function worldSlice(
         set({ speech: "The cannon wants a deck. Cast off first." });
         return;
       }
-      if (!landing) {
+      if (!landing || (landing.flagDown && !landing.goblins.some(g=>g.alive))) {
         set({ speech: "No goblin boat on the water." });
         return;
       }
@@ -297,6 +299,7 @@ export function worldSlice(
         set({ speech: "Too far. Sail closer to their hull." });
         return;
       }
+      if(s.naval.cooldown>0||s.naval.ammo<1)return;
       const goblins = landing.goblins.map((g) => ({ ...g }));
       const runt = goblins.find((g) => g.alive);
       let speech = "The cannon coughs smoke and hits water.";
@@ -308,6 +311,8 @@ export function worldSlice(
       const flagDown = flagHp <= 0 || landing.flagDown;
       set({
         landing: { ...landing, goblins, flagHp, flagDown },
+        naval:{...s.naval,ammo:s.naval.ammo-1,cooldown:6},
+        skills:withXp(s.skills,{navalWarfare:runt?24:16}).skills,
         speech: flagDown && !landing.flagDown ? "Their flag takes the shot and drops." : speech,
       });
       sfx("hit");
@@ -438,8 +443,9 @@ export function worldSlice(
       const respawn=readyCreatureRespawns(get());if(respawn)set(respawn);
       get().advanceRoadCrew?.();
       get().advanceCity?.();
+      get().advanceThimble?.();
       const s = get();
-      if (!s.named || s.combat || s.atHome || s.interior || s.abroad || (typeof document!=="undefined"&&document.hidden)) return;
+      if (!s.named || s.combat || s.naval?.battle || s.atHome || s.interior || s.abroad || (typeof document!=="undefined"&&document.hidden)) return;
       let buildingHp = s.buildingHp;
       let speech = s.speech;
       let raids = s.raids;

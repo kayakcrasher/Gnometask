@@ -1,3 +1,4 @@
+import {THIMBLE_HOME,starterThimbleHome} from "../thimblehaven";
 import { CASINO_VENUES } from "../data/sunstep";
 import { GREETS, PLACE_LINES, randOf } from "../quotes";
 import { applyDailyRollover, defaultSave, loadSave, writeSave } from "../save";
@@ -125,6 +126,8 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       set({
         ...fresh,
         bank:{...fresh.bank,pending:true},
+        city:{...fresh.city,buildings:[starterThimbleHome()]},
+        gnomeX:THIMBLE_HOME.x,gnomeY:THIMBLE_HOME.y+34,
         gnomeName: trimmed,
         named: true,
         atHome: false,
@@ -143,7 +146,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         panel: "place",
         abroad: null,
         raids: [],
-        speech: `${trimmed}. Tap the ground. Ol Pappy is on the dock.`,
+        speech: `${trimmed}. Thimblehaven is yours to grow. Pappy backed your loan. Open the town council to begin.`,
       });
       writeSave(snap(get()));
     },
@@ -191,7 +194,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       if (!CASINO_VENUES.some(v => v.id === id) || get().combat || get().atHome) return;
       set({ interior: "casino", casinoVenue: id, casinoResult: null, popup: null, panel: "place" });
     },
-    enterInterior: (id: InteriorId) => set({ interior: id, popup: null, panel: "place", ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) }),
+    enterInterior: (id: InteriorId) => {if(get().naval.battle)return;set({ interior: id, popup: null, panel: "place", ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });},
     leaveInterior: () => set({ interior: null }),
     setGnomePos: (x: number, y: number) => {
       set({ gnomeX: x, gnomeY: y });

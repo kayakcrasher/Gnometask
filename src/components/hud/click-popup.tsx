@@ -158,10 +158,11 @@ export function ClickPopup() {
   const placed = useGame((s) => s.placed);
   const coins = useGame((s) => s.coins);
   const combat = useGame((s) => s.combat);
+  const navalBattle=useGame(s=>s.naval.battle);
   const chart = useGame((s) => s.chart);
   const sailChart = useGame((s) => s.sailChart);
 
-  if (combat) return null;
+  if (combat||navalBattle) return null;
 
   const seaBar = afloat ? (
     <div className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3 pb-[env(safe-area-inset-bottom)] md:bottom-5">

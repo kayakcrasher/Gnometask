@@ -1,3 +1,4 @@
+import {shipFit} from "@/lib/game/naval";
 import {PlayerHarbours} from "./player-harbours";
 import {boatById} from "@/lib/game/data/boats";
 import { FutureSunstepHarbour,NorthernWaystation } from "./future-harbour";
@@ -266,7 +267,7 @@ function SceneBody({
       <CountryRoads />
       <EstateHomes /><PlayerCity />
       <PassengerWagons pos={pos} />
-      <PlayerHarbours/><FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
+      <PlayerHarbours walkTo={walkTo}/><FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
       <RoadCrew />
       <NorthernScenery />
       <FrontierLandscape onWalk={onWalk} pos={pos} />
@@ -371,7 +372,8 @@ function SceneBody({
               kind={boatById(save.afloat)?.id??"row"}
               parts={save.ports.parts[save.afloat]}
               rowing={walking}
-              cannon={save.cannons}
+              guns={shipFit(save.naval,save.afloat).guns}
+              crew={shipFit(save.naval,save.afloat).crew}
             />
           </group>
         </group>

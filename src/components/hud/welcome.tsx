@@ -3,10 +3,10 @@ import { useGame } from "@/lib/game/store";
 import { unlockAudio } from "@/lib/game/juice";
 
 const LESSONS = [
-  "Tap the ground. Your boots do the rest. I'm on the dock.",
-  "Come talk when you arrive. The first log is how a hollow starts.",
+  "Welcome to Thimblehaven, sprout. Your home is here now. Tap the ground to walk and open Thimblehaven council to start building.",
+  "Start small: a village well, a fish market, then a donkey depot. Pay for improvements with coins; the neighbours help the town earn its keep.",
   "The shop buys a basket. The Exchange buys the whole sack. The bank sells shares — Gnome500 is the slow sure one. Deeds buy empty ground. A gnome's own floor is never for sale.",
-  "Goblins grow by one each day. The watch ticks louder as they near. Wim bolts cannons on the boats for 45 coins.",
+  "Build the harbour road and run a donkey wagon service to silence the road jokes. Fit ship cannons at a landing; bring shot and hire gunners before challenging pirates.",
 ];
 
 export function Coach() {

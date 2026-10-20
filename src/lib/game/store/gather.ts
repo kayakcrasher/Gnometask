@@ -1,3 +1,4 @@
+import {shipFit} from "../naval";
 import {PUBLIC_PORT,NORTH_LANDING,portSite} from "../ports";
 import { bestHatchet, bestRod, CATALOG_BY_ID, gearStats } from "../catalog";
 import { TREE_GROW_MS, TREE_SAPLING_MS, TREE_SPOTS, logsFor, treeSize } from "../data/trees";
@@ -126,7 +127,7 @@ export function gatherSlice(
 
     sailTo: (dest, boatId) => {
       const s = get();
-      if (s.combat || s.fishing || s.bank.pending || s.transport.ride) return;
+      if (s.combat || s.fishing || s.bank.pending || s.transport.ride || s.naval.battle) return;
       const harbours=[PUBLIC_PORT,NORTH_LANDING,...s.ports.docks.map(d=>portSite(d.site)!)];
       if (dest === "dock") {
         if (!s.afloat) {
@@ -164,8 +165,8 @@ export function gatherSlice(
         return;
       }
       const lv = levelFromXp(s.skills.sailing);
-      if (lv < boat.need) {
-        set({ speech: `${boat.name} needs Sailing ${boat.need}. Sail the boats you know to gain experience.`, popup: null });
+      if (lv < boat.need || levelFromXp(s.skills.navalWarfare??0)<(boat.warfare??1)) {
+        set({ speech: `${boat.name} needs Sailing ${boat.need} and Naval Warfare ${boat.warfare??1}.`, popup: null });
         return;
       }
       set({
@@ -215,8 +216,8 @@ export function gatherSlice(
         return;
       }
       const lv = levelFromXp(s.skills.sailing);
-      if (lv < boat.need) {
-        set({ speech: `Wim wants Sailing ${boat.need} before he sells a ${boat.name.toLowerCase()}. You are ${lv}.` });
+      if (lv < boat.need || levelFromXp(s.skills.navalWarfare??0)<(boat.warfare??1)) {
+        set({ speech: `${boat.name} needs Sailing ${boat.need} and Naval Warfare ${boat.warfare??1}.` });
         sfx("error");
         return;
       }
@@ -236,26 +237,7 @@ export function gatherSlice(
       scheduleWrite(get);
     },
 
-    buyCannon: () => {
-      const s = get();
-      if (s.cannons) {
-        set({ speech: "The cannons are already bolted to every hull." });
-        return;
-      }
-      if (s.coins < 45) {
-        set({ speech: "A cannon is 45 coins. Wim taps the barrel." });
-        sfx("error");
-        return;
-      }
-      set({
-        coins: s.coins - 45,
-        cannons: true,
-        coinPopKey: s.coinPopKey + 1,
-        speech: "Wim bolts a cannon onto every boat you sail. Goblin hulls are the target.",
-      });
-      sfx("buy");
-      scheduleWrite(get);
-    },
+    buyCannon: () => { const s=get();get().armShip(s.afloat??boatById(s.popup?.hotspotId??"")?.id??"row"); },
 
     advanceCoach: () => {
       const s = get();
@@ -350,7 +332,7 @@ export function gatherSlice(
 
     castLine: (where, x, y, boatId) => {
       const s = get();
-      if (s.combat || s.fishing) return;
+      if (s.combat || s.fishing || s.naval.battle) return;
       if (where === "shore" && s.afloat) {
         set({ speech: "Return to the harbour before fishing from the shore.", popup: null });
         return;

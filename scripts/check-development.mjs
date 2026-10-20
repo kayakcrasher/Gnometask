@@ -65,7 +65,7 @@ test('homes require a deed and resources, preserve ownership, and survive reload
  state.deeds=[parcel.id];state.logs=0;state.buildParcelHome(parcel.id);assert.equal(state.estate[parcel.id].level,1);assert(state.coins<5000);assert.equal(state.logs,0,'Homes require coins, never logs');
  state.buildParcelHome(parcel.id);state.buildParcelHome(parcel.id);assert.equal(state.estate[parcel.id].level,3);const paid=state.coins;state.buildParcelHome(parcel.id);assert.equal(state.coins,paid);
  state.sellParcel(parcel.id);assert(state.deeds.includes(parcel.id),'Built homes cannot be sold as empty deeds');
- const loaded=migrate(snap(state));assert.deepEqual(loaded.estate,state.estate);assert.deepEqual(loaded.deeds,state.deeds);
+ const loaded=migrate(snap(state));assert.deepEqual(loaded.estate,state.estate);assert.deepEqual(loaded.deeds,[...new Set([...state.deeds,"thimble-home"])]);
 });
 test('road projects are sequential, paid once, resumable and visible',()=>{
  reset();state.coins=ROAD_PROJECTS.reduce((n,p)=>n+p.coins,0)+30000;state.logs=0;state.townHallLevel=5;

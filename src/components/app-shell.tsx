@@ -1,3 +1,4 @@
+import {NorthernSeas} from "./hud/northern-seas";
 import {MarineControls} from "./hud/marine-controls";
 import {StarterLoanChoice} from "./hud/mossroot-bank";
 import { TransportControls } from "./hud/transport-controls";
@@ -31,6 +32,8 @@ export function AppShell() {
   const atHome = useGame((s) => s.atHome);
   const interior = useGame((s) => s.interior);
   const tickWorld = useGame((s) => s.tickWorld);
+  const tickSeas=useGame(s=>s.tickSeas);
+  useEffect(()=>{const id=window.setInterval(()=>tickSeas(.25),250);return()=>window.clearInterval(id);},[tickSeas]);
   const tickMaritime=useGame(s=>s.tickMaritime);
   useEffect(()=>{const id=window.setInterval(()=>tickMaritime(.25),250);return()=>window.clearInterval(id);},[tickMaritime]);
   const tickTransport=useGame(s=>s.tickTransport);
@@ -80,6 +83,7 @@ export function AppShell() {
       <Soundtrack />
       <TransportControls />
       <MarineControls/>
+      <NorthernSeas/>
       <StarterLoanChoice/>
       <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>
         <LandMap />

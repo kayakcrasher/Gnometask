@@ -127,3 +127,25 @@ Cargo-capable hulls can run paid freight from an owned wharf to the public harbo
 Six visible, hull-specific fittings add 12% sailing speed (rigging), 20% speed (acorn drive), 50% cargo capacity (expanded hold), faster casts (tackle rack), navigation lamps or an aft canopy. Fit them at a public landing or owned wharf. **Fish from boat** works on every player hull with a rod; rowboats and beginners catch shallow-water species until their hull and Fishing skill allow deep-water fish.
 
 Run `npm run check:banking-ports` for loan-credit, compounding, repayment, waterfront gates, navigable shipping lanes, saved round trips, fitting bonuses, boat-fishing and old-save checks.
+
+### Player-run Thimblehaven and Naval Warfare
+
+New games now begin beside the player's home in **Thimblehaven**. Existing saves move the existing player home there once, preserving furniture, cottage upgrades, other city buildings, coins and cargo. The starter home has its own protected deed. **Thimblehaven council** funds five increasingly expensive projects: well and lamps (800), fish market (2,500), donkey depot (4,800), newcomer cottages (9,000), and harbour town hall (18,000 coins). Buildings appear as projects finish. The town starts with two households; healthy market conditions attract families into the new housing, while depression and exhausted purses can cause departures. Household levies of 0–3 coins come from residents' own purses and enter the player's wallet every ten active world ticks, roughly 90 seconds.
+
+Locals and several established NPCs make snide remarks about “no roads to Thimblehaven.” Finishing the harbour-road project changes their complaint to the missing donkey traffic. A funded, town-owned **thimble-road** wagon service ends the jokes. The council shows the next road-crew project and can purchase a wagon once the depot and road are ready; wagon upkeep remains 2 coins per arrival.
+
+**Naval Warfare** is a separate saved skill. Actual hull damage grants XP and improves cannon damage. Ship combat is independent of sword combat: approach a hostile vessel within 350 map units, engage it, then command broadsides or let hired gunners fire automatically. Friendly coastguard ships and licensed privateers cannot be attacked. Enemy and player damage, active engagements, remaining reloads, hired crew, ammunition and defeated-ship respawn periods survive saving. Retreat orders a voyage toward a public harbour; enemy guns remain active until the player sails out of range. A defeated player is towed ashore with their boat retained but damaged, requiring paid repairs.
+
+Cannons now belong to individual hulls. Rowboats carry at most **1**, skiffs/fishers/sloops **2**; larger hulls carry 4–12. The new purchasable fighting fleet has original hulls, masts, gunports and colours:
+
+| Ship | Coins | Sailing | Naval Warfare | Maximum guns |
+| --- | ---: | ---: | ---: | ---: |
+| Acorn Guard Cutter | 45,000 | 8 | 3 | 4 |
+| Briarwatch War Brig | 280,000 | 16 | 8 | 8 |
+| Ironroot Frigate | 2,400,000 | 30 | 20 | 16 |
+| Blackcap Corsair | 85,000 | 10 | 5 | 6 |
+| Crown of Thorns galleon | 6,800,000 | 45 | 35 | 20 |
+
+Hull purchases do not include cannons or crew. At a public landing or owned wharf, open **Naval command** to fit cannons (45 coins each), hire gunners (350 coins × the next crew member's number), buy 20 shot for 30 coins, and repair damage for 3 coins per hull point. A captain alone fires up to two fitted guns; hired gunners fire one each and receive 1 coin per shot. Each gun consumes one cannonball and every salvo reloads for six seconds. Old saves with the former global cannon purchase receive one fitted gun on each already-owned hull, plus a small ammunition allowance; future boats require their own fittings.
+
+`npm run check:northern-seas` verifies home migration, paid town growth, road/service dialogue, household levies, cannon caps, paid automatic crew, friendly protection, range and reload rules, damage-based XP, single-payment victory, persistent damage, defeat rescue, repairs and legacy saves.

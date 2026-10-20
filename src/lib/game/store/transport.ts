@@ -86,8 +86,8 @@ export function transportSlice(
         blocked() ||
         own >= 6 ||
         s.coins < price ||
-        !s.city.buildings.some((b) => b.kind === "home") ||
-        !s.city.buildings.some((b) => b.kind === "depot") ||
+        (!s.city.buildings.some((b) => b.kind === "home")&&!s.thimble) ||
+        (!s.city.buildings.some((b) => b.kind === "depot")&&!s.thimble?.projects.includes("depot")) ||
         !transportRoutes(s.roadWorks.completed).some((r) => r.id === route)
       )
         return;

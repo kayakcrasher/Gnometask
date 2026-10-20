@@ -18,6 +18,18 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    fundThimble:(id:string)=>void;
+    setThimbleTax:(tax:number)=>void;
+    advanceThimble:()=>void;
+    armShip:(id:string)=>void;
+    hireGunner:(id:string)=>void;
+    buyShot:()=>void;
+    repairShip:(id:string)=>void;
+    engageShip:(id:string)=>void;
+    fireBroadside:()=>void;
+    toggleGunners:()=>void;
+    retreatShip:()=>void;
+    tickSeas:(dt:number)=>void;
     plotPortCourse:(id:string)=>void;
     chooseStarterLoan:(amount:number)=>void;
     repayBank:(amount:number)=>void;

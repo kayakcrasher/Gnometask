@@ -1,3 +1,4 @@
+import { shipFit, gunLimit } from "@/lib/game/naval";
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -559,12 +560,120 @@ function BoatFittings({
     </group>
   );
 }
+function FightingShip({ kind }: { kind: BoatId }) {
+  const pirate = kind === "pirate",
+    large = kind === "frigate" || kind === "galleon",
+    length =
+      kind === "galleon" ? 4.8 : large ? 4.1 : kind === "warcutter" ? 2.4 : 3.2,
+    width = large ? 1.35 : 1.05;
+  return (
+    <group>
+      <Hull
+        length={length}
+        width={width}
+        color={pirate ? "#513548" : "#3e5663"}
+        lip={pirate ? "#a76b73" : "#ccad67"}
+      />
+      <ShipBox
+        at={[0, 0.27, 0]}
+        size={[width * 0.85, 0.1, length * 0.8]}
+        color="#b68c55"
+      />
+      <ShipBox
+        at={[0, 0.55, -length * 0.3]}
+        size={[width * 0.8, 0.6, 0.65]}
+        color={pirate ? "#764758" : "#6e8e91"}
+      />
+      <ShipBox
+        at={[0, 0.9, -length * 0.3]}
+        size={[width * 0.9, 0.08, 0.8]}
+        color="#bba16a"
+      />
+      {Array.from(
+        { length: kind === "galleon" ? 4 : large ? 3 : 2 },
+        (_, i) => (
+          <group
+            key={i}
+            position={[0, 0, (i - (large ? 1 : 0.5)) * length * 0.23]}
+          >
+            <Mast
+              h={large ? 2.5 : 1.9}
+              sailW={large ? 1.3 : 1}
+              tint={pirate ? "#694258" : "#e8ddbc"}
+            />
+            <ShipBox
+              at={[0, large ? 2.55 : 1.95, 0]}
+              size={[0.7, 0.04, 0.04]}
+              color="#594637"
+            />
+          </group>
+        ),
+      )}
+      {pirate && (
+        <>
+          <mesh position={[0, 1.55, 0.03]}>
+            <sphereGeometry args={[0.13, 10, 8]} />
+            <meshStandardMaterial color="#e7d8ba" />
+          </mesh>
+          <ShipBox
+            at={[0, 1.39, 0.03]}
+            size={[0.18, 0.13, 0.05]}
+            color="#e7d8ba"
+          />
+        </>
+      )}
+      {large && (
+        <>
+          <ShipBox
+            at={[0, 1, -length * 0.34]}
+            size={[1, 0.35, 0.6]}
+            color="#495d62"
+          />
+          {[-0.3, 0, 0.3].map((x) => (
+            <ShipBox
+              key={x}
+              at={[x, 1.03, -length * 0.42]}
+              size={[0.17, 0.22, 0.035]}
+              color="#ddb962"
+            />
+          ))}
+        </>
+      )}
+      {Array.from({ length: Math.ceil(gunLimit(kind) / 2) }, (_, i) =>
+        [-1, 1].map((side) => (
+          <ShipBox
+            key={`${i}-${side}`}
+            at={[
+              side * width * 0.45,
+              0.21,
+              ((i - (Math.ceil(gunLimit(kind) / 2) - 1) / 2) * length) /
+                (Math.ceil(gunLimit(kind) / 2) + 2),
+            ]}
+            size={[0.03, 0.12, 0.15]}
+            color="#252b2a"
+          />
+        )),
+      )}
+      <ShipBox
+        at={[0, 0.45, length * 0.44]}
+        size={[0.06, 0.06, 0.75]}
+        color="#ac8b59"
+      />
+    </group>
+  );
+}
 export function BoatMesh({
   kind,
   rowing,
   cannon,
   parts = [],
+  guns,
+  crew = 0,
+  faction = "player",
 }: {
+  guns?: number;
+  crew?: number;
+  faction?: "player" | "enemy" | "friendly";
   kind: BoatId | "goblin";
   rowing?: boolean;
   cannon?: boolean;
@@ -572,7 +681,63 @@ export function BoatMesh({
 }) {
   return (
     <group>
-      <BaseBoatMesh kind={kind} rowing={rowing} cannon={cannon} />
+      <BaseBoatMesh kind={kind} rowing={rowing} cannon={false} />
+      {Array.from(
+        { length: Math.min(gunLimit(kind), guns ?? (cannon ? 1 : 0)) },
+        (_, i) => {
+          const small =
+              kind === "row" ||
+              kind === "sail" ||
+              kind === "sloop" ||
+              kind === "fisher",
+            side = i % 2 ? 1 : -1,
+            rows = Math.ceil((guns ?? 1) / 2);
+          return (
+            <group
+              key={i}
+              position={[
+                side * (small ? 0.22 : 0.46),
+                small ? 0.3 : 0.4,
+                (Math.floor(i / 2) - (rows - 1) / 2) * (small ? 0.23 : 0.27),
+              ]}
+              rotation={[0, (side * Math.PI) / 2, 0]}
+            >
+              <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.05, 0.075, 0.35, 8]} />
+                <meshStandardMaterial color="#302e2b" metalness={0.5} />
+              </mesh>
+              <ShipBox
+                at={[0, -0.07, 0]}
+                size={[0.18, 0.08, 0.22]}
+                color="#936d46"
+              />
+            </group>
+          );
+        },
+      )}
+      {faction !== "player" && (
+        <group position={[0, 2.65, -0.4]}>
+          <ShipBox at={[0, 0, 0]} size={[0.035, 0.7, 0.035]} color="#b89e6d" />
+          <ShipBox
+            at={[0.25, 0.18, 0]}
+            size={[0.5, 0.25, 0.025]}
+            color={faction === "enemy" ? "#af554d" : "#76b6a4"}
+          />
+        </group>
+      )}
+      {Array.from({ length: Math.min(crew, 8) }, (_, i) => (
+        <group
+          key={`crew-${i}`}
+          position={[
+            (i % 2 ? 1 : -1) * 0.3,
+            0.3,
+            (Math.floor(i / 2) - (Math.ceil(Math.min(crew, 8) / 2) - 1) / 2) *
+              0.35,
+          ]}
+        >
+          <GnomeRig hat="hat-night" scale={0.32} beard />
+        </group>
+      ))}
       <BoatFittings
         parts={parts}
         large={!["row", "sail", "goblin"].includes(kind)}
@@ -590,6 +755,8 @@ function BaseBoatMesh({
   rowing?: boolean;
   cannon?: boolean;
 }) {
+  if (["warcutter", "brig", "frigate", "pirate", "galleon"].includes(kind))
+    return <FightingShip kind={kind as BoatId} />;
   if (["coaster", "packet", "yacht", "expedition", "megayacht"].includes(kind))
     return (
       <group>
@@ -1014,6 +1181,7 @@ export function Harbor3({
   const afloat = useGame((s) => s.afloat);
   const cannons = useGame((s) => s.cannons);
   const ports = useGame((s) => s.ports);
+  const naval = useGame((s) => s.naval);
   return (
     <group>
       {BOATS.map((boat) => {
@@ -1039,6 +1207,8 @@ export function Harbor3({
                   kind={boat.id}
                   cannon={cannons}
                   parts={ports.parts[boat.id]}
+                  guns={shipFit(naval, boat.id).guns}
+                  crew={shipFit(naval, boat.id).crew}
                 />
               </group>
             </Bob>

@@ -8,10 +8,16 @@ export type BoatId =
   | "packet"
   | "yacht"
   | "expedition"
-  | "megayacht";
+  | "megayacht"
+  | "warcutter"
+  | "brig"
+  | "frigate"
+  | "pirate"
+  | "galleon";
 
 export type BoatDef = {
   cargo?: number;
+  warfare?: number;
   id: BoatId;
   name: string;
   need: number;
@@ -146,6 +152,71 @@ export const BOATS: BoatDef[] = [
     x: -1120,
     y: 1700,
   },
+  {
+    id: "warcutter",
+    name: "Acorn Guard Cutter",
+    need: 8,
+    warfare: 3,
+    xp: 115,
+    price: 45000,
+    speed: 280,
+    blurb:
+      "Four-gun coastguard cutter, blue pennants and a raised fighting deck.",
+    x: -500,
+    y: 1900,
+  },
+  {
+    id: "brig",
+    name: "Briarwatch War Brig",
+    need: 16,
+    warfare: 8,
+    xp: 170,
+    price: 280000,
+    speed: 270,
+    blurb: "Eight-gun twin-masted escort with reinforced bulwarks.",
+    x: -750,
+    y: 2100,
+  },
+  {
+    id: "frigate",
+    name: "Ironroot Frigate",
+    need: 30,
+    warfare: 20,
+    xp: 240,
+    price: 2400000,
+    speed: 290,
+    blurb:
+      "Sixteen-gun warship with three masts, gunports and a gilded stern gallery.",
+    x: -1000,
+    y: 2300,
+  },
+  {
+    id: "pirate",
+    name: "Blackcap Corsair",
+    need: 10,
+    warfare: 5,
+    xp: 140,
+    price: 85000,
+    speed: 310,
+    blurb:
+      "Six-gun pirate vessel, patched plum sails and a crow’s nest. Fly your own colours.",
+    x: -1300,
+    y: 2000,
+  },
+  {
+    id: "galleon",
+    name: "Crown of Thorns",
+    need: 45,
+    warfare: 35,
+    xp: 320,
+    price: 6800000,
+    speed: 230,
+    cargo: 100,
+    blurb:
+      "Twenty-gun galleon with towering stern galleries and four proud masts.",
+    x: -1550,
+    y: 2400,
+  },
 ];
 
 export const BOAT_RANK: Record<BoatId, number> = {
@@ -159,6 +230,11 @@ export const BOAT_RANK: Record<BoatId, number> = {
   yacht: 8,
   expedition: 9,
   megayacht: 10,
+  warcutter: 6,
+  brig: 8,
+  frigate: 10,
+  pirate: 7,
+  galleon: 10,
 };
 
 export function boatById(id: string) {

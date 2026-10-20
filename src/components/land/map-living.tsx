@@ -7,6 +7,8 @@ export function MapLiving({ pos }: { pos: { x: number; y: number } }) {
   return (
     <>
       <g pointerEvents="none">
+       {s.naval.vessels.filter(v=>v.hp>0).map(v=><g key={v.id} transform={`translate(${v.x} ${v.y})`}><path d="M0 -50Q-28 -25 -28 30L28 30Q28 -25 0 -50Z" fill={v.side==='enemy'?'#734452':'#4d7e80'} stroke="#ddbf75" strokeWidth={5}/><rect x={0} y={-56} width={30} height={18} fill={v.side==='enemy'?'#bd665a':'#85c3ac'}/></g>)}
+
         {[
           { site: NORTH_LANDING, dock: { level: 1, style: "mint" } },
           ...s.ports.docks.map((d) => ({

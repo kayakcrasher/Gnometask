@@ -1,3 +1,4 @@
+import {thimbleRemark} from "../thimblehaven";
 import { NPCS } from "../world";
 import { QUEST_BY_ID } from "../quests";
 import { randOf } from "../quotes";
@@ -128,6 +129,7 @@ export function questsSlice(
 
       bonds[npcId] = (bonds[npcId] ?? 0) + 1;
 
+      if(["wim","nettie","greg","brine"].includes(npcId))speech+=` ${thimbleRemark(s)}`;
       if (ding) speech = `${speech} ${ding}`;
       const grown = maxHitpoints(skills) - maxHitpoints(s.skills);
       set({
