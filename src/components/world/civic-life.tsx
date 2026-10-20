@@ -1,3 +1,5 @@
+import { HomeAsset } from "./home-asset";
+import { homeStyle, HOME_PALETTES } from "@/lib/game/home-design";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 import { Html } from "@react-three/drei";
 import { COURTS, SUNSTEP_DOCK, TOWN_LABEL, civicBlurb } from "@/lib/game/data/civic";
@@ -6,71 +8,8 @@ import { useGame } from "@/lib/game/store";
 import { groundY, to3 } from "@/lib/game/world3";
 import { GnomeRig } from "./gnome-rig";
 
-function House({ plot }: { plot: CivicPlot }) {
-  const h = 0.48 + plot.stories * 0.42;
-  return (
-    <group>
-      <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.95, h, 0.78]} />
-        <meshStandardMaterial color={plot.rental ? "#e7d7b0" : "#efe6d4"} />
-      </mesh>
-      <mesh position={[0, h + 0.08, 0]} castShadow>
-        <boxGeometry args={[1.1, 0.12, 0.92]} />
-        <meshStandardMaterial color={plot.rental ? "#c9a227" : "#a35a42"} />
-      </mesh>
-      {Array.from({ length: plot.stories }, (_, i) => (
-        <mesh key={i} position={[0.2, 0.35 + i * 0.42, 0.4]}>
-          <boxGeometry args={[0.16, 0.16, 0.02]} />
-          <meshStandardMaterial color="#9ec7e6" />
-        </mesh>
-      ))}
-      {plot.rental ? (
-        <Html position={[0, h + 0.35, 0]} center distanceFactor={16} style={{ pointerEvents: "none" }}>
-          <span className="rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold text-ink">Let</span>
-        </Html>
-      ) : null}
-      {plot.trim?.includes("shutters") || plot.trim?.includes("boxes") ? (
-        <mesh position={[0.28, 0.45, 0.4]}>
-          <boxGeometry args={[0.16, 0.12, 0.03]} />
-          <meshStandardMaterial color={plot.trim.includes("boxes") ? "#6b8f4e" : "#35543f"} />
-        </mesh>
-      ) : null}
-      {plot.trim?.includes("awning") ? (
-        <mesh position={[0, h * 0.72, 0.48]} rotation={[0.4, 0, 0]}>
-          <boxGeometry args={[0.7, 0.03, 0.28]} />
-          <meshStandardMaterial color="#a33b32" />
-        </mesh>
-      ) : null}
-      {plot.trim?.includes("bench") ? (
-        <mesh position={[0.55, 0.16, 0.35]}>
-          <boxGeometry args={[0.28, 0.05, 0.1]} />
-          <meshStandardMaterial color="#6b4428" />
-        </mesh>
-      ) : null}
-      {plot.trim?.includes("vane") ? (
-        <mesh position={[0.2, h + 0.28, 0]}>
-          <boxGeometry args={[0.22, 0.02, 0.05]} />
-          <meshStandardMaterial color="#c9a227" metalness={0.4} />
-        </mesh>
-      ) : null}
-    </group>
-  );
-}
+function House({plot}:{plot:CivicPlot}){return <HomeAsset id={plot.id} level={plot.stories} style={homeStyle(plot.id,plot.town)} trim={plot.trim} lantern={plot.lantern}/>;}
 
-function Lantern() {
-  return (
-    <group position={[0.55, 0, 0.35]}>
-      <mesh position={[0, 0.45, 0]} castShadow>
-        <boxGeometry args={[0.04, 0.9, 0.04]} />
-        <meshStandardMaterial color="#5b4230" />
-      </mesh>
-      <mesh position={[0, 0.95, 0]}>
-        <sphereGeometry args={[0.08, 8, 8]} />
-        <meshStandardMaterial color="#f2d48a" emissive="#e2b84a" emissiveIntensity={0.8} />
-      </mesh>
-    </group>
-  );
-}
 
 function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; onEnter: () => void }) {
   const big = town === "capitol";
@@ -239,21 +178,21 @@ function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; 
     </group>
   );
 }
-export function CivicLife({ poses = {} }: { poses?: Record<string, NpcPose> }) {
+export function CivicLife({ poses = {},pos }: { poses?: Record<string, NpcPose>;pos?:{x:number;y:number} }) {
   const civic = useGame((s) => s.civic);
   const inCombat=useGame(s=>Boolean(s.combat));
   const enter = useGame((s) => s.enterCourt);
   const enterPub = useGame((s) => s.enterPub);
   const open = useGame((s) => s.openPopup);
   const speak = useGame((s) => s.speak);
-  const gx = useGame((s) => s.gnomeX);
-  const gy = useGame((s) => s.gnomeY);
+  const savedX = useGame((s) => s.gnomeX),savedY=useGame(s=>s.gnomeY);
+  const gx=pos?.x??savedX,gy=pos?.y??savedY;
   if (!civic?.gnomes?.length) return null;
   const speaker = civic.beat % civic.gnomes.length;
   return (
     <group>
-      {civic.plots.map((plot) => (
-        <group key={plot.id} position={to3(plot.x, plot.y, groundY(plot.x, plot.y))}>
+      {civic.plots.filter(p=>Math.hypot(p.x-gx,p.y-gy)<1250).map((plot) => (
+        <group key={plot.id} position={to3(plot.x, plot.y, groundY(plot.x, plot.y))} onClick={e=>{if(!plot.stories)return;e.stopPropagation();const owner=civic.gnomes.find(g=>g.id===plot.owner);open({kind:'place',hotspotId:plot.id,title:owner?`${owner.name}’s home`:'Vacant home',blurb:`${HOME_PALETTES[homeStyle(plot.id,plot.town)].name}, ${plot.stories} storeys. ${owner?`Household purse: ${owner.purse} coins. Work, living costs and savings determine the next upgrade.`:'The previous family has left. The house and its improvements remain for future neighbours.'}`,x:plot.x,y:plot.y});}}>
           <mesh position={[0, 0.04, 0]} receiveShadow>
             <boxGeometry args={[1.15, 0.06, 0.9]} />
             <meshStandardMaterial color={plot.shares.length ? "#c4b49a" : "#b7c4a4"} />
@@ -265,13 +204,15 @@ export function CivicLife({ poses = {} }: { poses?: Record<string, NpcPose> }) {
             </mesh>
           ))}
           {plot.stories > 0 ? <House plot={plot} /> : null}
-          {plot.lantern ? <Lantern /> : null}
+          {plot.stories>0&&!plot.owner&&Math.hypot(gx-plot.x,gy-plot.y)<300&&<Html position={[0,plot.stories*.9+1,0]} center style={{pointerEvents:'none'}}><span className="whitespace-nowrap rounded-full bg-parchment px-2 text-[10px] font-bold text-pine">Vacant home</span></Html>}
+
         </group>
       ))}
       {civic.gnomes.map((g, i) => {
         const talk = !inCombat&&(i === speaker || i === (speaker + 1) % civic.gnomes.length || !g.good);
         const pose = poses[g.id];
         const x = pose?.x ?? g.x, y = pose?.y ?? g.y;
+        if(Math.hypot(x-gx,y-gy)>1400)return null;
         const near = Math.hypot(x - gx, y - gy) < 85;
         const atPint = civic.pint && (civic.pint.a === g.id || civic.pint.b === g.id);
         const working = i === speaker && !near;

@@ -1,3 +1,4 @@
+import { MapLiving } from "./map-living";
 import {engageTarget} from "@/components/land/engage-target";
 import { useRef } from "react";
 import { clientToWorld, usePanZoom, VB } from "@/hooks/use-pan-zoom";
@@ -113,6 +114,7 @@ export function Island2d({
             villageHurt={Math.max(0, BUILDING_MAX.village - save.buildingHp.village)}
             havenHurt={Math.max(0, BUILDING_MAX.haven - save.buildingHp.haven)}
           />
+          <MapLiving pos={pos}/>
           <MapPlots wildCount={6} />
           <MapPlaces npcPoses={npcPoses} hLevel={hLevel} hoverTip={hoverTip} goInside={goInside} interact={interact} />
           <MapFights raiding={raiding} hoverTip={hoverTip} goFight={goFight} interact={interact} />

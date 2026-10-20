@@ -6,7 +6,7 @@ export type SeaPoint = { x: number; y: number };
 export const HARBOUR_APPROACH: SeaPoint = { x: -35, y: 530 };
 export const DOCKING_RANGE = 100;
 export const SAILING_XP_DISTANCE = 600;
-export const SEA_BOUNDS = { minX: -1900, maxX: 5100, minY: -5200, maxY: 1900 };
+export const SEA_BOUNDS = { minX: -3000, maxX: 6200, minY: -6300, maxY: 3000 };
 
 export function sailingSpeed(id: string, xp: number) {
   return (boatById(id)?.speed ?? 180) * (1 + Math.min(0.25, (levelFromXp(xp) - 1) * 0.01));

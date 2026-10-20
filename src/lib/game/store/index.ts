@@ -1,3 +1,4 @@
+import { transportSlice } from "./transport";
 import { citySlice } from "./city";
 import { developmentSlice } from "./development";
 import { islandsSlice } from "./islands";
@@ -27,6 +28,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...sessionSlice(set, get),
   ...developmentSlice(set, get),
   ...citySlice(set,get),
+  ...transportSlice(set,get),
   ...tasksSlice(set, get),
   ...economySlice(set, get),
   ...worldSlice(set, get),

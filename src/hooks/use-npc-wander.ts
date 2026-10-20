@@ -76,7 +76,7 @@ export function useNpcWander(homes: NpcHome[], frozen: boolean) {
         ...Object.values(state.estate).map((h) => ({ ...h, w: 23, h: 21 })),
         ...state.civic.plots
           .filter((p) => p.stories > 0)
-          .map((p) => ({ ...p, w: 12, h: 10 })),
+          .map((p) => ({ ...p, w: 22, h: 22 })),
       ];
       for (const [homeIndex, home] of homes.entries()) {
         let pose = cur[home.id] ?? {

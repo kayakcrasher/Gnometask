@@ -1,3 +1,4 @@
+import { SEA_BOUNDS } from "@/lib/game/sailing";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo } from "react";
 import {
@@ -70,7 +71,7 @@ export function IslandAtlas({
       <svg
         role="img"
         aria-label="Expanded island geography"
-        viewBox={WORLD_VIEW}
+        viewBox={s.afloat?`${SEA_BOUNDS.minX} ${SEA_BOUNDS.minY} ${SEA_BOUNDS.maxX-SEA_BOUNDS.minX} ${SEA_BOUNDS.maxY-SEA_BOUNDS.minY}`:WORLD_VIEW}
         className="min-h-0 w-full flex-1 rounded-2xl bg-[#39697a]"
         onClick={(e) => {
           const p = e.currentTarget.createSVGPoint();

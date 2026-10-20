@@ -1,3 +1,4 @@
+import { TransportControls } from "./hud/transport-controls";
 import { Soundtrack } from "./soundtrack";
 import { useEffect, useLayoutEffect } from "react";
 import { LandMap } from "@/components/land/land-map";
@@ -28,6 +29,8 @@ export function AppShell() {
   const atHome = useGame((s) => s.atHome);
   const interior = useGame((s) => s.interior);
   const tickWorld = useGame((s) => s.tickWorld);
+  const tickTransport=useGame(s=>s.tickTransport);
+  useEffect(()=>{const id=window.setInterval(()=>tickTransport(.25),250);return()=>window.clearInterval(id);},[tickTransport]);
   const tickClock = useGame((s) => s.tickClock);
 
   useLayoutEffect(() => {
@@ -71,6 +74,7 @@ export function AppShell() {
   return (
     <div className="fixed inset-0 overflow-hidden bg-pine" onPointerDown={unlockAudio} onKeyDown={unlockAudio}>
       <Soundtrack />
+      <TransportControls />
       <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>
         <LandMap />
         {named && !atHome ? (

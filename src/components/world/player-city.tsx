@@ -1,3 +1,4 @@
+import { HomeAsset } from "./home-asset";
 import { useEffect, useRef } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
@@ -100,6 +101,7 @@ export function PlayerCity() {
                 : b.kind === "sawmill"
                   ? "#ac8160"
                   : "#a19a8d";
+          if(home)return <group key={b.id} position={to3(b.x,b.y,groundY(b.x,b.y))} onClick={e=>{e.stopPropagation();open({kind:'place',hotspotId:b.id,title:`${city.name} · Workers’ cottages`,blurb:`Level ${b.level}. ${b.residents} residents. Connected cottages earn town revenue. Manage them in Deeds → Your city.`,x:b.x,y:b.y});}}><HomeAsset id={b.id} level={b.level}/></group>;
           return (
             <group
               key={b.id}
@@ -110,7 +112,7 @@ export function PlayerCity() {
                   kind: "place",
                   hotspotId: b.id,
                   title: `${city.name} · ${CITY_BUILDINGS[b.kind].name}`,
-                  blurb: `Level ${b.level}. ${factory ? `${b.supplies} logs stocked; ${b.stock} crates ready.` : home ? `${b.residents} residents.` : "Your donkey carts sell their deliveries here."} Open Deeds → Your city to manage this building.`,
+                  blurb: `Level ${b.level}. ${factory ? `${b.supplies} supply units stocked; ${b.stock} crates ready.` : home ? `${b.residents} residents.` : "Your donkey carts sell their deliveries here."} Open Deeds → Your city to manage this building.`,
                   x: b.x,
                   y: b.y,
                 });

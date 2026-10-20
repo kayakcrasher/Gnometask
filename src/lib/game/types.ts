@@ -206,6 +206,7 @@ export type GameSave = {
   tasks: Task[];
   ownedHats: string[];
   houseUpgrades: string[];
+  playerHomeStyle:import("./home-design").HomeStyle;
   cottageLevel: number;
   /** Number of enemy flags planted across all islands. */
   flagsPlanted: number;
@@ -225,6 +226,7 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  transport: import("./transport").Transport;
   roadWorks: import("./data/expansion").RoadWorks;
   estate: Record<string, import("./data/expansion").EstateHome>;
   shares: Record<string, number>;

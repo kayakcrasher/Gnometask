@@ -18,7 +18,8 @@
     "check:fishing": "node scripts/check-fishing.mjs",
     "check:cozy": "node scripts/check-cozy-world.mjs",
     "check:music": "node scripts/check-music.mjs",
-    "check:frontier": "node scripts/check-frontier.mjs"
+    "check:frontier": "node scripts/check-frontier.mjs",
+    "check:living-towns": "node scripts/check-living-towns.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

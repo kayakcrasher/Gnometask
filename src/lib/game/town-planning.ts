@@ -1,3 +1,5 @@
+import { ROAD_PROJECTS } from "./data/expansion";
+import { FRONTIER_SETTLEMENTS } from "./data/frontier";
 import { nearRoad } from "./data/road-layout";
 import { FRONTIER_NEIGHBOURS } from "./data/frontier";
 import { FRONTIER_HOMES } from "./data/expansion";
@@ -65,18 +67,18 @@ export function openFrontier(
 }
 /** Families bring savings and pay for their own home. No player wallet or deed is used. */
 export function settleFrontier(s: GameSave): CivicState {
-  const civic = s.civic,
+  const civic = growNeighbourhoods(s),
     batch = Math.floor(civic.beat / 96);
   if (
-    batch < 1 ||
+    batch < 1 || batch <= (civic.lastArrival??0) ||
     civic.gnomes.some((g) => g.id === `settler-${batch}`) ||
-    civic.gnomes.filter((g) => g.id.startsWith("settler-")).length >= 18
+    civic.gnomes.filter((g) => g.id.startsWith("settler-")).length >= 54
   )
     return civic;
   const plot = civic.plots.find(
     (p) =>
       p.id.startsWith("frontier-") &&
-      p.stories === 0 &&
+      !p.owner &&
       !p.shares.length &&
       npcBuildAllowed(s, p),
   );
@@ -103,7 +105,7 @@ export function settleFrontier(s: GameSave): CivicState {
   ];
   const n = civic.gnomes.filter((g) => g.id.startsWith("settler-")).length,
     id = `settler-${batch}`,
-    name = names[n]!;
+    name = names[n%names.length]!+(n>=names.length?` ${Math.floor(n/names.length)+1}`:"");
   const resident = {
     id,
     name,
@@ -121,10 +123,31 @@ export function settleFrontier(s: GameSave): CivicState {
   };
   return {
     ...civic,
+    lastArrival:batch,
     gnomes: [...civic.gnomes, resident],
     plots: civic.plots.map((p) =>
-      p.id === plot.id ? { ...p, stories: 1, owner: id, shares: [id] } : p,
+      p.id === plot.id ? { ...p, stories: Math.max(1,p.stories), owner: id, shares: [id] } : p,
     ),
     news: `${name}'s family moved into the northern countryside and paid 200 coins from their savings for a new home.`,
   };
+}
+
+/** Extend a full district along its completed road, while leaving countryside and private deeds alone. */
+export function growNeighbourhoods(s:GameSave):CivicState{
+ let civic=s.civic;
+ for(const d of FRONTIER_SETTLEMENTS){
+  if(!s.roadWorks.completed.includes(d.road))continue;
+  const existing=civic.plots.filter(p=>p.id.startsWith(`frontier-${d.id}-`));
+  if(existing.length>=18||existing.some(p=>!p.owner&&!p.shares.length&&npcBuildAllowed({...s,civic},p)))continue;
+  const road=ROAD_PROJECTS.find(r=>r.id===d.road)!;
+  const extra:CivicPlot[]=[];
+  for(let i=1;i<road.points.length&&extra.length<2;i+=3){const a=road.points[i-1]!,b=road.points[i]!,dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1;
+   for(const side of [-1,1]){const x=Math.round(b[0]-dy/len*side*125),y=Math.round(b[1]+dx/len*side*125),p:CivicPlot={id:`frontier-${d.id}-growth-${existing.length+extra.length}`,town:'haven',x,y,shares:[],stories:0,owner:null,lantern:false,rental:false,trim:[]};
+    if(!npcBuildAllowed({...s,civic},p)||!buildingSiteClear(x,y,[...civic.plots,...extra]))continue;
+    extra.push(p);if(extra.length===2)break;
+   }
+  }
+  if(extra.length)civic={...civic,plots:[...extra,...civic.plots],news:`${d.name} surveyed ${extra.length} more homes beside its established road.`};
+ }
+ return civic;
 }

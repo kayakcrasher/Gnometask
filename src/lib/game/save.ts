@@ -1,3 +1,5 @@
+import { HOME_STYLES } from "./home-design";
+import { emptyTransport, coerceTransport } from "./transport";
 import {aquariumLevel,cleanFishBag} from "./data/fish";
 import { emptyCity, coerceCity } from "./city";
 import { developmentLevel } from "./development";
@@ -47,6 +49,7 @@ export function defaultSave(): GameSave {
     tasks: makeBuiltinTasks(today),
     ownedHats: ["hat-berry"],
     houseUpgrades: [],
+    playerHomeStyle:"meadow",
     cottageLevel: 0,
     flagsPlanted: 0,
     clarionReads: 0,
@@ -91,6 +94,7 @@ export function defaultSave(): GameSave {
     saplings: 0,
     deeds: [],
     city: emptyCity(),
+    transport:emptyTransport(),
     estate: {},
     roadWorks: {completed:[],active:null},
     shares: {},
@@ -308,6 +312,7 @@ export function migrate(raw: unknown): GameSave {
     tasks,
     ownedHats: asStringArray(s.ownedHats, base.ownedHats),
     houseUpgrades: asStringArray(s.houseUpgrades, []),
+    playerHomeStyle:HOME_STYLES.includes(s.playerHomeStyle!)?s.playerHomeStyle!:"meadow",
     cottageLevel: typeof s.cottageLevel === "number" ? Math.max(0, Math.min(3, Math.floor(s.cottageLevel))) : 0,
     flagsPlanted: typeof s.flagsPlanted === "number" ? Math.max(0, Math.floor(s.flagsPlanted)) : 0,
     clarionReads: typeof s.clarionReads === "number" ? Math.max(0, Math.floor(s.clarionReads)) : 0,
@@ -348,6 +353,7 @@ export function migrate(raw: unknown): GameSave {
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: asStringArray(s.deeds, []),
     roadWorks: coerceRoadWorks(s.roadWorks),
+    transport:coerceTransport(s.transport,coerceRoadWorks(s.roadWorks).completed),
     estate: Object.fromEntries(Object.entries(s.estate && typeof s.estate === "object" ? s.estate : {}).filter(([id,h]) => {
       const p=parcelAt(id);return p && asStringArray(s.deeds,[]).includes(id) && h && Number.isFinite(h.x) && Number.isFinite(h.y) && Number.isInteger(h.level) && h.level>=1 && h.level<=3 && insideParcel(p,h.x,h.y) && buildingSiteClear(h.x,h.y);
     })),
@@ -385,6 +391,7 @@ export function migrate(raw: unknown): GameSave {
     cannons: Boolean(s.cannons),
     civic: coerceCivic(s.civic, typeof s.daysPlayed === "number" ? s.daysPlayed : 1),
   });
+  if(result.afloat){result.transport={...result.transport,mounted:false,ride:null};}
   return {...result,city:coerceCity(s.city,result)};
 }
 

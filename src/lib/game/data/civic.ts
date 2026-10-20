@@ -1,3 +1,4 @@
+import { npcUpgradeCost, npcHomeCost } from "../home-design";
 /** Town gnomes who spend their own purses. Nineteen of twenty are decent. The last came off a cruise ship. */
 
 export type CivicTown = "capitol" | "tideham" | "greenlane" | "haven" | "sunstep";
@@ -20,6 +21,7 @@ export type CivicGnome = {
   /** Day this gnome fainted on a raid. Half HP, and grumpy, until the next rollover. */
   fainted?: number;
   archetype?: string;
+  hardship?: number;
 };
 
 export type CivicPlot = {
@@ -36,6 +38,7 @@ export type CivicPlot = {
 };
 
 export type CivicState = {
+  lastArrival?: number;
   gnomes: CivicGnome[];
   plots: CivicPlot[];
   word: string;
@@ -120,8 +123,6 @@ const ANCHORS: Record<CivicTown, { x: number; y: number }> = {
 };
 
 const SHARE = 12;
-const HOUSE = 14;
-const STORY = 8;
 const LAMP = 4;
 
 // --- Newcomers -----------------------------------------------------------
@@ -289,25 +290,25 @@ function tryCivic(actor: CivicGnome, gnomes: CivicGnome[], plots: CivicPlot[], e
   const label = TOWN_LABEL[town];
 
   const short = homes.find((p) => p.stories > 0 && p.stories < Math.min(5, Math.max(Math.min(3, actor.family), 1 + economy)));
-  if (short && economy > 0 && actor.purse >= STORY + 10) {
-    actor.purse -= STORY;
+  if (short && economy > 0 && actor.purse >= npcUpgradeCost(short.stories) + 20) {
+    actor.purse -= npcUpgradeCost(short.stories);
     short.stories += 1;
     return `${actor.name} added a story in ${TOWN_LABEL[short.town]}. The new family needed the room.`;
   }
 
   const mine = plots.find((p) => p.shares.includes(actor.id) && p.stories === 0);
-  if (mine && economy > 0 && homes.length < 2 && mine.shares.length >= 2 && actor.purse >= HOUSE + 10) {
-    actor.purse -= HOUSE;
+  if (mine && economy > 0 && homes.length < 2 && mine.shares.length >= 2 && actor.purse >= npcHomeCost(homes.length) + 20) {
+    actor.purse -= npcHomeCost(homes.length);
     mine.stories = 1;
     mine.owner = actor.id;
     mine.rental = false;
     return `${mine.shares.length} gnomes split a plot in ${TOWN_LABEL[mine.town]}. ${actor.name} paid for the timber.`;
   }
 
-  if (economy >= 2 && homes.length >= 2 && !rental && actor.purse >= SHARE + HOUSE + 10) {
+  if (economy >= 2 && homes.length >= 2 && !rental && actor.purse >= SHARE + npcHomeCost(homes.length) + 20) {
     const lot = plots.find((p) => p.stories === 0 && p.shares.length === 0);
     if (lot) {
-      actor.purse -= SHARE + HOUSE;
+      actor.purse -= SHARE + npcHomeCost(homes.length);
       lot.shares.push(actor.id);
       lot.stories = 1;
       lot.owner = actor.id;
@@ -323,8 +324,8 @@ function tryCivic(actor: CivicGnome, gnomes: CivicGnome[], plots: CivicPlot[], e
     if (seat) {
       actor.purse -= SHARE;
       seat.shares.push(actor.id);
-      if (economy > 0 && seat.stories === 0 && seat.shares.length >= 2 && actor.purse >= HOUSE + 10) {
-        actor.purse -= HOUSE;
+      if (economy > 0 && seat.stories === 0 && seat.shares.length >= 2 && actor.purse >= npcHomeCost(homes.length) + 20) {
+        actor.purse -= npcHomeCost(homes.length);
         seat.stories = 1;
         seat.owner = actor.id;
         seat.rental = false;
@@ -483,7 +484,7 @@ export function stepCivic(state: CivicState, days: number, economy = 1, canBuild
   const word = wordFor(days, beat);
   let news: string | null = null;
   let jarsSold = state.jarsSold;
-  if (actor.good) actor.purse += 6 + actor.family + economy * 2;
+  if (actor.good) actor.purse = Math.max(0,actor.purse + 2 + economy * 3 - actor.family * 2);
   else actor.purse += 2;
 
   if (!actor.good) {
@@ -498,6 +499,7 @@ export function stepCivic(state: CivicState, days: number, economy = 1, canBuild
       news = news ?? `${actor.name}'s household grew to ${actor.family}. Another story, when the purse allows.`;
     }
   }
+  actor.hardship = actor.purse < 16 && economy <= 1 ? (actor.hardship??0)+1 : Math.max(0,(actor.hardship??0)-1);
   actor.line = compose(actor, gnomes, plots, word);
   const pal = gnomes[(beat + 3) % gnomes.length];
   if (pal && pal.id !== actor.id) pal.line = compose(pal, gnomes, plots, word);
@@ -584,6 +586,11 @@ export function stepCivic(state: CivicState, days: number, economy = 1, canBuild
     news = news ?? `A cruise ship tied up at ${TOWN_LABEL[g.town]}. One passenger came ashore.`;
   }
 
+  if(actor.id.startsWith('settler-')&&(actor.hardship??0)>=8){
+    for(const p of plots){p.shares=p.shares.filter(id=>id!==actor.id);if(p.owner===actor.id){p.owner=p.shares[0]??null;p.rental=false;}}
+    const index=gnomes.findIndex(g=>g.id===actor.id);if(index>=0)gnomes.splice(index,1);
+    news=`${actor.name}'s family moved away after a long spell of tight finances. Their home remains for future neighbours.`;
+  }
   // --- End newcomers -----------------------------------------------------
 
   return {
@@ -691,6 +698,7 @@ export function coerceCivic(raw: unknown, days: number): CivicState {
         y: typeof g.y === "number" ? g.y : 0,
         line: typeof g.line === "string" ? g.line : "",
         departsAt: typeof g.departsAt === "number" ? g.departsAt : undefined,
+        hardship:typeof g.hardship==="number"&&Number.isFinite(g.hardship)?Math.max(0,Math.min(8,Math.floor(g.hardship))):0,
         archetype: typeof g.archetype === "string" ? g.archetype : undefined,
       },
     ];
@@ -723,6 +731,7 @@ export function coerceCivic(raw: unknown, days: number): CivicState {
     gnomes,
     plots,
     word: typeof r.word === "string" ? r.word : wordFor(days, 0),
+    lastArrival:typeof r.lastArrival==="number"&&Number.isFinite(r.lastArrival)?Math.max(0,Math.floor(r.lastArrival)):0,
     beat: typeof r.beat === "number" ? Math.max(0, Math.floor(r.beat)) : 0,
     news: typeof r.news === "string" ? r.news : "",
     jarsSold: typeof r.jarsSold === "number" ? Math.max(0, Math.floor(r.jarsSold)) : 0,

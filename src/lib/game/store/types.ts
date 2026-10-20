@@ -18,6 +18,13 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    restyleHome:(style:import("../home-design").HomeStyle)=>void;
+    buyTravelCart:()=>void;
+    toggleTravelCart:()=>void;
+    buyPassengerWagon:(route:string)=>void;
+    hailWagon:(id:string)=>void;
+    leaveWagon:()=>void;
+    tickTransport:(dt:number)=>void;
     hydrate: () => void;
     persist: () => void;
     setName: (name: string) => void;

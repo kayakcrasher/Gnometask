@@ -1,3 +1,4 @@
+import { HomeAsset } from "./home-asset";
 import {nearRoad} from "@/lib/game/data/road-layout";
 import { useRef } from "react";
 import { Html } from "@react-three/drei";
@@ -33,37 +34,7 @@ export function EstateHomes() {
               });
             }}
           >
-            <mesh position={[0, h / 2, 0]} castShadow>
-              <boxGeometry args={[2.2, h, 1.85]} />
-              <meshStandardMaterial
-                color={home.level === 3 ? "#d6d1be" : "#e5d3a9"}
-              />
-            </mesh>
-            <mesh
-              position={[0, h + 0.2, 0]}
-              rotation={[0, Math.PI / 4, 0]}
-              castShadow
-            >
-              <coneGeometry args={[1.7, 0.65, 4]} />
-              <meshStandardMaterial
-                color={home.level > 1 ? "#536e68" : "#9c5341"}
-              />
-            </mesh>
-            <mesh position={[0, 0.4, 0.94]}>
-              <boxGeometry args={[0.4, 0.8, 0.04]} />
-              <meshStandardMaterial color="#725032" />
-            </mesh>
-            {Array.from({ length: home.level }, (_, i) =>
-              [-1, 1].map((side) => (
-                <mesh
-                  key={`${i}-${side}`}
-                  position={[side * 0.65, 0.7 + i * 0.5, 0.95]}
-                >
-                  <boxGeometry args={[0.33, 0.28, 0.03]} />
-                  <meshStandardMaterial color="#8eafb2" />
-                </mesh>
-              )),
-            )}
+            <HomeAsset id={id} level={home.level}/>
             <Html
               position={[0, h + 0.9, 0]}
               center

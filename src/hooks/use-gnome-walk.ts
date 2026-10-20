@@ -1,3 +1,4 @@
+import { CART_SPEED } from "@/lib/game/transport";
 import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
 import { landRoute } from "@/lib/game/land-route";
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
@@ -36,7 +37,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   const savedX = useGame(s => s.gnomeX);
   const savedY = useGame(s => s.gnomeY);
   const afloat = useGame(s => s.afloat);
-  const blocked = useGame(s => Boolean((s.combat&&!s.combat.retreating) || s.atHome || s.interior || s.abroad || s.fishing));
+  const blocked = useGame(s => Boolean((s.combat&&!s.combat.retreating) || s.atHome || s.interior || s.abroad || s.fishing || s.transport.ride));
   const sailHome = useGame(s => s.sailHome);
   const [pos, setPos] = useState({ x: savedX, y: savedY });
   const [facing, setFacing] = useState<GnomeFacing>("down");
@@ -81,12 +82,12 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
       last = now;
       const state = useGame.getState();
       const target = routeRef.current[0];
-      if (target && (!state.combat||state.combat.retreating) && !state.atHome && !state.interior && !state.abroad && !state.fishing) {
+      if (target && (!state.combat||state.combat.retreating) && !state.atHome && !state.interior && !state.abroad && !state.fishing && !state.transport.ride) {
         const cur = posRef.current;
         const dx = target.x - cur.x, dy = target.y - cur.y;
         const distance = Math.hypot(dx, dy);
         const sea = Boolean(state.afloat);
-        const speed = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing) : SPEED;
+        const speed = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing) : state.transport.mounted ? CART_SPEED : SPEED;
         const step = Math.min(distance, speed * dt);
         const tx = cur.x + dx / (distance || 1) * step, ty = cur.y + dy / (distance || 1) * step;
         let next: SeaPoint | null = null;
@@ -136,7 +137,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   const walkTo = useCallback((x: number, y: number, arrive?: () => void) => {
     const state = useGame.getState();
     if(state.combat&&state.combat.phase!=="won"&&state.combat.phase!=="lost")state.combatFlee();
-    if ((state.combat&&!useGame.getState().combat?.retreating) || state.atHome || state.interior || state.abroad || state.fishing) return;
+    if ((state.combat&&!useGame.getState().combat?.retreating) || state.atHome || state.interior || state.abroad || state.fishing || state.transport.ride) return;
     const sea = Boolean(state.afloat);
     const nx = clamp(x, sea ? SEA_BOUNDS.minX : WORLD_BOUNDS.minX, sea ? SEA_BOUNDS.maxX : WORLD_BOUNDS.maxX);
     const ny = clamp(y, sea ? SEA_BOUNDS.minY : WORLD_BOUNDS.minY, sea ? SEA_BOUNDS.maxY : WORLD_BOUNDS.maxY);

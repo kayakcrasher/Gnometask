@@ -1,3 +1,4 @@
+import { HOME_STYLES, HOME_PALETTES } from "@/lib/game/home-design";
 import { FRONTIER_SETTLEMENTS } from "@/lib/game/data/frontier";
 import { FrontierMap } from "@/components/land/frontier-map";
 import { useState } from "react";
@@ -114,6 +115,7 @@ export function CityPlanner({ onReturn }: { onReturn: () => void }) {
           moves there with all its upgrades.
         </p>
       )}
+      <section aria-label="Home styles" className="mt-3 rounded-xl bg-pine/10 p-3"><h3 className="text-sm font-bold">Your home’s style</h3><p className="text-xs">Decorators cost {90*(s.cottageLevel+1)} coins. Your upgrades stay.</p><div className="mt-2 grid grid-cols-2 gap-2">{HOME_STYLES.map(style=><button type="button" key={style} disabled={s.playerHomeStyle===style||s.coins<90*(s.cottageLevel+1)} onClick={()=>s.restyleHome(style)} className={`${button} ${s.playerHomeStyle===style?'bg-pine text-parchment':'bg-parchment'}`}>{HOME_PALETTES[style].name}</button>)}</div></section>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <label className="text-xs font-bold">
           Build

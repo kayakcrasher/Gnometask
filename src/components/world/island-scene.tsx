@@ -1,3 +1,4 @@
+import { PassengerWagons, TravelCartAsset } from "./passenger-wagons";
 import { FrontierLandscape } from "./frontier-landscape";
 import { GardenWhimsy } from "./garden-whimsy";
 import {engageTarget} from "@/components/land/engage-target";
@@ -167,7 +168,7 @@ function SceneBody({
       />
       <YardLife />
       <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
-      <CivicLife poses={npcPoses} />
+      <CivicLife poses={npcPoses} pos={pos} />
       <VillageHouses
         count={villageCount}
         onClick={(x, y) =>
@@ -261,6 +262,7 @@ function SceneBody({
       <Sunstep />
       <CountryRoads />
       <EstateHomes /><PlayerCity />
+      <PassengerWagons pos={pos} />
       <RoadCrew />
       <NorthernScenery />
       <FrontierLandscape onWalk={onWalk} pos={pos} />
@@ -373,7 +375,8 @@ function SceneBody({
           </group>
         </group>
       ) : null}
-      <group position={p3} rotation={[0, face, 0]}>
+      {save.transport.mounted&&!save.afloat&&<group position={p3} rotation={[0,face,0]}><TravelCartAsset moving={walking} rider/></group>}
+      <group visible={!save.transport.ride&&!save.transport.mounted} position={p3} rotation={[0, face, 0]}>
         <GnomeRig
           hat={save.hat}
           weapon={save.equipment.weapon}

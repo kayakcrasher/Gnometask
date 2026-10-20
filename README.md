@@ -77,6 +77,21 @@ The main island now extends far beyond Mount Noble, with a western mountain spin
 
 Fernmeadow, Willowbank and Bellweather Bay are future neighbourhoods separated by open countryside. Explore their paths immediately, then commission the three additional Road crew projects in order: **1,900 / 3,800 / 7,600 coins**, with Hall and island-wealth requirements. Each project unlocks its own group of nine purchasable deeds and six surveyed NPC home sites. Road corridors stay public and narrow; lakes and mountain slopes are excluded from usable deed land. Choose a district in the land or city planner for a closer view.
 
-Healthy island economies attract up to eighteen new gnome households to unlocked, clear surveyed sites. Families bring savings and pay 200 coins for their first house. They cannot settle on player deeds, streets or existing buildings; normal NPC home upgrades continue afterward. Player city capacity is now 120 buildings and 180 road sections, with existing coin costs and increasingly expensive upgrades. Trees clear around new construction, and nearby forest batches use instancing to limit mobile rendering work.
+Healthy island economies attract up to fifty-four new gnome households to unlocked, clear surveyed sites. Families bring savings and pay 200 coins for their first house. They cannot settle on player deeds, streets or existing buildings; normal NPC home upgrades continue afterward. Player city capacity is now 120 buildings and 180 road sections, with existing coin costs and increasingly expensive upgrades. Trees clear around new construction, and nearby forest batches use instancing to limit mobile rendering work.
 
 Run `npm run check:frontier` to verify geography, journeys, lake avoidance, road clearance, district access, construction sites, family arrivals and save migration.
+
+
+## Living towns and donkey travel
+
+Residents earn wages linked to island prosperity, pay household living costs, and save for houses and upgrades. Home construction and extra floors cost progressively more. Settler families can move away after sustained hardship; core quest characters stay. Vacant houses retain their upgrades, and future arrivals can live in them. Full northern neighbourhoods survey additional clear sites along completed roads, respecting player deeds and existing streets.
+
+The original modular home kit has four styles—meadow timber, harbour cottage, mossy stone and Sunstep adobe—and five storey levels. Roofs, upper floors, dormers, porches, conservatories and paid decorations have visible meshes. Player cottages, estates, workers’ housing and civic homes use the kit. Choose your own home style in **Deeds → Your city**; decorators charge 90 coins per cottage tier, preserving existing upgrades.
+
+Open **Travel** to buy a personal donkey cart for **480 coins**, or hail a nearby covered passenger wagon. Public rides cost **6 coins**, travel automatically along the road, and wait six seconds at either end. **Hop off wagon** exits beside the road. Your cart follows ordinary tap-to-walk destinations faster than walking.
+
+Town owners with a city home and trade depot can buy wagon services. The first costs **1,800 coins**, later purchases cost 1,800 times the square of the new fleet size. Public roads and completed road projects provide route choices. Nearby NPC passengers pay fares from their own purses; each service arrival costs the owner **2 coins** for upkeep. Services pause when the owner cannot fund upkeep. Vehicle purchases, ownership, progress, and fares survive saving; hidden tabs and blocked gameplay pause transport, without catching up missed time. Delivery carts remain separate from passenger travel.
+
+The sailing bounds now extend beyond the expanded island on every side. The atlas and minimap zoom out while afloat to include the offshore water. Boats still avoid land and use the existing sailing skill progression.
+
+Run `npm run check:living-towns` for boarding, fares, ownership, vehicle migration, household departures, neighbourhood growth and offshore sailing.

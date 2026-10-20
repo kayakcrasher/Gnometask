@@ -1,3 +1,4 @@
+import { SEA_BOUNDS } from "@/lib/game/sailing";
 import { IslandAtlas } from "./island-atlas";
 import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
 import { FrontierMap } from "@/components/land/frontier-map";
@@ -15,8 +16,7 @@ import { DeedMap } from "./deed-map";
 import { useGame } from "@/lib/game/store";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
-const VW = WORLD_BOUNDS.maxX-WORLD_BOUNDS.minX;
-const VH = WORLD_BOUNDS.maxY-WORLD_BOUNDS.minY;
+
 
 function poly(pts: [number, number][]) {
   return pts.map(([x, y]) => `${x},${y}`).join(" ");
@@ -35,6 +35,7 @@ export function Minimap({
   npcPoses: Record<string, NpcPose>;
   compassRef: { current: HTMLDivElement | null };
 }) {
+  const afloat=useGame(s=>!!s.afloat),bounds=afloat?SEA_BOUNDS:WORLD_BOUNDS,VW=bounds.maxX-bounds.minX,VH=bounds.maxY-bounds.minY;
   const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate),city=useGame(s=>s.city);
   const roads=useMemo(()=>[...developedRoads(works,estate),...city.roads],[works,estate,city.roads]);
   const travel = useGame((s) => s.travelIsle);
@@ -47,8 +48,8 @@ export function Minimap({
   const onClick = (e: ReactMouseEvent<SVGSVGElement>) => {
     const svg = e.currentTarget;
     const r = svg.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * VW + WORLD_BOUNDS.minX;
-    const y = ((e.clientY - r.top) / r.height) * VH + WORLD_BOUNDS.minY;
+    const x = ((e.clientX - r.left) / r.width) * VW + bounds.minX;
+    const y = ((e.clientY - r.top) / r.height) * VH + bounds.minY;
     walkTo(x, y);
   };
   return (
@@ -67,7 +68,7 @@ export function Minimap({
         </div>
       </div>
       <svg
-        viewBox={`${WORLD_BOUNDS.minX} ${WORLD_BOUNDS.minY} ${VW} ${VH}`}
+        viewBox={`${bounds.minX} ${bounds.minY} ${VW} ${VH}`}
         className="h-20 w-20 cursor-pointer rounded-full bg-water-deep shadow-panel ring-2 ring-parchment md:h-28 md:w-28"
         onClick={onClick}
         preserveAspectRatio="none"

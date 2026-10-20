@@ -1,3 +1,4 @@
+import { HomeAsset } from "./home-asset";
 import { Html } from "@react-three/drei";
 import { GnomeRig } from "./gnome-rig";
 import { Kenney } from "./kenney";
@@ -337,128 +338,8 @@ export function Cottage3({
   upgrades: string[];
   onEnter: () => void;
 }) {
-  const cottageLevel = useGame((s) => s.cottageLevel ?? 0);
-  const COTTAGE_ROOFS = ["berry", "gold", "moss", "night"] as const;
-  const roof = COTTAGE_ROOFS[cottageLevel] ?? "berry";
-  const scale = 1 + cottageLevel * 0.06;
-  const home=useGame(s=>s.city.buildings.find(b=>b.kind==='home'));
-  const spot = home??PLACE_ANCHORS.cottage;
-  const p = to3(spot.x, spot.y, groundY(spot.x, spot.y));
-  return (
-    <group
-      position={p}
-      onClick={(e) => {
-        e.stopPropagation();
-        onEnter();
-      }}
-    >
-      <group scale={scale}>
-          <TimberHouse position={[0, 0, 0]} roof={roof} sign="Home" onEnter={onEnter} />
-          {cottageLevel >= 1 ? (
-            <mesh position={[0.55, 1.75, 0]} castShadow>
-              <boxGeometry args={[0.18, 0.34, 0.18]} />
-              <meshStandardMaterial color="#5b4230" />
-            </mesh>
-          ) : null}
-          {cottageLevel >= 2 ? (
-            <mesh position={[0, 0.05, 0]} receiveShadow>
-              <boxGeometry args={[2.35, 0.08, 1.95]} />
-              <meshStandardMaterial color="#c9c3b4" />
-            </mesh>
-          ) : null}
-          {cottageLevel >= 3 ? (
-            <group position={[0, 1.35, 0.85]}>
-              <mesh rotation={[0.35, 0, 0]} castShadow>
-                <boxGeometry args={[1.5, 0.06, 0.7]} />
-                <meshStandardMaterial color="#6b5340" />
-              </mesh>
-              <mesh position={[-0.65, -0.4, 0.3]} castShadow>
-                <boxGeometry args={[0.1, 0.8, 0.1]} />
-                <meshStandardMaterial color="#5b4230" />
-              </mesh>
-              <mesh position={[0.65, -0.4, 0.3]} castShadow>
-                <boxGeometry args={[0.1, 0.8, 0.1]} />
-                <meshStandardMaterial color="#5b4230" />
-              </mesh>
-            </group>
-          ) : null}
-        </group>
-      {upgrades.includes("house-fence") ? (
-        <>
-          <Kenney name="fence_simpleLow" position={[-1.6, 0, 1.4]} scale={1.2} />
-          <Kenney name="fence_simpleLow" position={[1.6, 0, 1.4]} scale={1.2} />
-        </>
-      ) : null}
-      {upgrades.includes("house-boxes") ? (
-        <>
-          <mesh position={[-0.45, 0.72, 0.72]}>
-            <boxGeometry args={[0.28, 0.08, 0.1]} />
-            <meshStandardMaterial color="#6b8f4e" />
-          </mesh>
-          <mesh position={[0.45, 0.72, 0.72]}>
-            <boxGeometry args={[0.28, 0.08, 0.1]} />
-            <meshStandardMaterial color="#c45b6a" />
-          </mesh>
-        </>
-      ) : null}
-      {upgrades.includes("house-lanterns") || upgrades.includes("house-chimney") ? (
-        <mesh position={[0.55, 1.55, 0]}>
-          <boxGeometry args={[0.16, 0.28, 0.16]} />
-          <meshStandardMaterial color="#5b4230" />
-        </mesh>
-      ) : null}
-      {upgrades.includes("house-wreath") ? (
-        <mesh position={[0, 0.55, 0.78]}>
-          <torusGeometry args={[0.1, 0.03, 6, 10]} />
-          <meshStandardMaterial color="#2f6b4a" />
-        </mesh>
-      ) : null}
-      {upgrades.includes("house-shutters") ? (
-        <>
-          <mesh position={[-0.55, 0.85, 0.7]}>
-            <boxGeometry args={[0.08, 0.22, 0.04]} />
-            <meshStandardMaterial color="#35543f" />
-          </mesh>
-          <mesh position={[0.55, 0.85, 0.7]}>
-            <boxGeometry args={[0.08, 0.22, 0.04]} />
-            <meshStandardMaterial color="#35543f" />
-          </mesh>
-        </>
-      ) : null}
-      {upgrades.includes("house-path") ? (
-        <mesh position={[0, 0.04, 1.15]} receiveShadow>
-          <boxGeometry args={[0.45, 0.06, 0.7]} />
-          <meshStandardMaterial color="#b7b1a6" />
-        </mesh>
-      ) : null}
-      {upgrades.includes("house-awning") ? (
-        <mesh position={[0, 1.05, 0.85]} rotation={[0.3, 0, 0]}>
-          <boxGeometry args={[1.1, 0.04, 0.45]} />
-          <meshStandardMaterial color="#a33b32" />
-        </mesh>
-      ) : null}
-      {upgrades.includes("house-bench") ? (
-        <mesh position={[0.85, 0.22, 0.9]} castShadow>
-          <boxGeometry args={[0.42, 0.08, 0.16]} />
-          <meshStandardMaterial color="#6b4428" />
-        </mesh>
-      ) : null}
-      {upgrades.includes("house-vane") ? (
-        <mesh position={[0, 1.85, 0]}>
-          <boxGeometry args={[0.28, 0.03, 0.06]} />
-          <meshStandardMaterial color="#c9a227" metalness={0.4} />
-        </mesh>
-      ) : null}
-      {upgrades.includes("house-balcony") ? (
-        <mesh position={[0, 1.15, 0.7]}>
-          <boxGeometry args={[0.7, 0.06, 0.16]} />
-          <meshStandardMaterial color="#efe6d4" />
-        </mesh>
-      ) : null}
-      <Kenney name="flower_redA" position={[1.1, 0, 1.1]} scale={1.3} />
-      <Kenney name="flower_yellowA" position={[-1.2, 0, 1.15]} scale={1.3} />
-    </group>
-  );
+  const cottageLevel=useGame(s=>s.cottageLevel??0),home=useGame(s=>s.city.buildings.find(b=>b.kind==='home')),style=useGame(s=>s.playerHomeStyle),spot=home??PLACE_ANCHORS.cottage;
+  return <group position={to3(spot.x,spot.y,groundY(spot.x,spot.y))} onClick={e=>{e.stopPropagation();onEnter();}}><HomeAsset id="player-home" level={cottageLevel+1} style={style} trim={upgrades.map(id=>id.replace('house-',''))} lantern={upgrades.includes('house-lanterns')}/><Html position={[0,(cottageLevel+1)*.9+1.2,0]} center style={{pointerEvents:'none'}}><span className="rounded-full bg-parchment px-2 text-xs font-bold text-pine">Home</span></Html></group>;
 }
 
 export function Town3({
