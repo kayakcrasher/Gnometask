@@ -43,7 +43,7 @@ if (!fs.existsSync(key)) {
     '-validity', '10000', '-dname', 'CN=Gnometask Internal Test, O=Gnometask, C=US']);
   fs.chmodSync(key, 0o600);
 }
-const apk = path.join(output, 'Gnometask-test.apk');
+const apk = path.join(output, 'Hollow-Watch.apk');
 run(path.join(tools, 'apksigner'), ['sign', '--ks', key, '--ks-key-alias', 'gnometask-test',
   '--ks-pass', 'pass:android', '--key-pass', 'pass:android', '--out', apk, path.join(output, 'aligned.apk')], { env });
 run(path.join(tools, 'apksigner'), ['verify', '--verbose', apk], { env });

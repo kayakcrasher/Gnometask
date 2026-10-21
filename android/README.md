@@ -1,10 +1,10 @@
-# Gnometask Android test app
+# Hollow Watch Android test app
 
 This small native Android WebView shell bundles the game inside an APK. There is no web server, login, or Internet connection needed. The normal Internet permission enables WebView’s virtual HTTPS origin; the app serves its assets locally and blocks external WebView requests. The game uses its existing generated 3D assets, audio and local save system. The virtual HTTPS origin is served exclusively from the APK's assets; all other WebView requests and navigations are blocked.
 
 ## Install and play
 
-Copy `Gnometask-test.apk` to your Android phone and open it. Allow your browser or file manager to install this app when Android asks. Android 8.0 or newer and a current Android System WebView/Chrome are required. WebGL capability determines whether the game uses its 3D world or its existing map fallback.
+Copy `Hollow-Watch.apk` to your Android phone and open it. Allow your browser or file manager to install this app when Android asks. Android 8.0 or newer and a current Android System WebView/Chrome are required. WebGL capability determines whether the game uses its 3D world or its existing map fallback.
 
 Progress lives in the app's private storage and is separate from browser/Termux saves. Closing the app with Back asks to save; switching apps also triggers a save. Reinstalling over an existing copy with the same signing key retains saves. Uninstalling or clearing app storage deletes them. This is an internal signed test build, not a Play Store release.
 
@@ -21,7 +21,7 @@ npm run build:apk
 
 For SDK archives extracted outside the standard directory layout, set `ANDROID_JAR` to the platform's `android.jar` and `ANDROID_BUILD_TOOLS` to the directory containing `aapt2`, `d8`, `zipalign` and `apksigner`.
 
-The output is `android/build/Gnometask-test.apk`. The script rebuilds the current web game, compiles Java/resources, embeds the game, aligns and signs the APK, then verifies its signature and alignment. Build output is ignored by Git.
+The output is `android/build/Hollow-Watch.apk`. The script rebuilds the current web game, compiles Java/resources, embeds the game, aligns and signs the APK, then verifies its signature and alignment. Build output is ignored by Git.
 
 The first build generates `.android-signing/gnometask-test.keystore` (ignored by Git). Keep this directory privately and back it up to sign subsequent compatible test updates. Its standard internal-test password is `android`; use a different, secured signing process for any public store release. Android version metadata is in `AndroidManifest.xml`; increase `versionCode` for later distributed builds. Do not commit signing keys.
 
@@ -36,3 +36,7 @@ Version code 2 uses the same local signing key and application ID as the first t
 The web bundle now uses minified production React. On touch devices, rendering starts at 0.85 pixels per CSS pixel and adapts between 0.65 and 1 according to sustained frame time. Dynamic shadows and multisample antialiasing are disabled on mobile, including indoor and raid scenes. Nearby scenery and ships are mounted as the player explores; this does not remove distant NPCs or ships from the simulation or save. Outdoor rendering pauses behind an indoor or expedition scene.
 
 The first controlled mobile-size Chromium/SwiftShader comparison at Thimblehaven recorded 34 animation frames over 8.22 seconds for the old build and 70 over 8.02 seconds after the changes. This software-rendered browser measurement is comparative evidence, not a phone FPS prediction. Device testing is still needed.
+
+## App name (0.1.2)
+
+The launcher label is Hollow Watch and the output file is `Hollow-Watch.apk`. Version code 3 retains the existing application ID and signing key so installing it over the earlier Gnometask builds keeps local progress.
