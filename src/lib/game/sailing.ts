@@ -6,7 +6,7 @@ export type SeaPoint = { x: number; y: number };
 export const HARBOUR_APPROACH: SeaPoint = { x: -35, y: 530 };
 export const DOCKING_RANGE = 100;
 export const SAILING_XP_DISTANCE = 600;
-export const SEA_BOUNDS = { minX: -3000, maxX: 6200, minY: -6300, maxY: 3000 };
+export const SEA_BOUNDS = { minX: -11000, maxX: 12000, minY: -13000, maxY: 10000 };
 
 export function sailingSpeed(id: string, xp: number, parts:readonly string[]=[]) {
   return (1+(parts.includes("engine")?.2:0)+(parts.includes("rigging")?.12:0)) * (boatById(id)?.speed ?? 180) * (1 + Math.min(0.25, (levelFromXp(xp) - 1) * 0.01));
@@ -33,7 +33,7 @@ export function clearSeaSegment(a: SeaPoint, b: SeaPoint) {
 export function seaRoute(start: SeaPoint, target: SeaPoint): SeaPoint[] | null {
   if (!navigableWater(start.x, start.y) || !navigableWater(target.x, target.y)) return null;
   if (clearSeaSegment(start, target)) return [target];
-  const grid = 48;
+  const grid = Math.hypot(target.x-start.x,target.y-start.y)>3000?160:48;
   const key = (x: number, y: number) => `${x},${y}`;
   const water = new Map<string, boolean>();
   const allowed = (x: number, y: number) => {
@@ -63,7 +63,8 @@ export function seaRoute(start: SeaPoint, target: SeaPoint): SeaPoint[] | null {
   };
   push({ ...first, cost: 0, score: Math.hypot(last.x - first.x, last.y - first.y) });
   costs.set(key(first.x, first.y), 0);
-  while (open.length) {
+  let searched=0;
+  while (open.length && searched++<30000) {
     const current = open.pop()!;
     if (current.cost > costs.get(key(current.x, current.y))!) continue;
     if (current.x === last.x && current.y === last.y) {

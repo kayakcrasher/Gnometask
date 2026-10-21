@@ -94,6 +94,7 @@ export function snap(s: GameSave): GameSave {
     economy:{...s.economy,threats:(s as GameSave&{raids?:import("../types").Raid[]}).raids??s.economy?.threats??[]},
     thimble:s.thimble,
     naval:s.naval,
+    ocean:s.ocean,
     bank:s.bank,
     ports:s.ports,
     transport:s.transport,

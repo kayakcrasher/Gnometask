@@ -1,3 +1,4 @@
+import { oceanLandings, oceanLanding } from "../ocean-world";
 import { STARTER_LOANS, accrueBank } from "../bank";
 import {
   BOAT_PARTS,
@@ -41,17 +42,21 @@ export function maritimeSlice(
       !s.atHome &&
       !s.abroad &&
       !s.fishing &&
+      !s.naval.rescue &&
+      !s.naval.boarding &&
       !s.transport.ride
     );
   };
   return {
     plotPortCourse: (id) => {
       const s = get();
+      if (s.naval.rescue || s.naval.boarding) return;
       if (
         s.afloat &&
         portDestination(id) &&
         (id === "north-landing" ||
           id === "capital" ||
+          id.startsWith("ocean-") ||
           s.ports.docks.some((d) => d.site === id))
       )
         set({ portCourse: id, popup: null });
@@ -212,6 +217,7 @@ export function maritimeSlice(
       const harbours = [
         PUBLIC_PORT,
         NORTH_LANDING,
+        ...oceanLandings().filter((p) => p.town),
         ...s.ports.docks.map((d) => portSite(d.site)!),
       ];
       if (
@@ -250,7 +256,9 @@ export function maritimeSlice(
         s.ports.shipments.some((t) => t.boat === id) ||
         s.ports.shipments.filter((t) => t.origin === origin).length >=
           dock.level ||
-        (destination !== "capital" && !target) ||
+        (destination !== "capital" &&
+          !target &&
+          !oceanLanding(destination)?.town) ||
         origin === destination
       )
         return;

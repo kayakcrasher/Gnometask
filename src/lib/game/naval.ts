@@ -1,3 +1,11 @@
+import { oceanIslands } from "./ocean-world";
+import { navigableWater } from "./sailing";
+import {
+  rescuePorts,
+  coerceRescue,
+  type EnemyWreck,
+  type TowRescue,
+} from "./ocean-rescue";
 import { boatById, type BoatId } from "./data/boats";
 export type ShipFit = { guns: number; crew: number };
 export type SeaVessel = {
@@ -11,6 +19,7 @@ export type SeaVessel = {
   guns: number;
   reward: number;
   respawn: number;
+  patrol?: { x: number; y: number; r: number };
 };
 export const SEA_VESSELS: SeaVessel[] = [
   {
@@ -74,6 +83,24 @@ export const SEA_VESSELS: SeaVessel[] = [
     respawn: 0,
   },
 ];
+export function roamingPirates(): SeaVessel[] {
+  return oceanIslands().map((i, index) => ({
+    id: `rover-${i.id}`,
+    name: `${["Captain Crookedcap", "The Salt Snatcher", "Mildew’s Fortune", "Barnacle Betty", "Copperbeard", "Captain Snags", "The Moonlit Menace", "Fiddlehook"][index]} · roaming pirate`,
+    kind: index % 3 === 2 ? "brig" : "pirate",
+    side: "enemy",
+    x: i.x + i.rx + 700,
+    y: i.y - i.ry - 400,
+    hp: 70 + index * 25,
+    guns: 1 + Math.floor(index / 2),
+    reward: 150 + index * 90,
+    respawn: 0,
+    patrol: { x: i.x + i.rx + 700, y: i.y - i.ry - 400, r: 120 },
+  }));
+}
+export function fleetSeeds() {
+  return [...SEA_VESSELS, ...roamingPirates()];
+}
 export const gunLimit = (id: string) =>
   ({
     row: 1,
@@ -97,6 +124,11 @@ export const hullStrength = (id: string) =>
     ? Math.max(240, 60 + gunLimit(id) * 15)
     : 60 + gunLimit(id) * 15;
 export type Naval = {
+  moored: Record<string, string>;
+  clock: number;
+  wrecks: EnemyWreck[];
+  boarding: string | null;
+  rescue: TowRescue | null;
   fits: Record<string, ShipFit>;
   integrity: Record<string, number>;
   ammo: number;
@@ -109,6 +141,11 @@ export type Naval = {
   spent: number;
 };
 export const emptyNaval = (): Naval => ({
+  moored: {},
+  clock: 0,
+  wrecks: [],
+  boarding: null,
+  rescue: null,
   fits: {},
   integrity: {},
   ammo: 0,
@@ -116,7 +153,7 @@ export const emptyNaval = (): Naval => ({
   enemyCooldown: 0,
   battle: null,
   auto: true,
-  vessels: SEA_VESSELS.map((v) => ({ ...v })),
+  vessels: fleetSeeds().map((v) => ({ ...v })),
   victories: 0,
   spent: 0,
 });
@@ -145,7 +182,7 @@ export function coerceNaval(
     };
     const hp = raw?.integrity?.[id];
     if (Number.isFinite(hp))
-      out.integrity[id] = Math.max(1, Math.min(hullStrength(id), hp!));
+      out.integrity[id] = Math.max(0, Math.min(hullStrength(id), hp!));
   }
   if (!raw) {
     out.ammo = legacy ? 30 : 0;
@@ -156,12 +193,21 @@ export function coerceNaval(
   for (const k of ["cooldown", "enemyCooldown"] as const)
     if (Number.isFinite(raw[k])) out[k] = Math.max(0, Math.min(6, raw[k]!));
   out.auto = raw.auto !== false;
-  out.vessels = SEA_VESSELS.map((seed) => {
+  out.vessels = fleetSeeds().map((seed) => {
     const r = Array.isArray(raw.vessels)
       ? raw.vessels.find((v) => v?.id === seed.id)
       : null;
     return {
       ...seed,
+      ...(seed.patrol &&
+      r &&
+      Number.isFinite(r.x) &&
+      Number.isFinite(r.y) &&
+      Math.hypot(r.x - seed.patrol.x, r.y - seed.patrol.y) <=
+        seed.patrol.r + 1 &&
+      navigableWater(r.x, r.y)
+        ? { x: r.x, y: r.y }
+        : {}),
       hp:
         r && Number.isFinite(r.hp)
           ? Math.max(0, Math.min(seed.hp, r.hp))
@@ -172,6 +218,43 @@ export function coerceNaval(
           : 0,
     };
   });
+  if (raw.moored && typeof raw.moored === "object")
+    for (const [boat, port] of Object.entries(raw.moored)) {
+      if (owned.includes(boat) && rescuePorts().some((p) => p.id === port))
+        out.moored[boat] = port;
+    }
+  out.clock =
+    typeof raw.clock === "number" && Number.isFinite(raw.clock)
+      ? Math.max(0, raw.clock)
+      : 0;
+  out.wrecks = (Array.isArray(raw.wrecks) ? raw.wrecks : [])
+    .filter(
+      (w, i, a) =>
+        w &&
+        Number.isFinite(w.x) &&
+        Number.isFinite(w.y) &&
+        navigableWater(w.x, w.y) &&
+        Number.isFinite(w.seconds) &&
+        w.seconds > 0 &&
+        a.findIndex((k) => k?.id === w.id) === i &&
+        out.vessels.some((e) => e.id === w.id && e.hp === 0),
+    )
+    .map((w) => {
+      const e = out.vessels.find((v) => v.id === w.id)!;
+      return {
+        id: w.id,
+        kind: e.kind,
+        x: w.x,
+        y: w.y,
+        seconds: Math.min(120, w.seconds),
+        looted: w.looted === true,
+        coins: e.reward,
+      };
+    });
+  out.boarding = out.wrecks.some((w) => w.id === raw.boarding && w.seconds > 20)
+    ? raw.boarding!
+    : null;
+  out.rescue = coerceRescue(raw.rescue, owned);
   out.battle = out.vessels.some(
     (e) => e.id === raw.battle && e.side === "enemy" && e.hp > 0,
   )

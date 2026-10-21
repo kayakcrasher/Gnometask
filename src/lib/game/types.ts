@@ -227,6 +227,7 @@ export type GameSave = {
   deeds: string[];
   city: import("./city").PlayerCity;
   thimble:import("./thimblehaven").Thimblehaven;
+  ocean:import("./ocean-world").OceanSave;
   naval:import("./naval").Naval;
   bank:import("./bank").BankAccount;
   ports:import("./ports").Ports;

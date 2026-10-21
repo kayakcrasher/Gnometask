@@ -1,3 +1,4 @@
+import {openOceanSlice} from "./open-ocean";
 import {northernSeasSlice} from "./northern-seas";
 import {maritimeSlice} from "./maritime";
 import { islandEconomySlice } from "./island-economy";
@@ -31,6 +32,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...sessionSlice(set, get),
   ...maritimeSlice(set,get),
   ...northernSeasSlice(set,get),
+  ...openOceanSlice(set,get),
   ...developmentSlice(set, get),
   ...citySlice(set,get),
   ...transportSlice(set,get),

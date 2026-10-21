@@ -1,3 +1,4 @@
+import {emptyOcean,coerceOcean,setOceanSeed} from "./ocean-world";
 import {emptyThimble,coerceThimble,THIMBLE_HOME,starterThimbleHome} from "./thimblehaven";
 import {emptyNaval,coerceNaval} from "./naval";
 import {emptyBank,coerceBank} from "./bank";
@@ -98,6 +99,7 @@ export function defaultSave(): GameSave {
     deeds: ["thimble-home"],
     city: emptyCity(),
     thimble:emptyThimble(),
+    ocean:emptyOcean(),
     naval:emptyNaval(),
     bank:emptyBank(),
     ports:emptyPorts(),
@@ -287,6 +289,7 @@ export function migrate(raw: unknown): GameSave {
     haven: typeof buildingHp.haven === "number" ? buildingHp.haven : BUILDING_MAX.haven,
   };
 
+  const ocean=coerceOcean(s.ocean);setOceanSeed(ocean.seed);
   const skills = asSkills(s.skills);
   const chicken =
     s.chicken && typeof s.chicken.x === "number" && typeof s.chicken.y === "number"
@@ -362,6 +365,7 @@ export function migrate(raw: unknown): GameSave {
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: asStringArray(s.deeds, []),
     thimble:coerceThimble(s.thimble),
+    ocean,
     naval:coerceNaval(s.naval,asStringArray(s.hulls,[]),Boolean(s.cannons)),
     bank:coerceBank(s.bank),
     ports:coercePorts(s.ports,asStringArray(s.hulls,[])),
@@ -408,7 +412,8 @@ export function migrate(raw: unknown): GameSave {
   if(result.afloat){result.transport={...result.transport,mounted:false,ride:null};}
   const city=coerceCity(s.city,result);
   if(!s.thimble){city.name='Thimblehaven';if(city.buildings.some(b=>b.kind==='home'))city.buildings=city.buildings.map(b=>b.kind==='home'?{...b,x:THIMBLE_HOME.x,y:THIMBLE_HOME.y,parcel:'thimble-home'}:b);else city.buildings.push(starterThimbleHome());}
-  if(!result.afloat)result.naval.battle=null;
+  if(result.naval.rescue?.boat!==result.afloat)result.naval.rescue=null;
+  if(!result.afloat){result.naval.battle=null;result.naval.boarding=null;result.naval.rescue=null;}
   return {...result,deeds:[...new Set([...result.deeds,'thimble-home'])],city};
 }
 

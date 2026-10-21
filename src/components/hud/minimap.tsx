@@ -1,3 +1,4 @@
+import {oceanLandAt} from "@/lib/game/ocean-world";
 import { SEA_BOUNDS } from "@/lib/game/sailing";
 import { IslandAtlas } from "./island-atlas";
 import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
@@ -35,7 +36,7 @@ export function Minimap({
   npcPoses: Record<string, NpcPose>;
   compassRef: { current: HTMLDivElement | null };
 }) {
-  const afloat=useGame(s=>!!s.afloat),bounds=afloat?SEA_BOUNDS:WORLD_BOUNDS,VW=bounds.maxX-bounds.minX,VH=bounds.maxY-bounds.minY;
+  const afloat=useGame(s=>!!s.afloat),bounds=(afloat||oceanLandAt(pos.x,pos.y))?SEA_BOUNDS:WORLD_BOUNDS,VW=bounds.maxX-bounds.minX,VH=bounds.maxY-bounds.minY;
   const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate),city=useGame(s=>s.city);
   const roads=useMemo(()=>[...developedRoads(works,estate),...city.roads],[works,estate,city.roads]);
   const travel = useGame((s) => s.travelIsle);

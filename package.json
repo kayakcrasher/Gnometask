@@ -22,7 +22,8 @@
     "check:living-towns": "node scripts/check-living-towns.mjs",
     "check:economy": "node scripts/check-economy-north.mjs",
     "check:banking-ports": "node scripts/check-banking-ports.mjs",
-    "check:northern-seas": "node scripts/check-northern-seas.mjs"
+    "check:northern-seas": "node scripts/check-northern-seas.mjs",
+    "check:open-ocean": "node scripts/check-open-ocean.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

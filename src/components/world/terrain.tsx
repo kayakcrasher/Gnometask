@@ -156,7 +156,7 @@ function Water({ onWalk }: { onWalk: (x: number, y: number) => void }) {
         onWalk(hit.x, hit.y);
       }}
     >
-      <planeGeometry args={[760, 760, 80, 80]} />
+      <planeGeometry args={[1800, 1800, 96, 96]} />
     </mesh>
   );
 }

@@ -1,5 +1,6 @@
+import { oceanLanding, getOceanSeed } from "./ocean-world";
 import { boatById } from "./data/boats";
-import { clearSeaSegment, type SeaPoint } from "./sailing";
+import { clearSeaSegment, seaRoute, type SeaPoint } from "./sailing";
 export const DOCK_STYLES = ["timber", "mint", "slate"] as const;
 export type DockStyle = (typeof DOCK_STYLES)[number];
 export const DOCK_UPGRADES = [15000, 45000, 180000] as const;
@@ -124,7 +125,7 @@ export const portDestination = (id: string) =>
     ? PUBLIC_PORT
     : id === "north-landing"
       ? NORTH_LANDING
-      : portSite(id);
+      : (portSite(id) ?? oceanLanding(id));
 export const speedBonus = (parts: readonly string[] = []) =>
   1 +
   (parts.includes("rigging") ? 0.12 : 0) +
@@ -156,11 +157,16 @@ const NORTH_LANE: SeaPoint[] = [
 ];
 const routes = new Map<string, SeaPoint[] | null>();
 export function shippingRoute(origin: string, destination: string) {
-  const key = origin + ">" + destination;
+  const key = getOceanSeed() + ":" + origin + ">" + destination;
   if (routes.has(key)) return routes.get(key) ?? null;
   const a = portDestination(origin),
     b = portDestination(destination);
   if (!a || !b || origin === destination) return null;
+  if (("island" in a && a.island) || ("island" in b && b.island)) {
+    const path = seaRoute(a.water, b.water);
+    routes.set(key, path);
+    return path;
+  }
   const northA = "north" in a && a.north,
     northB = "north" in b && b.north;
   let route: SeaPoint[];
@@ -271,6 +277,7 @@ export function coercePorts(v: unknown, hulls: string[]): Ports {
         out.docks.some((d) => d.site === t.origin) &&
         t.destination !== t.origin &&
         (t.destination === "capital" ||
+          oceanLanding(t.destination)?.town ||
           out.docks.some((d) => d.site === t.destination)) &&
         a.findIndex((x) => x?.boat === t.boat) === i &&
         [t.elapsed, t.duration, t.cargo, t.cost, t.sale].every(

@@ -158,7 +158,7 @@ export function ClickPopup() {
   const placed = useGame((s) => s.placed);
   const coins = useGame((s) => s.coins);
   const combat = useGame((s) => s.combat);
-  const navalBattle=useGame(s=>s.naval.battle);
+  const navalBattle=useGame(s=>s.naval.battle||s.naval.rescue||s.naval.boarding);
   const chart = useGame((s) => s.chart);
   const sailChart = useGame((s) => s.sailChart);
 

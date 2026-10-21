@@ -1,3 +1,4 @@
+import {fleetSeeds} from "@/lib/game/naval";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGame } from "@/lib/game/store";
@@ -22,7 +23,7 @@ export function NorthernSeas() {
   if (
     !s.named ||
     s.atHome ||
-    s.bank.pending ||
+    s.bank.pending || s.naval.rescue || s.naval.boarding ||
     s.interior ||
     s.abroad ||
     s.combat
@@ -54,6 +55,7 @@ export function NorthernSeas() {
           <strong>
             {battle.name} · {battle.hp} hull
           </strong>
+          <progress aria-label="Enemy ship health" value={battle.hp} max={fleetSeeds().find(v=>v.id===battle.id)?.hp??battle.hp} className="mt-1 h-3 w-full accent-[#d6aa60]"/>
           <p className="text-xs">
             Your hull {s.naval.integrity[s.afloat!] ?? hullStrength(s.afloat!)}{" "}
             · {s.naval.ammo} shot · Reload {s.naval.cooldown.toFixed(1)}s

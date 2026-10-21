@@ -1,3 +1,4 @@
+import {oceanLandings} from "../ocean-world";
 import {shipFit} from "../naval";
 import {PUBLIC_PORT,NORTH_LANDING,portSite} from "../ports";
 import { bestHatchet, bestRod, CATALOG_BY_ID, gearStats } from "../catalog";
@@ -127,8 +128,8 @@ export function gatherSlice(
 
     sailTo: (dest, boatId) => {
       const s = get();
-      if (s.combat || s.fishing || s.bank.pending || s.transport.ride || s.naval.battle) return;
-      const harbours=[PUBLIC_PORT,NORTH_LANDING,...s.ports.docks.map(d=>portSite(d.site)!)];
+      if (s.combat || s.fishing || s.bank.pending || s.transport.ride || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
+      const harbours=[PUBLIC_PORT,NORTH_LANDING,...oceanLandings(),...s.ports.docks.map(d=>portSite(d.site)!)];
       if (dest === "dock") {
         if (!s.afloat) {
           set({ speech: "You are already ashore.", popup: null });
@@ -159,6 +160,7 @@ export function gatherSlice(
       }
       const boat = boatById(boatId ?? "row");
       if (!boat) return;
+      if((s.naval.integrity[boat.id]??1)<=0){set({speech:"This hull is disabled. Have the shipwright repair it in Naval command first."});return;}
       if(s.ports.shipments.some(t=>t.boat===boat.id)){set({speech:"That boat is away on a freight contract."});return;}
       if (boat.id !== "row" && !s.hulls.includes(boat.id)) {
         set({ speech: `${boat.name} isn't yours. Wim sells her at the dockhouse.`, popup: null });
@@ -170,6 +172,7 @@ export function gatherSlice(
         return;
       }
       set({
+        naval:{...s.naval,moored:Object.fromEntries(Object.entries(s.naval.moored).filter(([id])=>id!==boat.id))},
         gnomeX: boarding.id==='capital'?boat.x:boarding.water.x, gnomeY: boarding.id==='capital'?boat.y:boarding.water.y, afloat: boat.id, sailHome: false,
         selectedPlace: "dock", boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
         popup: null, interior: null,
@@ -183,7 +186,7 @@ export function gatherSlice(
     sailStep: (x, y) => {
       const s = get();
       const boat = s.afloat ? boatById(s.afloat) : null;
-      if (!boat || s.combat || s.atHome || s.interior || s.abroad || s.fishing) return;
+      if (!boat || s.combat || s.atHome || s.interior || s.abroad || s.fishing || s.naval.rescue || s.naval.boarding || (s.naval.integrity[boat.id]??1)<=0) return;
       const distance = Math.hypot(x - s.gnomeX, y - s.gnomeY);
       // Only actual movement steps earn XP; boarding and port transfers do not.
       if (!Number.isFinite(distance) || distance <= 0 || distance > 50
@@ -332,7 +335,7 @@ export function gatherSlice(
 
     castLine: (where, x, y, boatId) => {
       const s = get();
-      if (s.combat || s.fishing || s.naval.battle) return;
+      if (s.combat || s.fishing || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
       if (where === "shore" && s.afloat) {
         set({ speech: "Return to the harbour before fishing from the shore.", popup: null });
         return;
@@ -367,8 +370,8 @@ export function gatherSlice(
           x: where === "sea" ? s.gnomeX : x, y: where === "sea" ? s.gnomeY : y },
         popup: null,
         speech: where === "sea" ? "The rod bends over the deep water." : "The line kisses the shallows.",
-        gnomeX: where === "shore" ? 96 : s.gnomeX,
-        gnomeY: where === "shore" ? 548 : s.gnomeY,
+        gnomeX: s.gnomeX,
+        gnomeY: s.gnomeY,
       });
       sfx("place");
       if (typeof window === "undefined") return;

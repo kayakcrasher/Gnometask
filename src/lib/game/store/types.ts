@@ -18,6 +18,12 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    requestTow:()=>void;
+    boardWreck:(id:string)=>void;
+    lootWreck:()=>void;
+    leaveWreck:()=>void;
+    tickOpenOcean:(dt:number)=>void;
+    buyIslandBread:()=>void;
     fundThimble:(id:string)=>void;
     setThimbleTax:(tax:number)=>void;
     advanceThimble:()=>void;

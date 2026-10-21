@@ -1,3 +1,4 @@
+import {oceanLandings} from "@/lib/game/ocean-world";
 import { shipFit } from "@/lib/game/naval";
 import { BoatShowroom } from "./boat-showroom";
 import { useState } from "react";
@@ -25,7 +26,7 @@ export function MarineControls() {
   if (
     !s.named ||
     s.bank.pending ||
-    s.naval.battle ||
+    s.naval.battle || s.naval.rescue || s.naval.boarding ||
     s.atHome ||
     s.interior ||
     s.abroad ||
@@ -379,7 +380,7 @@ export function MarineControls() {
                         onChange={(e) => setDestination(e.target.value)}
                         className="min-h-11 w-full rounded-xl bg-pine/10 px-2"
                       >
-                        <option value="capital">{PUBLIC_PORT.name}</option>
+                        <option value="capital">{PUBLIC_PORT.name}</option>{oceanLandings().filter(p=>p.town).map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
                         {s.ports.docks
                           .filter((d) => d.site !== origin)
                           .map((d) => (

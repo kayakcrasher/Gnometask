@@ -1,3 +1,4 @@
+import {oceanLandAt} from "./ocean-world";
 import { frontierRise, inlandWater } from "./data/frontier";
 import { PLACE_ANCHORS } from "./data/layout";
 import { deckY } from "./data/country";
@@ -131,7 +132,7 @@ export function nobleRise(x: number, y: number) {
 export const SUNSTEP = { x: 3320, y: 760, name: "Sunstep" };
 
 export function onGrass(x: number, y: number) {
-  return insidePoly(x, y, ISLAND_POLY);
+  return insidePoly(x, y, ISLAND_POLY)||!!oceanLandAt(x,y,true);
 }
 
 export function onDesert(x: number, y: number) {
@@ -139,7 +140,7 @@ export function onDesert(x: number, y: number) {
 }
 
 export function onIsland(x: number, y: number) {
-  return insidePoly(x, y, BEACH_POLY) || insidePoly(x, y, DESERT_BEACH);
+  return (x>=-1600&&x<=5000&&y>=-5000&&y<=1900&&(insidePoly(x, y, BEACH_POLY) || insidePoly(x, y, DESERT_BEACH)))||!!oceanLandAt(x,y);
 }
 
 /**

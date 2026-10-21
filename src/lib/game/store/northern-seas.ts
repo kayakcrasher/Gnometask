@@ -1,4 +1,5 @@
-import { gunLimit, hullStrength, shipFit, SEA_VESSELS } from "../naval";
+import { rescuePorts } from "../ocean-rescue";
+import { gunLimit, hullStrength, shipFit, fleetSeeds } from "../naval";
 import { TOWN_PROJECTS, stepThimble } from "../thimblehaven";
 import { levelFromXp } from "../xp";
 import { withXp, scheduleWrite } from "./persist";
@@ -25,13 +26,21 @@ export function northernSeasSlice(
   const save = () => scheduleWrite(get),
     ready = () => {
       const s = get();
-      return s.named && !s.atHome && !s.combat && !s.bank.pending && !s.abroad;
+      return (
+        s.named &&
+        !s.atHome &&
+        !s.combat &&
+        !s.bank.pending &&
+        !s.abroad &&
+        !s.naval.rescue &&
+        !s.naval.boarding
+      );
     };
   const inPort = () => {
     const s = get();
     return (
       (!s.afloat &&
-        [PUBLIC_PORT, NORTH_LANDING].some(
+        rescuePorts().some(
           (p) => Math.hypot(p.x - s.gnomeX, p.y - s.gnomeY) < 300,
         )) ||
       (!s.afloat &&
@@ -220,10 +229,24 @@ export function northernSeasSlice(
         won = damage >= enemy.hp,
         gained = withXp(s.skills, { navalWarfare: damage * 4 });
       set({
-        coins: s.coins - wages + (won ? enemy.reward : 0),
+        coins: s.coins - wages,
         skills: gained.skills,
         naval: {
           ...n,
+          wrecks: won
+            ? [
+                ...n.wrecks.filter((w) => w.id !== enemy.id),
+                {
+                  id: enemy.id,
+                  kind: enemy.kind,
+                  x: enemy.x,
+                  y: enemy.y,
+                  seconds: 120,
+                  coins: enemy.reward,
+                  looted: false,
+                },
+              ]
+            : n.wrecks,
           ammo: n.ammo - guns,
           cooldown: 6,
           battle: won ? null : n.battle,
@@ -236,7 +259,7 @@ export function northernSeasSlice(
           ),
         },
         speech: won
-          ? `${enemy.name} surrenders. ${enemy.reward} salvage coins; +${damage * 4} Naval Warfare XP.`
+          ? `${enemy.name} is disabled. Board and loot the wreck before it sinks in two minutes. +${damage * 4} Naval Warfare XP.`
           : (gained.ding ??
             `${guns} gun${guns > 1 ? "s" : ""} fire. ${damage} hull damage; +${damage * 4} Naval Warfare XP. Reloading for 6 seconds.`),
       });
@@ -280,6 +303,7 @@ export function northernSeasSlice(
         return;
       const n = s.naval;
       if (
+        !s.afloat &&
         !n.battle &&
         n.cooldown <= 0 &&
         n.enemyCooldown <= 0 &&
@@ -289,6 +313,7 @@ export function northernSeasSlice(
       const step = Math.min(0.5, dt);
       let next = {
         ...n,
+        clock: n.clock + step,
         cooldown: Math.max(0, n.cooldown - step),
         enemyCooldown: Math.max(0, n.enemyCooldown - step),
         vessels: n.vessels.map((v) =>
@@ -298,12 +323,38 @@ export function northernSeasSlice(
                 respawn: Math.max(0, v.respawn - step),
                 hp:
                   v.respawn <= step
-                    ? SEA_VESSELS.find((e) => e.id === v.id)!.hp
+                    ? fleetSeeds().find((e) => e.id === v.id)!.hp
                     : v.hp,
               }
             : v,
         ),
       };
+      next.vessels = next.vessels.map((v) => {
+        if (!v.patrol || v.hp <= 0 || v.id === next.battle) return v;
+        const a = next.clock * 0.035 + Number(v.id.split("-").at(-1) || 0);
+        return {
+          ...v,
+          x: v.patrol.x + Math.cos(a) * v.patrol.r,
+          y: v.patrol.y + Math.sin(a) * v.patrol.r,
+        };
+      });
+      if (s.afloat && !next.battle && (next.integrity[s.afloat] ?? 1) > 0) {
+        const ambush = next.vessels.find(
+          (v) =>
+            v.patrol &&
+            v.side === "enemy" &&
+            v.hp > 0 &&
+            Math.hypot(v.x - s.gnomeX, v.y - s.gnomeY) < 180,
+        );
+        if (ambush) {
+          next.battle = ambush.id;
+          next.enemyCooldown = 6;
+          set({
+            fishing: null,
+            speech: `${ambush.name} closes to attack. Fight or sail out of gun range!`,
+          });
+        }
+      }
       const enemy = next.vessels.find((v) => v.id === next.battle);
       if (enemy && s.afloat) {
         if (Math.hypot(enemy.x - s.gnomeX, enemy.y - s.gnomeY) > 350) {
@@ -319,26 +370,19 @@ export function northernSeasSlice(
         if (next.enemyCooldown <= 0) {
           const id = s.afloat,
             hp = (next.integrity[id] ?? hullStrength(id)) - enemy.guns * 6;
-          next.integrity = { ...next.integrity, [id]: Math.max(1, hp) };
+          next.integrity = { ...next.integrity, [id]: Math.max(0, hp) };
           next.enemyCooldown = 6;
           if (hp <= 0) {
-            const dock = [PUBLIC_PORT, NORTH_LANDING].sort(
-              (a, b) =>
-                Math.hypot(a.water.x - s.gnomeX, a.water.y - s.gnomeY) -
-                Math.hypot(b.water.x - s.gnomeX, b.water.y - s.gnomeY),
-            )[0]!;
             next.battle = null;
             set({
               naval: next,
-              afloat: null,
-              gnomeX: dock.x,
-              gnomeY: dock.y,
               portCourse: null,
               sailHome: false,
               fishing: null,
               speech:
-                "The coastguard tows your battered boat to a public landing. Your hull needs paid repairs.",
+                "Your hull is disabled. Captain Mallow’s tow service has been called; stay with the remains.",
             });
+            get().requestTow();
             save();
             return;
           }
@@ -354,7 +398,9 @@ export function northernSeasSlice(
         s.afloat &&
         shipFit(next, s.afloat).crew > 0 &&
         next.auto &&
-        next.cooldown <= 0
+        next.cooldown <= 0 &&
+        next.ammo > 0 &&
+        s.coins >= shipFit(next, s.afloat).crew
       )
         get().fireBroadside();
     },

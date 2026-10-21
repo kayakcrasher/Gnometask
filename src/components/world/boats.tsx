@@ -58,7 +58,7 @@ function hullOutline(length: number, width: number) {
   return shape;
 }
 
-function Hull({
+export function Hull({
   length,
   width,
   color,

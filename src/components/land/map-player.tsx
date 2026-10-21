@@ -43,7 +43,7 @@ export function MapPlayer({
             <path d="M-23 -10 H23 M-23 18 H23" stroke="#6b5340" strokeWidth="5" />
           </g> : null}
           {save.transport.mounted&&!save.afloat&&<g><rect x={-25} y={-35} width={50} height={43} rx={4} fill="#b78d5a" stroke="#745938" strokeWidth={4}/><circle cx={-27} cy={-3} r={7} fill="#4d4030"/><circle cx={27} cy={-3} r={7} fill="#4d4030"/><ellipse cx={0} cy={-60} rx={9} ry={19} fill="#998469"/></g>}
-          {!save.transport.ride&&<GnomeSprite
+          {!save.transport.ride&&!save.naval.boarding&&<GnomeSprite
             hat={save.hat}
             bounceKey={save.combat ? save.combat.shake : save.bounceKey}
             weapon={save.equipment.weapon}

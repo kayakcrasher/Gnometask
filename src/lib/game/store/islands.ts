@@ -16,7 +16,7 @@ export function islandsSlice(
     raidIsle: (id) => {
       const s = get(),
         isle = ISLE_BY_ID[id];
-      if (!isle || s.combat || s.naval?.battle || s.fishing || s.atHome) return;
+      if (!isle || s.combat || s.naval?.battle || s.naval?.rescue || s.naval?.boarding || s.fishing || s.atHome) return;
       if (s.abroad) {
         set({ speech: "Return home before setting out for another island." });
         return;

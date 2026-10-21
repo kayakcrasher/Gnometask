@@ -1,3 +1,4 @@
+import {fleetSeeds} from "@/lib/game/naval";
 import { navigableWater } from "@/lib/game/sailing";
 import { thimbleRemark, THIMBLE_HOME } from "@/lib/game/thimblehaven";
 import { GnomeRig } from "./gnome-rig";
@@ -57,7 +58,7 @@ export function DockAsset({
           ? "#d9d5c1"
           : "#775837";
   return (
-    <group position={to3(x, y, SEA_LEVEL)} rotation={[0, angle, 0]}>
+    <group position={to3(x, y, SEA_LEVEL+.26)} rotation={[0, angle, 0]}>
       <Beam
         at={[0, 0.25, length / 2]}
         size={[1.6, 0.22, length]}
@@ -244,7 +245,7 @@ export function PlayerHarbours({
                 );
             }}
           >
-            <BoatMesh kind={v.kind} guns={v.guns} faction={v.side} />
+            <BoatMesh kind={v.kind} guns={v.guns} faction={v.side} />{Math.hypot(v.x-s.gnomeX,v.y-s.gnomeY)<850&&<Html center position={[0,3.4,0]}><div className="pointer-events-none w-32 rounded-lg bg-ink/85 p-1 text-center text-[10px] text-parchment"><p>{v.name}</p><progress aria-label={`${v.name} health`} max={fleetSeeds().find(e=>e.id===v.id)?.hp??v.hp} value={v.hp} className="h-2 w-full accent-[#c78f63]"/><span>{v.hp} hull</span></div></Html>}
           </group>
         ))}
       {s.naval.battle &&

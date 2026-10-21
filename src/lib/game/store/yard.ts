@@ -208,6 +208,7 @@ export function yardSlice(
     },
 
     travelIsle: (id) => {
+      if(get().naval?.battle||get().naval?.rescue||get().naval?.boarding)return;
       const s = get();
       const isle = FAR_ISLES.find((i) => i.id === id);
       if (!isle || s.combat || s.raidVisit || s.abroad) return;

@@ -1,3 +1,4 @@
+import {OpenOceanScene} from "./open-ocean";
 import {shipFit} from "@/lib/game/naval";
 import {PlayerHarbours} from "./player-harbours";
 import {boatById} from "@/lib/game/data/boats";
@@ -78,10 +79,12 @@ function CameraRig({
   camRef: { current: Cam };
 }) {
   const { camera } = useThree();
+  const rescuing=useGame(s=>!!s.naval.rescue || !!s.naval.boarding);
   const desired = useRef(new THREE.Vector3());
   useFrame((_, dt) => {
     const d = Math.min(dt, 0.1);
-    const { yaw, pitch, dist: distCam } = camRef.current;
+    const { yaw, pitch, dist: baseDistance } = camRef.current;
+    const distCam=rescuing?Math.max(22,baseDistance):baseDistance;
     const p = to3(target.x, target.y, groundY(target.x, target.y) + 0.85);
     const fx = Math.sin(yaw) * Math.cos(pitch);
     const fy = Math.sin(pitch);
@@ -137,7 +140,7 @@ function SceneBody({
 
   return (
     <>
-      <CameraRig target={pos} camRef={camRef} />
+      <CameraRig target={save.naval.wrecks.find(w => w.id === save.naval.boarding) ?? pos} camRef={camRef} />
       <Sky />
       <hemisphereLight args={["#cfe4c8", "#6b5340", 0.85]} />
       <directionalLight
@@ -267,7 +270,7 @@ function SceneBody({
       <CountryRoads />
       <EstateHomes /><PlayerCity />
       <PassengerWagons pos={pos} />
-      <PlayerHarbours walkTo={walkTo}/><FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
+      <OpenOceanScene onWalk={onWalk}/><PlayerHarbours walkTo={walkTo}/><FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
       <RoadCrew />
       <NorthernScenery />
       <FrontierLandscape onWalk={onWalk} pos={pos} />
@@ -366,7 +369,7 @@ function SceneBody({
       />
       <Kenney name="log_large" position={to3(70, 250, 0.08)} scale={1.0} />
       {save.afloat ? (
-        <group position={to3(pos.x, pos.y, SEA_LEVEL + 0.06)} rotation={[0, face, 0]}>
+        <group position={to3(pos.x, pos.y, SEA_LEVEL + 0.06)} rotation={[0, face, (save.naval.integrity[save.afloat]??1)<=0?.15:0]}>
           <group scale={2.4}>
             <BoatMesh
               kind={boatById(save.afloat)?.id??"row"}
@@ -379,7 +382,7 @@ function SceneBody({
         </group>
       ) : null}
       {save.transport.mounted&&!save.afloat&&<group position={p3} rotation={[0,face,0]}><TravelCartAsset moving={walking} rider/></group>}
-      <group visible={!save.transport.ride&&!save.transport.mounted} position={p3} rotation={[0, face, 0]}>
+      <group visible={!save.transport.ride&&!save.transport.mounted&&!save.naval.boarding} position={p3} rotation={[0, face, 0]}>
         <GnomeRig
           hat={save.hat}
           weapon={save.equipment.weapon}

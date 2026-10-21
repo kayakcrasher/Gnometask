@@ -1,3 +1,5 @@
+import {emptyOcean,setOceanSeed} from "../ocean-world";
+import {emptyNaval} from "../naval";
 import {THIMBLE_HOME,starterThimbleHome} from "../thimblehaven";
 import { CASINO_VENUES } from "../data/sunstep";
 import { GREETS, PLACE_LINES, randOf } from "../quotes";
@@ -122,9 +124,11 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     beginGame: (name) => {
       const trimmed = name.trim().slice(0, 24) || "Pip";
       const fresh = defaultSave();
+      const ocean=emptyOcean(Math.floor(Math.random()*4294967295)||1013);setOceanSeed(ocean.seed);
       const seeded = seedQuests({ quests: [], chicken: null, landing: null });
       set({
         ...fresh,
+        ocean,naval:emptyNaval(),
         bank:{...fresh.bank,pending:true},
         city:{...fresh.city,buildings:[starterThimbleHome()]},
         gnomeX:THIMBLE_HOME.x,gnomeY:THIMBLE_HOME.y+34,
@@ -194,7 +198,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       if (!CASINO_VENUES.some(v => v.id === id) || get().combat || get().atHome) return;
       set({ interior: "casino", casinoVenue: id, casinoResult: null, popup: null, panel: "place" });
     },
-    enterInterior: (id: InteriorId) => {if(get().naval.battle)return;set({ interior: id, popup: null, panel: "place", ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });},
+    enterInterior: (id: InteriorId) => {if(get().naval.battle||get().naval.rescue||get().naval.boarding)return;set({ interior: id, popup: null, panel: "place", ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });},
     leaveInterior: () => set({ interior: null }),
     setGnomePos: (x: number, y: number) => {
       set({ gnomeX: x, gnomeY: y });

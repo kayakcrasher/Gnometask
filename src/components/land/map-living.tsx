@@ -7,6 +7,8 @@ export function MapLiving({ pos }: { pos: { x: number; y: number } }) {
   return (
     <>
       <g pointerEvents="none">
+       {s.naval.wrecks.map(w=><g key={w.id} transform={`translate(${w.x} ${w.y}) rotate(15)`}><path d="M0 -48Q-28 -25 -28 30L28 30Q28 -25 0 -48Z" fill="#79715d" stroke="#584d40" strokeWidth={5}/><rect x={-10} y={-10} width={20} height={18} fill={w.looted?'#5c5948':'#dab263'}/>{s.naval.boarding===w.id&&<circle cy={15} r={8} fill="#d4a271"/>}</g>)}
+
        {s.naval.vessels.filter(v=>v.hp>0).map(v=><g key={v.id} transform={`translate(${v.x} ${v.y})`}><path d="M0 -50Q-28 -25 -28 30L28 30Q28 -25 0 -50Z" fill={v.side==='enemy'?'#734452':'#4d7e80'} stroke="#ddbf75" strokeWidth={5}/><rect x={0} y={-56} width={30} height={18} fill={v.side==='enemy'?'#bd665a':'#85c3ac'}/></g>)}
 
         {[

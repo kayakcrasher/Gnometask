@@ -1,3 +1,4 @@
+import {oceanLandAt} from "@/lib/game/ocean-world";
 import {portDestination,portNavigationRoute} from "@/lib/game/ports";
 import { CART_SPEED } from "@/lib/game/transport";
 import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
@@ -38,7 +39,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   const savedX = useGame(s => s.gnomeX);
   const savedY = useGame(s => s.gnomeY);
   const afloat = useGame(s => s.afloat);
-  const blocked = useGame(s => Boolean((s.combat&&!s.combat.retreating) || s.atHome || s.interior || s.abroad || s.fishing || s.transport.ride));
+  const blocked = useGame(s => Boolean((s.combat&&!s.combat.retreating) || s.atHome || s.interior || s.abroad || s.fishing || s.transport.ride || s.naval.rescue || s.naval.boarding || (s.afloat&&(s.naval.integrity[s.afloat]??1)<=0)));
   const portCourse=useGame(s=>s.portCourse);
   const sailHome = useGame(s => s.sailHome);
   const [pos, setPos] = useState({ x: savedX, y: savedY });
@@ -84,7 +85,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
       last = now;
       const state = useGame.getState();
       const target = routeRef.current[0];
-      if (target && (!state.combat||state.combat.retreating) && !state.atHome && !state.interior && !state.abroad && !state.fishing && !state.transport.ride && !state.bank.pending) {
+      if (target && (!state.combat||state.combat.retreating) && !state.atHome && !state.interior && !state.abroad && !state.fishing && !state.transport.ride && !state.bank.pending && !state.naval.rescue && !state.naval.boarding) {
         const cur = posRef.current;
         const dx = target.x - cur.x, dy = target.y - cur.y;
         const distance = Math.hypot(dx, dy);
@@ -139,10 +140,11 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   const walkTo = useCallback((x: number, y: number, arrive?: () => void, suppliedRoute?:SeaPoint[]) => {
     const state = useGame.getState();
     if(state.combat&&state.combat.phase!=="won"&&state.combat.phase!=="lost")state.combatFlee();
-    if ((state.combat&&!useGame.getState().combat?.retreating) || state.atHome || state.interior || state.abroad || state.fishing || state.transport.ride) return;
+    if ((state.combat&&!useGame.getState().combat?.retreating) || state.atHome || state.interior || state.abroad || state.fishing || state.transport.ride || state.naval.rescue || state.naval.boarding) return;
     const sea = Boolean(state.afloat);
-    const nx = clamp(x, sea ? SEA_BOUNDS.minX : WORLD_BOUNDS.minX, sea ? SEA_BOUNDS.maxX : WORLD_BOUNDS.maxX);
-    const ny = clamp(y, sea ? SEA_BOUNDS.minY : WORLD_BOUNDS.minY, sea ? SEA_BOUNDS.maxY : WORLD_BOUNDS.maxY);
+    const wide=sea||!!oceanLandAt(state.gnomeX,state.gnomeY);
+    const nx = clamp(x, wide ? SEA_BOUNDS.minX : WORLD_BOUNDS.minX, wide ? SEA_BOUNDS.maxX : WORLD_BOUNDS.maxX);
+    const ny = clamp(y, wide ? SEA_BOUNDS.minY : WORLD_BOUNDS.minY, wide ? SEA_BOUNDS.maxY : WORLD_BOUNDS.maxY);
     const spot = nearestLegal(sea, nx, ny);
     if (!spot) { stop(); return; }
     const route = suppliedRoute??(sea ? seaRoute(posRef.current, spot) : landRoute(posRef.current, spot));
