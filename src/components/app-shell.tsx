@@ -92,7 +92,7 @@ export function AppShell() {
       <OpenOceanControls/>
       <StarterLoanChoice/>
       <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>
-        <LandMap />
+        {!atHome && <LandMap />}
         {named && !atHome ? (
           <>
             <TopBar />

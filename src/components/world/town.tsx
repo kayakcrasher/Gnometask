@@ -51,7 +51,7 @@ const capitolHall = CAPITOL_HALL;
 const havenCells = cellsOf(townGrid("haven"));
 const tideCells = cellsOf(townGrid("tideham"));
 
-function TimberHouse({
+export function TimberHouse({
   position,
   roof = "cream",
   tall,
@@ -156,7 +156,7 @@ function TimberHouse({
   );
 }
 
-function Hall3({
+export function Hall3({
   level,
   position,
   onEnter,
@@ -243,7 +243,7 @@ function Hall3({
   );
 }
 
-function Bank3({
+export function Bank3({
   position,
   onEnter,
 }: {

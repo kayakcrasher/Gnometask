@@ -11,7 +11,7 @@ import { GnomeRig } from "./gnome-rig";
 function House({plot}:{plot:CivicPlot}){return <HomeAsset id={plot.id} level={plot.stories} style={homeStyle(plot.id,plot.town)} trim={plot.trim} lantern={plot.lantern}/>;}
 
 
-function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; onEnter: () => void }) {
+export function CourtHouse({ town, level, onEnter, label=true }: { town: CivicTown; level: number; onEnter: () => void; label?:boolean }) {
   const big = town === "capitol";
   const scale = big ? 1.0 : 0.62;
   const W = 6.0;
@@ -165,7 +165,7 @@ function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; 
         </mesh>
       ))}
 
-      <Html
+      {label && <Html
         position={[0, finialY + 0.6, 0]}
         center
         distanceFactor={big ? 28 : 20}
@@ -174,7 +174,7 @@ function CourtHouse({ town, level, onEnter }: { town: CivicTown; level: number; 
         <span className="whitespace-nowrap rounded-full bg-ink/85 px-2 py-0.5 font-display text-[10px] font-semibold text-parchment">
           {big ? "Port Victoria · Supreme Court" : `${TOWN_LABEL[town]} court`}
         </span>
-      </Html>
+      </Html>}
     </group>
   );
 }

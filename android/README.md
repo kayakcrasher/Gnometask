@@ -58,3 +58,9 @@ After naming a new gnome, a short sequence shows the capitol from the ship, the 
 “A Light Across the Water” is the new original 32-bar title waltz (76 BPM, D major), with flute, harp, piano, soft pads and bell flourishes. The same offline Web Audio instrument renderer plays it in the game and produced the separate listening sample. The home screen offers Hear the theme/Mute theme; audio starts after a gesture and retains existing mute, volume and soundtrack preferences. After arrival, automatic music returns to the existing regional scores.
 
 Validation includes the nine-score music checks, the peaceful-opening checks, and mobile browser flows for normal animation, title music controls, reduced motion, skipping, automatic scene advancement, visibility pause/resume, the loan choice, visiting the town home, saving and continuing. The native APK still needs phone testing.
+
+## In-engine disembarkation update (0.1.5)
+
+The arrival cinematic now uses React Three Fiber and the actual game models instead of the illustrated sequence. The opening shot starts with the player stepping from the sloop's bow onto a boarding plank and the shared Port Victoria pier. The real gnome rig supplies walking, the suitcase travels with the player, and Ol Pappy uses his game hat, beard and wave. The actual capitol court, shops, bank, dockhouse and terrain form the background. The camera then moves closer for their greeting.
+
+The title artwork and original theme remain. The arrival supports advancing, skipping, hidden-app pause and reduced-motion poses. Only the local harbour set is mounted, mobile shadows remain off, and the hidden gameplay view is unmounted while the title/introduction is open so two game worlds are not retained in graphics memory. Arrival does not award items or alter old progress; finishing still begins the protected Thimblehaven opening with the player's home there.

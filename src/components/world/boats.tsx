@@ -906,7 +906,7 @@ function Gull({
   );
 }
 
-function Pier() {
+export function Pier() {
   const posts = [-5.4, -4.2, -3.0, -1.8, -0.6, 0.4];
   return (
     <group position={to3(78, 520, 0)}>
@@ -948,7 +948,7 @@ function Pier() {
   );
 }
 
-function Dockhouse({ onEnter }: { onEnter: () => void }) {
+export function Dockhouse({ onEnter }: { onEnter: () => void }) {
   const p = to3(108, 515, groundY(108, 515));
   return (
     <group

@@ -35,3 +35,8 @@ html, body, #root {
   .harbour-story * { animation:none !important; }
   .story-guest { transform:translate(411px,802px); }
 }
+
+/* Cinematic uses game meshes; suppress their normal floating shop labels. */
+.arrival-engine canvas ~ div { display:none !important; }
+
+.arrival-engine p:not(.arrival-fallback), .arrival-engine span { display:none !important; }
