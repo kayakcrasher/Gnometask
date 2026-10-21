@@ -1,3 +1,4 @@
+import { settledOpening, coerceOpening, openingPeaceful } from "./opening";
 import {emptyOcean,coerceOcean,setOceanSeed} from "./ocean-world";
 import {emptyThimble,coerceThimble,THIMBLE_HOME,starterThimbleHome} from "./thimblehaven";
 import {emptyNaval,coerceNaval} from "./naval";
@@ -43,6 +44,7 @@ export function defaultSave(): GameSave {
   const skills = defaultSkills();
   return {
     version: SAVE_VERSION,
+    opening: settledOpening(),
     gnomeName: "",
     named: false,
     hat: "hat-berry",
@@ -319,6 +321,7 @@ export function migrate(raw: unknown): GameSave {
   const result = freshenSupply({
     ...base,
     ...s,
+    opening: coerceOpening(s.opening),
     version: SAVE_VERSION,
     named: Boolean(s.named || (s.gnomeName && s.gnomeName.length > 0)),
     tasks,
@@ -506,8 +509,8 @@ export function applyDailyRollover(save: GameSave): GameSave {
   const missed = Math.max(0, daysBetween(save.lastVisitDate, today));
   const streakBroken = save.lastCompletedDate !== yesterdayDate() && save.lastCompletedDate !== today;
   const absencePending =
-    missed >= 2 && save.absenceDefeatedOn !== today ? true : missed === 0 ? save.absencePending : save.absencePending;
-  const raiding = Math.random() < 0.28 + Math.min(missed, 4) * 0.08;
+    !openingPeaceful(save) && missed >= 2 && save.absenceDefeatedOn !== today ? true : missed === 0 ? save.absencePending : save.absencePending;
+  const raiding = !openingPeaceful(save) && Math.random() < 0.28 + Math.min(missed, 4) * 0.08;
   const scorch = raiding ? Math.max(2, 6 - save.fortLevel) : 0;
   const buildingHp = {
     cottage: Math.max(0, save.buildingHp.cottage - scorch),

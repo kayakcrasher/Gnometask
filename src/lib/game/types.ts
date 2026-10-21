@@ -195,6 +195,7 @@ export type FishingCast = {
 };
 
 export type GameSave = {
+  opening: import("./opening").Opening;
   version: number;
   gnomeName: string;
   named: boolean;

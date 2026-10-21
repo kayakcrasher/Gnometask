@@ -28,6 +28,8 @@ import { useGame } from "@/lib/game/store";
 import { cn } from "@/lib/utils";
 
 export function AppShell() {
+  const tickOpening=useGame(s=>s.tickOpening);
+  useEffect(()=>{const id=window.setInterval(()=>tickOpening(1),1000);return()=>window.clearInterval(id);},[tickOpening]);
   const hydrate = useGame((s) => s.hydrate);
   const named = useGame((s) => s.named);
   const atHome = useGame((s) => s.atHome);

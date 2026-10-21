@@ -1,3 +1,4 @@
+import { openingSlice } from "./opening";
 import {openOceanSlice} from "./open-ocean";
 import {northernSeasSlice} from "./northern-seas";
 import {maritimeSlice} from "./maritime";
@@ -30,6 +31,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...UI_SEED,
   speech: GREETS[0]!,
   ...sessionSlice(set, get),
+  ...openingSlice(set,get),
   ...maritimeSlice(set,get),
   ...northernSeasSlice(set,get),
   ...openOceanSlice(set,get),

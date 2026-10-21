@@ -1,3 +1,4 @@
+import { openingPeaceful } from "../opening";
 import {shipFit} from "../naval";
 import { economicClimate,advanceEconomy,economicDividend } from "../island-economy";
 import { residentEconomy } from "../resident-economy";
@@ -473,7 +474,7 @@ export function worldSlice(
       }
 
       let waveDay = s.waveDay;
-      if (waveDay !== s.daysPlayed) {
+      if (!openingPeaceful(s) && waveDay !== s.daysPlayed) {
         const n = Math.max(1, s.daysPlayed);
         const fresh = Array.from({ length: n }, (_, i) => ({
           id: uid("wave"),
@@ -491,7 +492,7 @@ export function worldSlice(
             ? `One goblin on the sand. Tomorrow there will be two. ${posted} are watching.`
             : `A wave of ${n}. One more than yesterday. ${posted} take the ${tideShift(s.daysPlayed)} watch.`;
         changed = true;
-      } else if (raids.some((r) => r.swarm)) {
+      } else if (!openingPeaceful(s) && raids.some((r) => r.swarm)) {
         const who = pickStriker(s.daysPlayed, s.settlers);
         const idx = raids.findIndex((r) => r.swarm && r.hp > 0);
         if (idx >= 0) {
@@ -514,7 +515,7 @@ export function worldSlice(
           }
           changed = true;
         }
-      } else if (s.townHallLevel >= 3 && raids.length < 2 && Math.random() < 0.08) {
+      } else if (!openingPeaceful(s) && s.townHallLevel >= 3 && raids.length < 2 && Math.random() < 0.08) {
         const raid = {
           id: uid("raid"),
           kind: "darkelf" as const,

@@ -116,7 +116,17 @@ export function StarterLoanChoice() {
       aria-label="Choose your starter loan"
     >
       <div className="max-h-[96dvh] w-full max-w-lg overflow-auto rounded-3xl bg-parchment p-4 shadow-panel">
-        <BankLedger />
+        <p className="text-xs font-bold uppercase tracking-widest text-bark">{BANK_NAME} · Thimblehaven</p>
+        <h2 className="mt-2 font-display text-2xl font-bold text-pine">A fresh start, backed by Pappy.</h2>
+        <p className="mt-2 text-sm text-ink">Your cottage is ready. Choose a starter loan to help your new town grow. Pappy will co-sign.</p>
+        <p className="my-3 text-sm font-semibold text-pine">0.6% interest every 7 in-game market days.</p>
+        <div className="space-y-2">
+          {STARTER_LOANS.map(n=><button key={n} type="button" onClick={()=>useGame.getState().chooseStarterLoan(n)} className={`${marineButton} flex w-full items-center justify-between bg-pine text-parchment`}><span>Borrow {n.toLocaleString()} coins</span><span className="text-xs">First week: {n*WEEKLY_INTEREST} interest</span></button>)}
+        </div>
+        <details className="mt-3 text-xs text-bark">
+          <summary className="min-h-11 cursor-pointer py-3 font-bold">Loan details</summary>
+          One starter loan per game. Interest is rounded up on the unpaid balance, and unpaid interest joins the balance. There are no real-world or offline charges. Repay any amount at the bank, with no fees.
+        </details>
       </div>
     </div>
   );

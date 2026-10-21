@@ -18,6 +18,7 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    tickOpening:(dt:number)=>void;
     requestTow:()=>void;
     boardWreck:(id:string)=>void;
     lootWreck:()=>void;

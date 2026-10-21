@@ -244,7 +244,7 @@ export function gatherSlice(
 
     advanceCoach: () => {
       const s = get();
-      const next = Math.min(5, (s.coach || 1) + 1);
+      const next = 5;
       set({ coach: next });
       scheduleWrite(get);
     },

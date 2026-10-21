@@ -1,3 +1,4 @@
+import { openingPeaceful } from "../opening";
 import {COMBAT_TICK_MS} from "../combat";
 import type { GameSave } from "../types";
 import { writeSave } from "../save";
@@ -42,6 +43,7 @@ export function armAutoAttack(get:StoreGet,_delay=COMBAT_TICK_MS){
 export function snap(s: GameSave): GameSave {
   return {
     version: s.version,
+    opening: s.opening,
     gnomeName: s.gnomeName,
     named: s.named,
     hat: s.hat,
@@ -154,22 +156,23 @@ export function withXp(skills: Skills, grants: Partial<Record<SkillId, number>>)
   return { skills: next, ding };
 }
 
-export function seedQuests(s: Pick<GameSave, "quests" | "chicken" | "landing">) {
+export function seedQuests(s: Pick<GameSave, "quests" | "chicken" | "landing"> & Partial<Pick<GameSave,"opening">>) {
   let quests = s.quests.length ? [...s.quests] : pickStartingQuests();
+  if (openingPeaceful(s)) quests = quests.filter(q=>q.id!=="pappy-landing");
   if (!quests.some((q) => q.id === "pappy-timber")) {
     quests = [{ id: "pappy-timber", stage: "active" }, ...quests];
   }
   if (!quests.some((q) => q.id === "pappy-expand")) {
     quests = [...quests, { id: "pappy-expand", stage: "active" }];
   }
-  if (!quests.some((q) => q.id === "pappy-landing")) {
+  if (!openingPeaceful(s) && !quests.some((q) => q.id === "pappy-landing")) {
     quests = [...quests, { id: "pappy-landing", stage: "active" }];
   }
   const needsChicken = quests.some((q) => q.id === "lost-chicken" && q.stage !== "done");
   const chicken = s.chicken ?? (needsChicken ? { x: 280, y: 780 } : null);
   const landingQ = quests.find((q) => q.id === "pappy-landing");
   let landing = s.landing ?? null;
-  if (landingQ && landingQ.stage !== "done") {
+  if (!openingPeaceful(s) && landingQ && landingQ.stage !== "done") {
     landing = landing ?? makeLanding();
   }
   if (landing && landingCleared(landing) && landing.flagDown && landingQ?.stage === "active") {

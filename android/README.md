@@ -40,3 +40,11 @@ The first controlled mobile-size Chromium/SwiftShader comparison at Thimblehaven
 ## App name (0.1.2)
 
 The launcher label is Hollow Watch and the output file is `Hollow-Watch.apk`. Version code 3 retains the existing application ID and signing key so installing it over the earlier Gnometask builds keeps local progress.
+
+## Welcome home update (0.1.3)
+
+New games open with a sunrise title scene, naming your gnome, a compact starter-loan choice, and one short, skippable welcome from Pappy. The player arrives at the front door of their owned Thimblehaven cottage and can step directly inside. Existing home upgrades and town ownership remain unchanged.
+
+The opening landing quest and daily goblin waves are delayed until the player has visited their home and accumulated three minutes of foreground outdoor play after the welcome. Bank selection, the title screen, tutorial card, interiors, expeditions, combat and background time do not advance the quiet period. Progress is saved; reloading and daily rollover cannot seed the early goblins or apply offline opening damage. Established saves keep their existing progression. Choose **New game** to try the new arrival.
+
+Validated with `npm run check:opening` plus the combat, northern town/naval, open-ocean, and banking/ports suites. A mobile-size browser test covered the full opening, entering/leaving the home, having tea, saving, and continuing with no repeated tips or goblins. Native phone testing remains necessary.

@@ -1,3 +1,5 @@
+import { freshOpening, openingPeaceful } from "../opening";
+import { playerHomeDoor } from "../city";
 import {emptyOcean,setOceanSeed} from "../ocean-world";
 import {emptyNaval} from "../naval";
 import {THIMBLE_HOME,starterThimbleHome} from "../thimblehaven";
@@ -87,7 +89,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     setName: (name) => {
       const trimmed = name.trim().slice(0, 24) || "Pip";
       const s = get();
-      const seeded = seedQuests({ quests: s.quests, chicken: s.chicken, landing: s.landing });
+      const seeded = seedQuests(s);
       set({
         gnomeName: trimmed,
         named: true,
@@ -117,7 +119,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         atHome: false,
         abroad: s.raidVisit?.isleId as GameState["abroad"] ?? null,
         lifeDragon: { ...s.lifeDragon, name: "Ember" },
-        speech: `Welcome back, ${s.gnomeName}. The hall must reach level 3 before Ember shows.`,
+        speech: openingPeaceful(s) ? `Welcome home, ${s.gnomeName}. Take your time finding your feet in Thimblehaven.` : `Welcome back, ${s.gnomeName}. Thimblehaven is waiting.`,
       });
     },
 
@@ -125,9 +127,11 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       const trimmed = name.trim().slice(0, 24) || "Pip";
       const fresh = defaultSave();
       const ocean=emptyOcean(Math.floor(Math.random()*4294967295)||1013);setOceanSeed(ocean.seed);
-      const seeded = seedQuests({ quests: [], chicken: null, landing: null });
+      const opening = freshOpening();
+      const seeded = seedQuests({ quests: [], chicken: null, landing: null, opening });
       set({
         ...fresh,
+        opening,
         ocean,naval:emptyNaval(),
         bank:{...fresh.bank,pending:true},
         city:{...fresh.city,buildings:[starterThimbleHome()]},
@@ -150,7 +154,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         panel: "place",
         abroad: null,
         raids: [],
-        speech: `${trimmed}. Thimblehaven is yours to grow. Pappy backed your loan. Open the town council to begin.`,
+        speech: `Welcome to Thimblehaven, ${trimmed}. Your key is waiting, the kettle is warm, and this little town is yours to grow.`,
       });
       writeSave(snap(get()));
     },
@@ -198,7 +202,14 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       if (!CASINO_VENUES.some(v => v.id === id) || get().combat || get().atHome) return;
       set({ interior: "casino", casinoVenue: id, casinoResult: null, popup: null, panel: "place" });
     },
-    enterInterior: (id: InteriorId) => {if(get().naval.battle||get().naval.rescue||get().naval.boarding)return;set({ interior: id, popup: null, panel: "place", ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });},
+    enterInterior: (id: InteriorId) => {
+      const s=get();
+      if(s.naval.battle||s.naval.rescue||s.naval.boarding)return;
+      const door=playerHomeDoor(s);
+      const homeVisit=id==="cottage"&&!s.afloat&&Math.hypot(s.gnomeX-door.x,s.gnomeY-door.y)<90;
+      set({ interior: id, popup: null, panel: "place", ...(homeVisit ? {opening:{...s.opening,homeVisited:true},coach:5} : {}), ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });
+      if(homeVisit)scheduleWrite(get);
+    },
     leaveInterior: () => set({ interior: null }),
     setGnomePos: (x: number, y: number) => {
       set({ gnomeX: x, gnomeY: y });
