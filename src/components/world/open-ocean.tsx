@@ -1,3 +1,4 @@
+import { useNearby } from "./mobile-graphics";
 import { rescuePorts } from "@/lib/game/ocean-rescue";
 import { boatById } from "@/lib/game/data/boats";
 import { shipFit } from "@/lib/game/naval";
@@ -108,6 +109,7 @@ export function OpenOceanScene({
 }: {
   onWalk: (x: number, y: number) => void;
 }) {
+  const near = useNearby();
   const s = useGame(),
     islands = oceanIslands(s.ocean.seed),
     rescue = s.naval.rescue;
@@ -125,7 +127,7 @@ export function OpenOceanScene({
     : null;
   return (
     <group>
-      {islands.map((i) => (
+      {islands.filter(i => near(i.x,i.y,Math.max(i.rx,i.ry))).map((i) => (
         <group key={i.id}>
           <IslandGround island={i} onWalk={onWalk} />
           <DockAsset

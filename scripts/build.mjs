@@ -33,7 +33,8 @@ await build({
   sourcemap: false,
   logLevel: "info",
   alias: { "@": src },
-  define: { "process.env.NODE_ENV": '"development"' },
+  minify: true,
+  define: { "process.env.NODE_ENV": '"production"' },
   loader: {
     ".png": "dataurl",
     ".jpg": "dataurl",

@@ -1,3 +1,4 @@
+import { NearbyWorld, NearbyRegion, AdaptiveResolution, MOBILE_GRAPHICS, INITIAL_DPR } from "./mobile-graphics";
 import {OpenOceanScene} from "./open-ocean";
 import {shipFit} from "@/lib/game/naval";
 import {PlayerHarbours} from "./player-harbours";
@@ -140,13 +141,14 @@ function SceneBody({
 
   return (
     <>
+      <AdaptiveResolution />
       <CameraRig target={save.naval.wrecks.find(w => w.id === save.naval.boarding) ?? pos} camRef={camRef} />
       <Sky />
       <hemisphereLight args={["#cfe4c8", "#6b5340", 0.85]} />
       <directionalLight
         position={[30, 40, 18]}
         intensity={1.15}
-        castShadow
+        castShadow={!MOBILE_GRAPHICS}
         shadow-mapSize={[1024, 1024]}
         shadow-camera-far={90}
         shadow-camera-left={-40}
@@ -158,10 +160,13 @@ function SceneBody({
       <OceanLife />
       <ShoreLife />
       <CastLine />
+      <NearbyRegion x={playerHome(save).x} y={playerHome(save).y} radius={100}>
       <Cottage3
         upgrades={save.houseUpgrades}
         onEnter={() => goInside(playerHome(save).x, playerHome(save).y, "cottage")}
       />
+      </NearbyRegion>
+      <NearbyRegion x={350} y={250} radius={700}>
       <YardPlots
         onPlot={(id, x, y, popup) =>
           interact(x, y, {
@@ -174,8 +179,12 @@ function SceneBody({
         }
       />
       <YardLife />
+      </NearbyRegion>
+      <NearbyRegion x={1100} y={600} radius={1200}>
       <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
+      </NearbyRegion>
       <CivicLife poses={npcPoses} pos={pos} />
+      <NearbyRegion x={950} y={600} radius={900}>
       <VillageHouses
         count={villageCount}
         onClick={(x, y) =>
@@ -189,6 +198,8 @@ function SceneBody({
           })
         }
       />
+      </NearbyRegion>
+      <NearbyRegion x={100} y={550} radius={450}>
       <Harbor3
         onBoat={(id, x, y, title, blurb) =>
           interact(save.afloat ? x : PLACE_ANCHORS.dock.x, save.afloat ? y : PLACE_ANCHORS.dock.y, {
@@ -250,6 +261,7 @@ function SceneBody({
           <meshStandardMaterial color="#e7c56a" />
         </mesh>
       </group>
+      </NearbyRegion>
       <Trees3
         onTree={(id, x, y) => {
           const spot = TREE_SPOTS.find((t) => t.id === id);
@@ -266,7 +278,7 @@ function SceneBody({
       <Rocks3 />
       <EastHills />
       <MountNoble onWalk={onWalk} />
-      <Sunstep />
+      <NearbyRegion x={3300} y={800} radius={1300}><Sunstep /></NearbyRegion>
       <CountryRoads />
       <EstateHomes /><PlayerCity />
       <PassengerWagons pos={pos} />
@@ -274,7 +286,7 @@ function SceneBody({
       <RoadCrew />
       <NorthernScenery />
       <FrontierLandscape onWalk={onWalk} pos={pos} />
-      <GardenWhimsy />
+      <NearbyRegion x={350} y={250} radius={600}><GardenWhimsy /></NearbyRegion>
       <SupplyRunners />
       <Npcs3
         poses={npcPoses}
@@ -354,6 +366,7 @@ function SceneBody({
           })
         }
       />
+      <NearbyRegion x={950} y={550} radius={950}>
       <IslandAnimals
         chicken={save.chicken}
         onChicken={() =>
@@ -367,6 +380,7 @@ function SceneBody({
           })
         }
       />
+      </NearbyRegion>
       <Kenney name="log_large" position={to3(70, 250, 0.08)} scale={1.0} />
       {save.afloat ? (
         <group position={to3(pos.x, pos.y, SEA_LEVEL + 0.06)} rotation={[0, face, (save.naval.integrity[save.afloat]??1)<=0?.15:0]}>
@@ -481,6 +495,8 @@ export function IslandCanvas({
   const [ready, setReady] = useState(false);
   const [epoch, setEpoch] = useState(0);
   const named = useGame((s) => s.named);
+  const interior = useGame(s => s.interior);
+  const abroad = useGame(s => s.abroad);
   const camRef = useRef<Cam>({ ...DEFAULT_CAM });
   const drag = useRef<{ x: number; y: number; yaw: number; pitch: number; pointer: number } | null>(null);
   const dragged = useRef(false);
@@ -582,7 +598,8 @@ export function IslandCanvas({
       <CanvasGate onFail={() => failRef.current?.()}>
         <Canvas
           key={epoch}
-          dpr={[1, 1]}
+          dpr={INITIAL_DPR}
+          frameloop={interior || abroad ? "never" : "always"}
           camera={{ position: [-6, 16, -2], fov: 42, near: 0.1, far: 160 }}
           gl={{
             antialias: false,
@@ -594,7 +611,7 @@ export function IslandCanvas({
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
           onCreated={({ gl }) => {
             gl.setClearColor("#8eb8ae", 1);
-            gl.shadowMap.enabled = true;
+            gl.shadowMap.enabled = !MOBILE_GRAPHICS;
             gl.shadowMap.type = THREE.PCFShadowMap;
             const el = gl.domElement;
             const lost = (e: Event) => {
@@ -610,6 +627,7 @@ export function IslandCanvas({
           }}
           onPointerMissed={() => useGame.getState().closePopup()}
         >
+          <NearbyWorld pos={pos}>
           <SceneBody
             pos={pos}
             yaw={yaw}
@@ -620,6 +638,7 @@ export function IslandCanvas({
             camRef={camRef}
             onWalk={walk}
           />
+          </NearbyWorld>
         </Canvas>
       </CanvasGate>
       {named ? (

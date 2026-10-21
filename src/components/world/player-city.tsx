@@ -1,3 +1,4 @@
+import { useNearby } from "./mobile-graphics";
 import { HomeAsset } from "./home-asset";
 import { useEffect, useRef } from "react";
 import { Html } from "@react-three/drei";
@@ -84,13 +85,14 @@ function DeliveryCart({ cart }: { cart: CityCart }) {
   );
 }
 export function PlayerCity() {
+  const near=useNearby();
   const city = useGame((s) => s.city),
     open = useGame((s) => s.openPopup);
   return (
     <group>
       {city.buildings
         .filter((b) => b.kind !== "home")
-        .map((b) => {
+        .filter(b=>near(b.x,b.y,150)).map((b) => {
           const factory = b.kind === "sawmill" || b.kind === "workshop",
             home = b.kind === "housing",
             height = home ? 1.3 + b.level * 0.4 : 1.7 + b.level * 0.25,

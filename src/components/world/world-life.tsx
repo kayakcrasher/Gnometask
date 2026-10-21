@@ -1,3 +1,4 @@
+import { useNearby } from "./mobile-graphics";
 import { useMemo } from "react";
 import { developedRoads } from "@/lib/game/land-planning";
 import { nearRoad } from "@/lib/game/data/road-layout";
@@ -42,13 +43,14 @@ export function Trees3({
 }: {
   onTree: (id: string, x: number, y: number) => void;
 }) {
+  const near = useNearby();
   const trees = useGame((s) => s.trees);
   const estate=useGame(s=>s.estate),works=useGame(s=>s.roadWorks),city=useGame(s=>s.city);
   const roads=useMemo(()=>[...developedRoads(works,estate),...city.roads],[works,estate,city.roads]);
   const now = Date.now();
   return (
     <group>
-      {TREE_SPOTS.map((t) => {
+      {TREE_SPOTS.filter(t => near(t.x,t.y)).map((t) => {
         if (deckY(t.x, t.y) > 0 || inTownPlot(t.x, t.y) || roads.some(r=>nearRoad(t.x,t.y,r,6)) || [...Object.values(estate),...city.buildings].some(h=>Math.abs(h.x-t.x)<32&&Math.abs(h.y-t.y)<29)) return null;
         const stage = treeStageOf(trees[t.id], now);
         const p = to3(t.x, t.y, groundY(t.x, t.y));
@@ -119,9 +121,10 @@ export function EastHills() {
 }
 
 export function Rocks3() {
+  const near = useNearby();
   return (
     <group>
-      {ROCKS.map((r) => (
+      {ROCKS.filter(r => near(r.x,r.y)).map((r) => (
         <Kenney key={r.id} name={r.model} position={to3(r.x, r.y, groundY(r.x, r.y))} scale={r.scale} />
       ))}
     </group>
@@ -136,6 +139,7 @@ export function Npcs3({
   poses: Record<string, NpcPose>;
   onNpc: (id: string, x: number, y: number) => void;
 }) {
+  const near = useNearby();
   const showLabels = useLabels();
   const days = useGame((s) => s.daysPlayed);
   const gx = useGame((s) => s.gnomeX);
@@ -146,6 +150,7 @@ export function Npcs3({
       {NPCS.map((n) => {
         const x = poses[n.id]?.x ?? n.x;
         const y = poses[n.id]?.y ?? n.y;
+        if (!near(x,y)) return null;
         const p = to3(x, y, groundY(x, y));
         const post = WATCH_POSTS.find((w) => w.id === n.id);
         const onWatch = post?.shift === shift;

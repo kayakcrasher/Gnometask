@@ -1,3 +1,4 @@
+import { AdaptiveResolution, INITIAL_DPR } from "./mobile-graphics";
 import { Canvas } from "@react-three/fiber";
 import { FAR_ISLES, GOODS } from "@/lib/game/data/trade";
 import { useGame } from "@/lib/game/store";
@@ -12,7 +13,8 @@ export function FarIsle() {
   if (!isle || raidVisit) return null;
   return (
     <div className="absolute inset-0 z-30 bg-[#143e4c]">
-      <Canvas camera={{ position: [4, 5, 7], fov: 42 }}>
+      <Canvas dpr={INITIAL_DPR} gl={{antialias:false,powerPreference:"high-performance"}} camera={{ position: [4, 5, 7], fov: 42 }}>
+        <AdaptiveResolution />
         <color attach="background" args={["#8ecfc6"]} />
         <ambientLight intensity={0.7} />
         <directionalLight position={[4, 8, 2]} intensity={1.1} />

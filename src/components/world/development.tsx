@@ -1,3 +1,4 @@
+import { useNearby } from "./mobile-graphics";
 import { HomeAsset } from "./home-asset";
 import {nearRoad} from "@/lib/game/data/road-layout";
 import { useRef } from "react";
@@ -10,11 +11,12 @@ import { estateAccess } from "@/lib/game/land-planning";
 import { groundY, to3 } from "@/lib/game/world3";
 import { GnomeRig } from "./gnome-rig";
 export function EstateHomes() {
+  const near=useNearby();
   const estate = useGame((s) => s.estate),
     open = useGame((s) => s.openPopup);
   return (
     <group>
-      {Object.entries(estate).map(([id, home]) => {
+      {Object.entries(estate).filter(([,h])=>near(h.x,h.y,100)).map(([id, home]) => {
         const { yaw } = estateAccess(home),
           h = 0.9 + home.level * 0.55;
         return (

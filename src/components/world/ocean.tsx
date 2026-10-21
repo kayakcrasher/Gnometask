@@ -1,3 +1,4 @@
+import { useNearby } from "./mobile-graphics";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -88,9 +89,10 @@ function Buoy({ x, y }: { x: number; y: number }) {
 }
 
 export function OceanLife() {
+  const near=useNearby();
   return (
     <group>
-      {SCHOOLS.map((s) => (
+      {SCHOOLS.filter(s=>near(s.cx,s.cy,100)).map((s) => (
         <School key={`${s.cx}-${s.cy}`} {...s} />
       ))}
       <Buoy x={-30} y={430} />

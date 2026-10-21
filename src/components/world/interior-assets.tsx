@@ -1,3 +1,4 @@
+import { AdaptiveResolution, INITIAL_DPR, MOBILE_GRAPHICS } from "./mobile-graphics";
 import { CottageMusicBox } from "./music-box";
 import { useGame } from "@/lib/game/store";
 import { IndoorWalker, IndoorControls, IndoorCamera } from "./indoor-walker";
@@ -36,10 +37,13 @@ export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
     <InteriorBoundary>
       <div className="relative isolate h-full w-full" aria-label="Walkable interior">
         <Canvas
-          dpr={[1, 1.5]}
           {...canvasProps}
+          dpr={INITIAL_DPR}
+          shadows={MOBILE_GRAPHICS ? false : canvasProps.shadows}
+          gl={{ antialias: false, powerPreference: "high-performance" }}
           fallback={<div className="h-full w-full bg-[#3a3541]" />}
         >
+          <AdaptiveResolution />
           {children}
           {id && id !== "chart" && (
             <>

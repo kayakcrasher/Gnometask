@@ -28,3 +28,11 @@ The first build generates `.android-signing/gnometask-test.keystore` (ignored by
 ## Validation limits
 
 The initial APK was compiled and its signature, alignment, Android metadata and bundled game assets verified. The web game passed its existing mobile browser smoke test, including island travel, naval combat, wreck salvage, rescue and repair. No Android device or emulator was available for the initial native build; installing on a phone is the next compatibility check.
+
+## Mobile performance update (0.1.1)
+
+Version code 2 uses the same local signing key and application ID as the first test APK, so it can be installed over that build without clearing its saves. Do not uninstall the original app first.
+
+The web bundle now uses minified production React. On touch devices, rendering starts at 0.85 pixels per CSS pixel and adapts between 0.65 and 1 according to sustained frame time. Dynamic shadows and multisample antialiasing are disabled on mobile, including indoor and raid scenes. Nearby scenery and ships are mounted as the player explores; this does not remove distant NPCs or ships from the simulation or save. Outdoor rendering pauses behind an indoor or expedition scene.
+
+The first controlled mobile-size Chromium/SwiftShader comparison at Thimblehaven recorded 34 animation frames over 8.22 seconds for the old build and 70 over 8.02 seconds after the changes. This software-rendered browser measurement is comparative evidence, not a phone FPS prediction. Device testing is still needed.

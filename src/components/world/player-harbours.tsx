@@ -1,3 +1,4 @@
+import { useNearby } from "./mobile-graphics";
 import {fleetSeeds} from "@/lib/game/naval";
 import { navigableWater } from "@/lib/game/sailing";
 import { thimbleRemark, THIMBLE_HOME } from "@/lib/game/thimblehaven";
@@ -125,6 +126,7 @@ export function PlayerHarbours({
 }: {
   walkTo?: (x: number, y: number, arrive?: () => void) => void;
 }) {
+  const near = useNearby();
   const s = useGame();
   return (
     <group>
@@ -212,7 +214,7 @@ export function PlayerHarbours({
         </group>
       )}
       {s.naval.vessels
-        .filter((v) => v.hp > 0)
+        .filter((v) => v.hp > 0 && near(v.x,v.y,200))
         .map((v) => (
           <group
             key={v.id}
