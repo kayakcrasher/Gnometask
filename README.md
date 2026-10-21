@@ -163,3 +163,7 @@ A hostile ship at **zero hull** becomes a wreck instead of paying an automatic b
 If the player's hull reaches zero, it stays disabled at its actual position and calls **Captain Mallow's Little Lifeline**, an original tug with a curved teal hull, cabin, tyre fenders, life ring and towline. The tug travels from a public repair port to the player, then tows the remaining hull along a clear-water route to port. The camera widens during rescue. Hull identity, fittings, crew, incoming-tug progress and towing progress are saved. The disabled hull remains visible at its recovery berth and **cannot sail until paid repairs** restore it. The existing shipwright price remains three coins per hull point; towing itself is free, including for penniless sailors. Ocean chart also offers a voluntary tow for stranded sailors outside active combat.
 
 Wreck timers, patrols and tow progress pause at the title screen and when the app/tab is hidden. No real-world offline burst of attacks, sinking or tow progress is applied on return. `npm run check:open-ocean` covers seeded geography, water routes, island services, patrols, boarding and single-payment loot, wreck expiry, saved tow stages, disabled-ship departure gates, repair payments, island freight persistence and old-save migration.
+
+### Android APK
+
+The game can also run offline as an Android app. See [android/README.md](android/README.md) for installation, local save behavior, and `npm run build:apk` prerequisites. The Android shell packages the current game rather than requiring a separately hosted website.

@@ -23,7 +23,8 @@
     "check:economy": "node scripts/check-economy-north.mjs",
     "check:banking-ports": "node scripts/check-banking-ports.mjs",
     "check:northern-seas": "node scripts/check-northern-seas.mjs",
-    "check:open-ocean": "node scripts/check-open-ocean.mjs"
+    "check:open-ocean": "node scripts/check-open-ocean.mjs",
+    "build:apk": "node scripts/build-apk.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

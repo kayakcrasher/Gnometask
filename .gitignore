@@ -4,3 +4,7 @@ dist/
 .vercel/
 *.log
 .env
+
+# Android build output and local signing key
+android/build/
+.android-signing/
