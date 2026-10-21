@@ -2,6 +2,7 @@ import type { GameSave, GameUi } from "../types";
 import type { CombatState } from "../combat";
 import { nearestPlace } from "../world3";
 export type MusicTheme =
+  | "title"
   | "home"
   | "meadow"
   | "harbour"
@@ -29,6 +30,18 @@ export type ThemeScore = {
   chords: number[];
 };
 export const MUSIC: Record<MusicTheme, ThemeScore> = {
+  title: {
+    title: "A Light Across the Water",
+    description: "Hollow Watch’s original title waltz: a hopeful flute, harp, warm piano and lantern-bright bells.",
+    bpm: 76, beats: 3, root: 62, voice: "flute",
+    motifs: [
+      [0, -1, 2, 4, 5, -1, 4, 2, 1, -1, 0, -1],
+      [2, -1, 4, 5, 7, -1, 6, 5, 4, -1, 2, -1],
+      [5, -1, 4, 2, 3, -1, 2, 1, 0, -1, -1, -1],
+      [1, 2, 4, -1, 2, 1, 0, -1, 0, -1, -1, -1],
+    ],
+    chords: [0, 5, 3, 4, 0, 2, 3, 4, 5, 3, 0, 4, 3, 4, 4, 0],
+  },
   home: {
     title: "Tea with the Window Open",
     description: "Warm piano, a tiny music box and nowhere to hurry.",
@@ -191,6 +204,8 @@ export function makeScore(theme: MusicTheme, variation = 0) {
         voice: song.voice,
       });
     }
+    if (theme === "title" && bar % 4 === 3)
+      for (const [i,tone] of [4,2,0].entries()) notes.push({at:at+(1.5+i*.5)*beat,duration:beat*1.1,midi:song.root+12+degree(tone),gain:.013,voice:"bell"});
     if (bar % 8 === 6)
       notes.push({
         at: at + beat * 1.5,
@@ -210,7 +225,8 @@ type MusicWorld = Pick<GameSave, "gnomeX" | "gnomeY" | "afloat" | "city"> &
     combat: CombatState | null;
   };
 export function themeForWorld(s: MusicWorld): MusicTheme {
-  if (s.atHome || s.interior === "cottage") return "home";
+  if (s.atHome) return "title";
+  if (s.interior === "cottage") return "home";
   if (s.combat && s.combat.phase !== "won" && s.combat.phase !== "lost")
     return "adventure";
   if (s.interior === "casino") return "sunstep";

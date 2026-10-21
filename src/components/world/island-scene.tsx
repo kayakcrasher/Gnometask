@@ -495,6 +495,7 @@ export function IslandCanvas({
   const [ready, setReady] = useState(false);
   const [epoch, setEpoch] = useState(0);
   const named = useGame((s) => s.named);
+  const atHome = useGame(s => s.atHome);
   const interior = useGame(s => s.interior);
   const abroad = useGame(s => s.abroad);
   const camRef = useRef<Cam>({ ...DEFAULT_CAM });
@@ -599,7 +600,7 @@ export function IslandCanvas({
         <Canvas
           key={epoch}
           dpr={INITIAL_DPR}
-          frameloop={interior || abroad ? "never" : "always"}
+          frameloop={atHome || interior || abroad ? "never" : "always"}
           camera={{ position: [-6, 16, -2], fov: 42, near: 0.1, far: 160 }}
           gl={{
             antialias: false,

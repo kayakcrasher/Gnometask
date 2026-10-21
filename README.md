@@ -167,3 +167,7 @@ Wreck timers, patrols and tow progress pause at the title screen and when the ap
 ### Android APK
 
 The game can also run offline as an Android app. See [android/README.md](android/README.md) for installation, local save behavior, and `npm run build:apk` prerequisites. The Android shell packages the current game rather than requiring a separately hosted website.
+
+### A light across the water
+
+Hollow Watch opens on an original moonlit harbour illustration with a dedicated flute-and-harp title waltz. New gnomes see Port Victoria from the ship, step onto the quay, and meet Ol Pappy before heading to their Thimblehaven home. The short introduction supports skipping, reduced motion and background pause; continuing an existing game goes directly back to play.

@@ -9,3 +9,29 @@ html, body, #root {
   -webkit-tap-highlight-color: transparent;
   background: #24402f;
 }
+
+/* Opening artwork uses a few composited SVG layers instead of another 3D scene. */
+.harbour-story { width:100%;height:100%;display:block;background:#17374b; }
+.story-star { animation:story-twinkle 5s ease-in-out infinite; }
+.story-mote { animation:story-drift 8s ease-in-out infinite; }
+.story-water { animation:story-tide 9s ease-in-out infinite; }
+.story-ferry { animation:story-rock 6s ease-in-out infinite;transform-origin:360px 1100px; }
+.story-wave { animation:story-wave 2.4s ease-in-out infinite;transform-origin:22px -54px; }
+.shot-ship .story-city { animation:story-approach 6s ease-out both;transform-origin:360px 620px; }
+.story-guest { transform:translate(220px,940px);animation:story-land 7s ease-in-out forwards; }
+.story-guest .story-feet { animation:story-step .7s ease-in-out 10; }
+.story-guest-arrived { transform:translate(411px,802px);animation:none; }
+.story-guest-arrived .story-feet { animation:none; }
+.story-paused * { animation-play-state:paused !important; }
+@keyframes story-twinkle { 0%,100% {opacity:.3}50% {opacity:.9} }
+@keyframes story-drift { 0%,100% {opacity:.15;transform:translateY(8px)}50% {opacity:.8;transform:translateY(-12px)} }
+@keyframes story-tide { 0%,100% {transform:translateX(-8px)}50% {transform:translateX(8px)} }
+@keyframes story-rock { 0%,100% {transform:rotate(-.35deg) translateY(2px)}50% {transform:rotate(.35deg) translateY(-2px)} }
+@keyframes story-wave { 0%,100% {transform:rotate(-8deg)}50% {transform:rotate(12deg)} }
+@keyframes story-approach { from {transform:scale(.94) translateY(9px)}to {transform:scale(1.02)} }
+@keyframes story-land { 0%,8% {transform:translate(220px,940px)}85%,100% {transform:translate(411px,802px)} }
+@keyframes story-step { 0%,100% {transform:rotate(-5deg)}50% {transform:rotate(5deg)} }
+@media (prefers-reduced-motion:reduce) {
+  .harbour-story * { animation:none !important; }
+  .story-guest { transform:translate(411px,802px); }
+}
