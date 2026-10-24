@@ -32,6 +32,11 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
   | "setFollowWalk"
   | "speak"
 > {
+  const canEnter = () => {
+    const s=get();
+    return !s.atHome && !s.combat && !s.abroad && !s.afloat && !s.fishing &&
+      !s.naval.battle && !s.naval.rescue && !s.naval.boarding && !s.transport.ride;
+  };
   return {
     hydrate: () => {
       const before = loadSave();
@@ -199,12 +204,12 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     openPopup: (popup: GamePopup) => set({ popup, panel: "place", interior: null }),
     closePopup: () => set({ popup: null }),
     enterCasino: (id) => {
-      if (!CASINO_VENUES.some(v => v.id === id) || get().combat || get().atHome) return;
+      if (!CASINO_VENUES.some(v => v.id === id) || !canEnter()) return;
       set({ interior: "casino", casinoVenue: id, casinoResult: null, popup: null, panel: "place" });
     },
     enterInterior: (id: InteriorId) => {
       const s=get();
-      if(s.naval.battle||s.naval.rescue||s.naval.boarding)return;
+      if(!canEnter())return;
       const door=playerHomeDoor(s);
       const homeVisit=id==="cottage"&&!s.afloat&&Math.hypot(s.gnomeX-door.x,s.gnomeY-door.y)<90;
       set({ interior: id, popup: null, panel: "place", ...(homeVisit ? {opening:{...s.opening,homeVisited:true},coach:5} : {}), ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });

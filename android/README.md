@@ -64,3 +64,7 @@ Validation includes the nine-score music checks, the peaceful-opening checks, an
 The arrival cinematic now uses React Three Fiber and the actual game models instead of the illustrated sequence. The opening shot starts with the player stepping from the sloop's bow onto a boarding plank and the shared Port Victoria pier. The real gnome rig supplies walking, the suitcase travels with the player, and Ol Pappy uses his game hat, beard and wave. The actual capitol court, shops, bank, dockhouse and terrain form the background. The camera then moves closer for their greeting.
 
 The title artwork and original theme remain. The arrival supports advancing, skipping, hidden-app pause and reduced-motion poses. Only the local harbour set is mounted, mobile shadows remain off, and the hidden gameplay view is unmounted while the title/introduction is open so two game worlds are not retained in graphics memory. Arrival does not award items or alter old progress; finishing still begins the protected Thimblehaven opening with the player's home there.
+
+## Consistency fixes (0.1.6)
+
+This build fixes home-visit progression, home recovery during save migration, entry to buildings during combat/travel, and island departures from northern and remote harbours. Raid boats must be seaworthy and not reserved for freight; disabled hulls cannot run freight contracts. The capital's public harbour is consistently named Port Victoria. See [the bug-hunt report](../docs/bug-hunt-2026-10-24.md) for reproductions and verification. Existing saves can continue without starting a new game.

@@ -269,6 +269,8 @@ export function citySlice(
         gnomeX: p.x,
         gnomeY: p.y,
         interior: "cottage",
+        opening: {...s.opening,homeVisited:true},
+        coach: 5,
         popup: null,
         selectedPlace: "cottage",
         speech: `Home in ${s.city.name}.`,

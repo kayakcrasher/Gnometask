@@ -44,7 +44,7 @@ export const NORTH_LANDING = {
 };
 export const PUBLIC_PORT = {
   id: "capital",
-  name: "Tideham public harbour",
+  name: "Port Victoria public harbour",
   x: 96,
   y: 520,
   water: { x: -35, y: 530 },

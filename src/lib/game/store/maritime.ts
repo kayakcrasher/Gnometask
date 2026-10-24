@@ -251,6 +251,7 @@ export function maritimeSlice(
         !available() ||
         !dock ||
         !boat?.cargo ||
+        (s.naval.integrity[id] ?? 1) <= 0 ||
         !s.hulls.includes(id) ||
         s.afloat === id ||
         s.ports.shipments.some((t) => t.boat === id) ||

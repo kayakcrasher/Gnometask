@@ -366,7 +366,7 @@ export function migrate(raw: unknown): GameSave {
     woodsGreeted: Boolean(s.woodsGreeted),
     logs: typeof s.logs === "number" ? s.logs : 0,
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
-    deeds: asStringArray(s.deeds, []),
+    deeds: [...new Set([...asStringArray(s.deeds, []), "thimble-home"])],
     thimble:coerceThimble(s.thimble),
     ocean,
     naval:coerceNaval(s.naval,asStringArray(s.hulls,[]),Boolean(s.cannons)),
@@ -415,9 +415,10 @@ export function migrate(raw: unknown): GameSave {
   if(result.afloat){result.transport={...result.transport,mounted:false,ride:null};}
   const city=coerceCity(s.city,result);
   if(!s.thimble){city.name='Thimblehaven';if(city.buildings.some(b=>b.kind==='home'))city.buildings=city.buildings.map(b=>b.kind==='home'?{...b,x:THIMBLE_HOME.x,y:THIMBLE_HOME.y,parcel:'thimble-home'}:b);else city.buildings.push(starterThimbleHome());}
+  if(!city.buildings.some(b=>b.kind==='home'))city.buildings.push(starterThimbleHome());
   if(result.naval.rescue?.boat!==result.afloat)result.naval.rescue=null;
   if(!result.afloat){result.naval.battle=null;result.naval.boarding=null;result.naval.rescue=null;}
-  return {...result,deeds:[...new Set([...result.deeds,'thimble-home'])],city};
+  return {...result,city};
 }
 
 function asHerd(raw: unknown): GameSave["herd"] {

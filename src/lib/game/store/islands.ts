@@ -21,7 +21,7 @@ export function islandsSlice(
         set({ speech: "Return home before setting out for another island." });
         return;
       }
-      const { boat, reason } = raidAccess(s, isle);
+      const { boat, reason, harbour } = raidAccess(s, isle);
       if (reason || !boat) {
         set({ speech: reason ?? "Choose a seaworthy boat." });
         return;
@@ -31,13 +31,15 @@ export function islandsSlice(
         previous && !previous.claimed
           ? previous
           : { defeated: [], claimed: false };
-      const returnX = s.afloat ? s.gnomeX : boat.x,
-        returnY = s.afloat ? s.gnomeY : boat.y;
+      const returnX = s.afloat ? s.gnomeX : harbour?.id === "capital" ? boat.x : harbour!.water.x,
+        returnY = s.afloat ? s.gnomeY : harbour?.id === "capital" ? boat.y : harbour!.water.y;
       set({
         raidVisit: { isleId: id, boat: boat.id, returnX, returnY },
         raidProgress: { ...s.raidProgress, [id]: progress },
         abroad: id as GameState["abroad"],
         afloat: boat.id,
+        naval: {...s.naval,moored:Object.fromEntries(Object.entries(s.naval.moored).filter(([id])=>id!==boat.id))},
+        transport: {...s.transport,mounted:false,ride:null},
         gnomeX: returnX,
         gnomeY: returnY,
         boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),

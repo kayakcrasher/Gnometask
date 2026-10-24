@@ -61,10 +61,10 @@ test('city pauses at home, in combat, interiors and overseas',()=>{
  for(const [key,value] of [['atHome',true],['combat',{}],['interior','bank'],['abroad','reed']]){state[key]=value;const before=JSON.stringify(state.city);state.advanceCity();assert.equal(JSON.stringify(state.city),before);state[key]=key==='atHome'?false:null;}
 });
 test('city saves in-transit cargo without duplicate stock or payout and rejects corrupt data',()=>{
- state.advanceCity();const saved=snap(state),loaded=migrate(JSON.parse(JSON.stringify(saved)));assert.equal(loaded.city.buildings.length,saved.city.buildings.length);assert.equal(loaded.city.carts.length,1);assert.equal(loaded.city.carts[0].cargo,saved.city.carts[0].cargo);assert.equal(loaded.city.carts[0].distance,saved.city.carts[0].distance);assert.equal(loaded.city.delivered,saved.city.delivered);assert.equal(loaded.city.earned,saved.city.earned);
+ state.advanceCity();const saved=snap(state),loaded=migrate(JSON.parse(JSON.stringify(saved)));assert.deepEqual(loaded.city.buildings.filter(b=>b.kind!=="home"),saved.city.buildings.filter(b=>b.kind!=="home"));assert.equal(loaded.city.buildings.filter(b=>b.kind==="home").length,1,"Loading repairs a missing starter home");assert.equal(loaded.city.carts.length,1);assert.equal(loaded.city.carts[0].cargo,saved.city.carts[0].cargo);assert.equal(loaded.city.carts[0].distance,saved.city.carts[0].distance);assert.equal(loaded.city.delivered,saved.city.delivered);assert.equal(loaded.city.earned,saved.city.earned);
  const a=stepCity(saved),b=stepCity(loaded);assert.equal(a.coins,b.coins);assert.equal(a.city.delivered,b.city.delivered);
  const bad={...saved.city,earned:Infinity,buildings:[...saved.city.buildings,{id:'bad',kind:'__proto__',x:0,y:0}],carts:[{factory:'missing',route:[[0,0],[999,999]],cargo:99999}],roads:[{points:[[NaN,0],[0,0]]}]};const clean=coerceCity(bad,saved);assert.equal(clean.earned,0);assert.equal(clean.carts.length,0);assert(!clean.buildings.some(b=>b.id==='bad'));
- assert.equal(migrate({...saved,city:undefined}).city.buildings.length,0);
+ assert.equal(migrate({...saved,city:undefined}).city.buildings.filter(b=>b.kind==="home").length,1);
 });
 test('housing grows after trade, taxes residents, and upgrades need resources',()=>{
  const candidates=points.filter(p=>!citySiteError(state,'housing',...p));
