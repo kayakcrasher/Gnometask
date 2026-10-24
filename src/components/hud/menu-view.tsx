@@ -1,3 +1,4 @@
+import { useGraphics } from "@/lib/game/graphics";
 import { IslandOutlook } from "./island-outlook";
 import { SoundPanel } from "./sound-panel";
 import { X } from "lucide-react";
@@ -19,6 +20,7 @@ const HORNS: { id: DragonHorn; label: string }[] = [
 ];
 
 export function MenuView() {
+  const graphics=useGraphics();
   const panel = useGame((s) => s.panel);
   const setPanel = useGame((s) => s.setPanel);
   const dragon = useGame((s) => s.lifeDragon);
@@ -52,6 +54,13 @@ export function MenuView() {
           </button>
         </div>
         <IslandOutlook/>
+        <section aria-label="Graphics" className="mb-4 rounded-2xl bg-parchment-dark p-3">
+          <label className="block text-sm font-bold">Graphics quality
+            <select aria-label="Graphics quality" value={graphics.mode} onChange={e=>graphics.setMode(e.target.value as typeof graphics.mode)} className="mt-2 min-h-11 w-full rounded-xl bg-parchment px-3">
+              <option value="auto">Balanced · automatic</option><option value="sharp">Sharp · highest resolution</option><option value="smooth">Smooth · lighter rendering</option>
+            </select>
+          </label><p className="mt-2 text-xs text-bark">Sharp favours detail. Smooth favours frame rate and battery life. Balanced adjusts gently as you play.</p>
+        </section>
         <SoundPanel />
         <h3 className="mb-1 font-display text-lg font-bold text-ink">Ember</h3>
         <p className="text-sm font-semibold text-bark/70">

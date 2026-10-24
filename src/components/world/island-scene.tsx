@@ -1,4 +1,5 @@
-import { NearbyWorld, NearbyRegion, AdaptiveResolution, MOBILE_GRAPHICS, INITIAL_DPR } from "./mobile-graphics";
+import { SailingPlayer } from "./sailing-player";
+import { NearbyWorld, NearbyRegion, AdaptiveResolution, MOBILE_GRAPHICS, useCanvasDpr } from "./mobile-graphics";
 import {OpenOceanScene} from "./open-ocean";
 import {shipFit} from "@/lib/game/naval";
 import {PlayerHarbours} from "./player-harbours";
@@ -15,6 +16,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import {
   Component,
+  memo,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -49,6 +52,9 @@ import { Minimap } from "@/components/hud/minimap";
 import type { GamePopup, InteriorId } from "@/lib/game/types";
 import type { NpcPose } from "@/hooks/use-npc-wander";
 
+const StableTerrain=memo(Terrain), StableTown=memo(Town3), StableTrees=memo(Trees3), StableRocks=memo(Rocks3);
+const MAIN_CAMERA={position:[-6,16,-2] as [number,number,number],fov:42,near:.1,far:160};
+const MAIN_GL={antialias:true,alpha:false,powerPreference:"high-performance" as const,preserveDrawingBuffer:false,failIfMajorPerformanceCaveat:false};
 type WalkTo = (x: number, y: number, arrive?: () => void) => void;
 type Cam = { yaw: number; pitch: number; dist: number };
 
@@ -117,27 +123,31 @@ function SceneBody({
   onWalk: (x: number, y: number) => void;
 }) {
   const save = useGame();
+  const livePos=useRef(pos);livePos.current=pos;
   const striking = Boolean(save.combat?.striking);
   const fighting = save.combat && !save.combat.retreating && save.combat.phase !== "won" && save.combat.phase !== "lost";
   const face = fighting ? Math.atan2(save.combat!.atX - pos.x, save.combat!.atY - pos.y) : yaw;
   const villageCount = save.placed.filter((p) => p.slotId.startsWith("v")).length;
   const p3 = to3(pos.x, pos.y, save.afloat ? SEA_LEVEL + 0.68 : groundY(pos.x, pos.y));
 
-  const interact = (worldX: number, worldY: number, popup: GamePopup, range = 70) => {
+  const interact=useCallback((worldX:number,worldY:number,popup:GamePopup,range=70)=>{
+    const s=useGame.getState(),here=livePos.current;
     if(popup.kind==='enemy'){engageTarget(popup,worldX,worldY,walkTo);return;}
-    if (save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost") return;
-    save.selectPlace(popup.place ?? nearestPlace(worldX, worldY));
-    save.openPopup({ ...popup, x: worldX, y: worldY });
-    if (dist(pos.x, pos.y, worldX, worldY) >= range) walkTo(worldX, worldY);
-  };
-
-  const goInside = (x: number, y: number, interior: InteriorId) => {
-    if (save.combat && save.combat.phase !== "won" && save.combat.phase !== "lost") return;
-    save.closePopup();
-    const run = () => save.enterInterior(interior);
-    if (dist(pos.x, pos.y, x, y) < 78) run();
-    else walkTo(x, y, run);
-  };
+    if(s.combat&&s.combat.phase!=='won'&&s.combat.phase!=='lost')return;
+    s.selectPlace(popup.place??nearestPlace(worldX,worldY));s.openPopup({...popup,x:worldX,y:worldY});
+    if(dist(here.x,here.y,worldX,worldY)>=range)walkTo(worldX,worldY);
+  },[walkTo]);
+  const goInside=useCallback((x:number,y:number,interior:InteriorId)=>{
+    const s=useGame.getState(),here=livePos.current;
+    if(s.combat&&s.combat.phase!=='won'&&s.combat.phase!=='lost')return;
+    s.closePopup();const run=()=>useGame.getState().enterInterior(interior);
+    if(dist(here.x,here.y,x,y)<78)run();else walkTo(x,y,run);
+  },[walkTo]);
+  const enterTown=useCallback((id:InteriorId,x:number,y:number)=>goInside(x,y,id),[goInside]);
+  const onTree=useCallback((id:string,x:number,y:number)=>{
+    const spot=TREE_SPOTS.find(t=>t.id===id);
+    interact(x,y,{kind:'tree',hotspotId:id,treeId:id,title:spot?spot.kind[0]!.toUpperCase()+spot.kind.slice(1)+' tree':'Tree',blurb:'Chop it down for logs and two saplings. A cleared spot stays gone until you plant one back.',place:'woods'});
+  },[interact]);
 
   return (
     <>
@@ -156,7 +166,7 @@ function SceneBody({
         shadow-camera-top={32}
         shadow-camera-bottom={-32}
       />
-      <Terrain onWalk={onWalk} />
+      <StableTerrain onWalk={onWalk} />
       <OceanLife />
       <ShoreLife />
       <CastLine />
@@ -181,7 +191,7 @@ function SceneBody({
       <YardLife />
       </NearbyRegion>
       <NearbyRegion x={1100} y={600} radius={1200}>
-      <Town3 hallLevel={save.townHallLevel} onEnter={(id, x, y) => goInside(x, y, id)} />
+      <StableTown hallLevel={save.townHallLevel} onEnter={enterTown} />
       </NearbyRegion>
       <CivicLife poses={npcPoses} pos={pos} />
       <NearbyRegion x={950} y={600} radius={900}>
@@ -262,20 +272,8 @@ function SceneBody({
         </mesh>
       </group>
       </NearbyRegion>
-      <Trees3
-        onTree={(id, x, y) => {
-          const spot = TREE_SPOTS.find((t) => t.id === id);
-          interact(x, y, {
-            kind: "tree",
-            hotspotId: id,
-            treeId: id,
-            title: spot ? `${spot.kind[0]!.toUpperCase()}${spot.kind.slice(1)} tree` : "Tree",
-            blurb: "Chop it down for logs and two saplings. A cleared spot stays gone until you plant one back.",
-            place: "woods",
-          });
-        }}
-      />
-      <Rocks3 />
+      <StableTrees onTree={onTree} />
+      <StableRocks />
       <EastHills />
       <MountNoble onWalk={onWalk} />
       <NearbyRegion x={3300} y={800} radius={1300}><Sunstep /></NearbyRegion>
@@ -383,20 +381,12 @@ function SceneBody({
       </NearbyRegion>
       <Kenney name="log_large" position={to3(70, 250, 0.08)} scale={1.0} />
       {save.afloat ? (
-        <group position={to3(pos.x, pos.y, SEA_LEVEL + 0.06)} rotation={[0, face, (save.naval.integrity[save.afloat]??1)<=0?.15:0]}>
-          <group scale={2.4}>
-            <BoatMesh
-              kind={boatById(save.afloat)?.id??"row"}
-              parts={save.ports.parts[save.afloat]}
-              rowing={walking}
-              guns={shipFit(save.naval,save.afloat).guns}
-              crew={shipFit(save.naval,save.afloat).crew}
-            />
-          </group>
-        </group>
+        <SailingPlayer x={pos.x} y={pos.y} heading={face} moving={walking} disabled={(save.naval.integrity[save.afloat]??1)<=0}
+          kind={boatById(save.afloat)?.id??"row"} parts={save.ports.parts[save.afloat]??[]} guns={shipFit(save.naval,save.afloat).guns} crew={shipFit(save.naval,save.afloat).crew}
+          hat={save.hat} equipment={save.equipment} showPlayer={!save.naval.boarding&&!save.transport.ride}/>
       ) : null}
       {save.transport.mounted&&!save.afloat&&<group position={p3} rotation={[0,face,0]}><TravelCartAsset moving={walking} rider/></group>}
-      <group visible={!save.transport.ride&&!save.transport.mounted&&!save.naval.boarding} position={p3} rotation={[0, face, 0]}>
+      {!save.afloat && <group visible={!save.transport.ride&&!save.transport.mounted&&!save.naval.boarding} position={p3} rotation={[0, face, 0]}>
         <GnomeRig
           hat={save.hat}
           weapon={save.equipment.weapon}
@@ -452,7 +442,7 @@ function SceneBody({
             </p>
           </Html>
         ) : null}
-      </group>
+      </group>}
       {marker ? <ClickMarker x={marker.x} y={marker.y} /> : null}
     </>
   );
@@ -492,6 +482,7 @@ export function IslandCanvas({
   npcPoses: Record<string, NpcPose>;
   onFail?: () => void;
 }) {
+  const dpr=useCanvasDpr();
   const [ready, setReady] = useState(false);
   const [epoch, setEpoch] = useState(0);
   const named = useGame((s) => s.named);
@@ -567,7 +558,7 @@ export function IslandCanvas({
     camRef.current.dist = Math.min(38, Math.max(8, camRef.current.dist * factor));
   };
 
-  const walk = (x: number, y: number) => {
+  const walk = useCallback((x: number, y: number) => {
     if (dragged.current) return;
     const sea = Boolean(useGame.getState().afloat);
     if (sea) {
@@ -579,7 +570,7 @@ export function IslandCanvas({
       camRef.current.dist = 34;
       camRef.current.pitch = 0.58;
     }
-  };
+  },[walkTo]);
 
   if (!ready) return <div className="absolute inset-0 bg-water-deep" />;
 
@@ -599,16 +590,10 @@ export function IslandCanvas({
       <CanvasGate onFail={() => failRef.current?.()}>
         <Canvas
           key={epoch}
-          dpr={INITIAL_DPR}
+          dpr={dpr}
           frameloop={atHome || interior || abroad ? "never" : "always"}
-          camera={{ position: [-6, 16, -2], fov: 42, near: 0.1, far: 160 }}
-          gl={{
-            antialias: false,
-            alpha: false,
-            powerPreference: "high-performance",
-            preserveDrawingBuffer: false,
-            failIfMajorPerformanceCaveat: false,
-          }}
+          camera={MAIN_CAMERA}
+          gl={MAIN_GL}
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
           onCreated={({ gl }) => {
             gl.setClearColor("#8eb8ae", 1);

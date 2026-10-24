@@ -1,4 +1,4 @@
-import { AdaptiveResolution, INITIAL_DPR, MOBILE_GRAPHICS } from "./mobile-graphics";
+import { AdaptiveResolution, useCanvasDpr, MOBILE_GRAPHICS } from "./mobile-graphics";
 import { Component, useRef, type ReactNode } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, OrbitControls } from "@react-three/drei";
@@ -331,6 +331,7 @@ function IslandScene({ isle }: { isle: IsleDef }) {
 }
 
 export function EnemyIsland() {
+  const dpr=useCanvasDpr();
   const s = useGame();
   const visit = s.raidVisit;
   const isle = visit ? ISLE_BY_ID[visit.isleId] : null;
@@ -344,8 +345,8 @@ export function EnemyIsland() {
     <div className="fixed inset-0 z-30 bg-[#215466]">
       <SceneBoundary>
         <Canvas
-          dpr={INITIAL_DPR}
-          gl={{antialias:false,powerPreference:"high-performance"}}
+          dpr={dpr}
+          gl={{antialias:true,powerPreference:"high-performance"}}
           camera={{ position: [14, 19, 26], fov: 44 }}
           shadows={!MOBILE_GRAPHICS}
           onCreated={({ camera }) => camera.lookAt(0, 0, -0.5)}

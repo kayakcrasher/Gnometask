@@ -1,3 +1,4 @@
+import { FluidSeaGroup } from "./sailing-player";
 import { useNearby } from "./mobile-graphics";
 import {fleetSeeds} from "@/lib/game/naval";
 import { navigableWater } from "@/lib/game/sailing";
@@ -216,9 +217,8 @@ export function PlayerHarbours({
       {s.naval.vessels
         .filter((v) => v.hp > 0 && near(v.x,v.y,200))
         .map((v) => (
-          <group
-            key={v.id}
-            position={to3(v.x, v.y, SEA_LEVEL + 0.06)}
+          <FluidSeaGroup
+            key={v.id} x={v.x} y={v.y}
             scale={2.4}
             onClick={(e) => {
               e.stopPropagation();
@@ -248,7 +248,7 @@ export function PlayerHarbours({
             }}
           >
             <BoatMesh kind={v.kind} guns={v.guns} faction={v.side} />{Math.hypot(v.x-s.gnomeX,v.y-s.gnomeY)<850&&<Html center position={[0,3.4,0]}><div className="pointer-events-none w-32 rounded-lg bg-ink/85 p-1 text-center text-[10px] text-parchment"><p>{v.name}</p><progress aria-label={`${v.name} health`} max={fleetSeeds().find(e=>e.id===v.id)?.hp??v.hp} value={v.hp} className="h-2 w-full accent-[#c78f63]"/><span>{v.hp} hull</span></div></Html>}
-          </group>
+          </FluidSeaGroup>
         ))}
       {s.naval.battle &&
         (() => {
@@ -305,10 +305,8 @@ export function PlayerHarbours({
         const p = shipmentPosition(t),
           boat = boatById(t.boat);
         return p && boat ? (
-          <group
-            key={t.boat}
-            position={to3(p.x, p.y, SEA_LEVEL + 0.06)}
-            rotation={[0, p.heading, 0]}
+          <FluidSeaGroup
+            key={t.boat} x={p.x} y={p.y} heading={p.heading}
             scale={2.4}
           >
             <BoatMesh
@@ -316,7 +314,7 @@ export function PlayerHarbours({
               parts={s.ports.parts[t.boat]}
               guns={shipFit(s.naval, boat.id).guns}
             />
-          </group>
+          </FluidSeaGroup>
         ) : null;
       })}
     </group>

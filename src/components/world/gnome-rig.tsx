@@ -27,7 +27,7 @@ function HatModel({ id }: { id: string }) {
   if (hat.kind === "straw") {
     return (
       <group position={[0, 1.08, 0]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <mesh castShadow>
           <cylinderGeometry args={[0.38, 0.38, 0.04, 16]} />
           <meshStandardMaterial color={hat.body} roughness={0.8} />
         </mesh>
@@ -126,6 +126,7 @@ export function GnomeRig({
   beard = true,
   ears = false,
   skinColor = "#e7b48a",
+  elder = false,
 }: {
   hat: string;
   weapon?: string | null;
@@ -140,6 +141,7 @@ export function GnomeRig({
   beard?: boolean;
   ears?: boolean;
   skinColor?: string;
+  elder?: boolean;
 }) {
   const bob = useRef<THREE.Group>(null);
   const legL = useRef<THREE.Group>(null);
@@ -148,57 +150,50 @@ export function GnomeRig({
   const hand = useRef<THREE.Group>(null);
   const t = useRef(0);
   useFrame((_, d) => {
-    t.current += d * (walking || gesture ? 8 : 1.6);
-    const swing = walking ? Math.sin(t.current) * 0.5 : 0;
-    if (legL.current) legL.current.rotation.x = swing;
-    if (legR.current) legR.current.rotation.x = -swing;
-    if (armR.current) {
-      const wave = -2.15 + Math.sin(t.current * 3.2) * 0.55;
-      const hammer = -0.35 - Math.abs(Math.sin(t.current * 1.15)) * 1.35;
-      const saw = -1.15 + Math.sin(t.current * 2.4) * 0.55;
-      const hoe = -0.45 - Math.abs(Math.sin(t.current)) * 1.05;
-      armR.current.rotation.z =
-        gesture === "wave" ? wave : gesture === "hammer" ? hammer : gesture === "saw" ? saw : gesture === "hoe" ? hoe : weapon ? -0.85 : -0.25;
+    const dt=Math.min(.08,d),blend=1-Math.exp(-12*dt);
+    t.current += dt;
+    const swing=walking?Math.sin(t.current*(elder?5.2:7.5))*(elder?.28:.44):0;
+    if(legL.current)legL.current.rotation.x+=(swing-legL.current.rotation.x)*blend;
+    if(legR.current)legR.current.rotation.x+=(-swing-legR.current.rotation.x)*blend;
+    if(armR.current){
+      const target=gesture==='wave'?2.12+Math.sin(t.current*(elder?1.5:2.1))*.18:
+        gesture==='hammer'?.35+Math.abs(Math.sin(t.current*3.5))*1.1:
+        gesture==='saw'?.8+Math.sin(t.current*4)*.4:
+        gesture==='hoe'?.45+Math.abs(Math.sin(t.current*3))*1.05:
+        weapon?.45:walking?-swing*.6:.18;
+      armR.current.rotation.z+=(target-armR.current.rotation.z)*blend;
     }
-    if (hand.current) {
-      if (gesture === "wave") {
-        hand.current.rotation.z = -2.05 + Math.sin(t.current * 3.2) * 0.5;
-        hand.current.rotation.x = 0.2;
-      } else if (gesture === "hammer" || gesture === "hoe") {
-        hand.current.rotation.z = -0.9;
-        hand.current.rotation.x = 0.2 + Math.abs(Math.sin(t.current * 1.15)) * 1.1;
-      } else if (gesture === "saw") {
-        hand.current.rotation.z = -0.7 + Math.sin(t.current * 2.4) * 0.45;
-        hand.current.rotation.x = 0.35;
-      } else {
-        hand.current.rotation.z = striking ? -1.15 : -0.18;
-        hand.current.rotation.x = 0.1;
-      }
+    if(hand.current){
+      const wrist=gesture==='wave'?-.12+Math.sin(t.current*2)*.08:striking?-.5:0;
+      hand.current.rotation.z+=(wrist-hand.current.rotation.z)*blend;
+      hand.current.rotation.x=.1;
     }
-    if (!bob.current) return;
-    bob.current.position.y = walking ? Math.abs(Math.sin(t.current)) * 0.045 : Math.sin(t.current) * 0.015;
+    if(bob.current){
+      const target=walking?Math.abs(Math.sin(t.current*(elder?5.2:7.5)))*.025:Math.sin(t.current*1.5)*.006;
+      bob.current.position.y+=(target-bob.current.position.y)*blend;
+    }
   });
   const beardColor = skinColor === "#6f8f40" ? "#dfe7c8" : "#f7f4ee";
   return (
     <group scale={scale}>
       <FighterMotion striking={striking}>
         <group ref={bob}>
-          <group ref={legL} position={[-0.11, 0, 0]}>
-            <mesh position={[0, 0.22, 0]} castShadow>
+          <group ref={legL} position={[-0.11, 0.38, 0]}>
+            <mesh position={[0, -0.16, 0]} castShadow>
               <boxGeometry args={[0.13, 0.32, 0.14]} />
               <meshStandardMaterial color={pants} roughness={0.8} />
             </mesh>
-            <mesh position={[0, 0.06, 0.02]} castShadow>
+            <mesh position={[0, -0.32, 0.02]} castShadow>
               <boxGeometry args={[0.16, 0.12, 0.2]} />
               <meshStandardMaterial color="#1c1a17" roughness={0.85} />
             </mesh>
           </group>
-          <group ref={legR} position={[0.11, 0, 0]}>
-            <mesh position={[0, 0.22, 0]} castShadow>
+          <group ref={legR} position={[0.11, 0.38, 0]}>
+            <mesh position={[0, -0.16, 0]} castShadow>
               <boxGeometry args={[0.13, 0.32, 0.14]} />
               <meshStandardMaterial color={pants} roughness={0.8} />
             </mesh>
-            <mesh position={[0, 0.06, 0.02]} castShadow>
+            <mesh position={[0, -0.32, 0.02]} castShadow>
               <boxGeometry args={[0.16, 0.12, 0.2]} />
               <meshStandardMaterial color="#1c1a17" roughness={0.85} />
             </mesh>
@@ -218,7 +213,7 @@ export function GnomeRig({
             <meshStandardMaterial color="#e2b84a" metalness={0.35} roughness={0.4} />
           </mesh>
 
-          <group position={[-0.26, 0.68, 0.04]} rotation={[0.25, 0, 0.35]}>
+          <group position={[-0.26, 0.68, 0.04]} rotation={[-0.12, 0, -0.18]}>
             <mesh position={[0, -0.14, 0]} castShadow>
               <boxGeometry args={[0.1, 0.26, 0.1]} />
               <meshStandardMaterial color={coat} roughness={0.7} />
@@ -227,19 +222,22 @@ export function GnomeRig({
               <boxGeometry args={[0.08, 0.08, 0.08]} />
               <meshStandardMaterial color={skinColor} roughness={0.6} />
             </mesh>
+            {elder && !shield && <group position={[0,-.3,.08]}>
+              <mesh position={[0,-.14,0]}><cylinderGeometry args={[.018,.024,.46,7]}/><meshStandardMaterial color="#72583b"/></mesh>
+              <mesh rotation={[0,0,Math.PI/2]} position={[-.025,.065,0]}><capsuleGeometry args={[.024,.07,3,7]}/><meshStandardMaterial color="#72583b"/></mesh>
+            </group>}
             {shield ? (
               <group position={[0, -0.28, 0.06]}>
                 <ShieldMesh id={shield} />
               </group>
             ) : null}
           </group>
-          <group ref={armR} position={[0.2, 0.78, 0.06]} rotation={[0.55, 0.1, weapon ? -0.85 : -0.25]}>
+          <group ref={armR} position={[0.2, 0.78, 0.06]} rotation={[-0.55, 0, 0.18]}>
             <mesh position={[0, -0.16, 0]} castShadow>
               <boxGeometry args={[0.1, 0.28, 0.1]} />
               <meshStandardMaterial color={coat} roughness={0.7} />
             </mesh>
-          </group>
-          <group ref={hand} position={[0.34, 0.58, 0.24]} rotation={[0.1, 0, striking ? -1.15 : -0.18]}>
+          <group ref={hand} position={[0, -0.31, 0.02]} rotation={[0.1, 0, 0]}>
             <mesh castShadow>
               <boxGeometry args={[0.09, 0.08, 0.1]} />
               <meshStandardMaterial color={skinColor} roughness={0.6} />
@@ -259,6 +257,7 @@ export function GnomeRig({
             ) : null}
           </group>
 
+          </group>
           <mesh position={[0, 0.92, 0]} castShadow>
             <sphereGeometry args={[0.2, 14, 12]} />
             <meshStandardMaterial color={skinColor} roughness={0.55} />
@@ -295,6 +294,17 @@ export function GnomeRig({
               </mesh>
             </>
           ) : null}
+          {elder && <>
+            <mesh position={[-.075,1.025,.172]} rotation={[0,0,Math.PI/2-.12]}><capsuleGeometry args={[.017,.065,3,8]}/><meshStandardMaterial color="#e8e4d8"/></mesh>
+            <mesh position={[.075,1.025,.172]} rotation={[0,0,Math.PI/2+.12]}><capsuleGeometry args={[.017,.065,3,8]}/><meshStandardMaterial color="#e8e4d8"/></mesh>
+            {[-1,1].map(side=><group key={side}>
+              <mesh position={[side*.078,.97,.204]}><torusGeometry args={[.046,.006,5,16]}/><meshStandardMaterial color="#a79263" metalness={.25} roughness={.55}/></mesh>
+              <mesh position={[side*.16,.84,.08]}><sphereGeometry args={[.065,10,8]}/><meshStandardMaterial color="#eee9de"/></mesh>
+              <mesh position={[side*.13,.915,.18]}><boxGeometry args={[.05,.006,.006]}/><meshStandardMaterial color="#ba927a"/></mesh>
+            </group>)}
+            <mesh position={[0,.97,.21]}><boxGeometry args={[.06,.008,.008]}/><meshStandardMaterial color="#a79263"/></mesh>
+            <mesh position={[0,.7,.14]} scale={[1,.95,.65]}><sphereGeometry args={[.18,12,10]}/><meshStandardMaterial color="#eee9de" roughness={.95}/></mesh>
+          </>}
           {ears ? (
             <>
               <mesh position={[-0.18, 0.94, 0]} rotation={[0, 0, 0.7]} castShadow>

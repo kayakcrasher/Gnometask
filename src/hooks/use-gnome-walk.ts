@@ -1,3 +1,4 @@
+import { sailingVelocity } from "@/lib/game/visual-motion";
 import {oceanLandAt} from "@/lib/game/ocean-world";
 import {portDestination,portNavigationRoute} from "@/lib/game/ports";
 import { CART_SPEED } from "@/lib/game/transport";
@@ -50,6 +51,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   const posRef = useRef(pos);
   const yawRef = useRef(Math.PI / 2);
   const speedRef = useRef(0);
+  const cruiseRef=useRef(0);
   const combatPositionAt=useRef(0);
   const routeRef = useRef<Waypoint[]>([]);
   const previousBoat = useRef(afloat);
@@ -59,6 +61,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
     setMarker(null);
     setWalking(false);
     speedRef.current = 0;
+    cruiseRef.current=0;
   }, []);
 
   useEffect(() => {
@@ -90,7 +93,8 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
         const dx = target.x - cur.x, dy = target.y - cur.y;
         const distance = Math.hypot(dx, dy);
         const sea = Boolean(state.afloat);
-        const speed = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat]) : state.transport.mounted ? CART_SPEED : SPEED;
+        const maximum = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat]) : state.transport.mounted ? CART_SPEED : SPEED;
+        const speed=sea?(cruiseRef.current=sailingVelocity(cruiseRef.current,maximum,routeRef.current.length===1?distance:Infinity,dt)):maximum;
         const step = Math.min(distance, speed * dt);
         const tx = cur.x + dx / (distance || 1) * step, ty = cur.y + dy / (distance || 1) * step;
         let next: SeaPoint | null = null;

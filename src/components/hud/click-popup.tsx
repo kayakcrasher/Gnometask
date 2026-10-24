@@ -149,6 +149,7 @@ export function ClickPopup() {
   const buyCannon = useGame((s) => s.buyCannon);
   const fireCannon = useGame((s) => s.fireCannon);
   const afloat = useGame((s) => s.afloat);
+  const fishing = useGame(s=>s.fishing);
   const hulls = useGame(s => s.hulls);
   const activeBoat = afloat ? boatById(afloat) : null;
   const cannons = useGame((s) => s.cannons);
@@ -165,7 +166,7 @@ export function ClickPopup() {
   if (combat||navalBattle) return null;
 
   const seaBar = afloat ? (
-    <div className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3 pb-[env(safe-area-inset-bottom)] md:bottom-5">
+    <div className="pointer-events-none absolute left-3 right-16 bottom-3 z-30 flex justify-center pb-[env(safe-area-inset-bottom)] md:bottom-5">
       <div
         className="pointer-events-auto flex w-full max-w-md flex-wrap gap-1.5 rounded-[20px] bg-parchment p-3 shadow-panel"
         onPointerDown={(e) => e.stopPropagation()}
@@ -173,7 +174,7 @@ export function ClickPopup() {
       >
         <p className="w-full font-display text-sm font-semibold text-ink">{activeBoat?.name ?? "At sea"}</p>
         <SailingProgress />
-        {activeBoat && activeBoat.need >= 2 ? <Action label="Cast line" tone="gold" onClick={() => { const s = useGame.getState(); castLine("sea", s.gnomeX, s.gnomeY); }} /> : null}
+        {activeBoat ? <Action label="Fish from boat" tone="gold" disabled={!!fishing} onClick={() => { const s = useGame.getState(); castLine("sea", s.gnomeX, s.gnomeY); }} /> : null}
         {cannons && landing ? <Action label="Fire cannon" tone="berry" onClick={fireCannon} /> : null}
         <Action label="Enemy islands" tone="gold" onClick={() => enter("chart")} />
         <Action label="Return to harbour" tone="quiet" onClick={() => sailTo("dock")} />

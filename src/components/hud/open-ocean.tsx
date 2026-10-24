@@ -30,7 +30,7 @@ export function OpenOceanControls() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`${btn} fixed bottom-24 right-3 z-30 bg-parchment text-pine shadow-panel`}
+          className={`${btn} fixed ${s.afloat ? "bottom-64" : "bottom-24"} right-3 z-30 bg-parchment text-pine shadow-panel`}
         >
           Ocean chart
         </button>
@@ -193,7 +193,7 @@ export function OpenOceanControls() {
                     }}
                     className={`${btn} bg-pine text-parchment`}
                   >
-                    Course to Tideham
+                    Course to Port Victoria
                   </button>
                   <button
                     type="button"

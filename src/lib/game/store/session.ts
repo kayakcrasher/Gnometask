@@ -32,9 +32,9 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
   | "setFollowWalk"
   | "speak"
 > {
-  const canEnter = () => {
+  const canEnter = (navigation=false) => {
     const s=get();
-    return !s.atHome && !s.combat && !s.abroad && !s.afloat && !s.fishing &&
+    return !s.atHome && !s.combat && !s.abroad && (!s.afloat || navigation) && !s.fishing &&
       !s.naval.battle && !s.naval.rescue && !s.naval.boarding && !s.transport.ride;
   };
   return {
@@ -209,7 +209,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     },
     enterInterior: (id: InteriorId) => {
       const s=get();
-      if(!canEnter())return;
+      if(!canEnter(id === "chart"))return;
       const door=playerHomeDoor(s);
       const homeVisit=id==="cottage"&&!s.afloat&&Math.hypot(s.gnomeX-door.x,s.gnomeY-door.y)<90;
       set({ interior: id, popup: null, panel: "place", ...(homeVisit ? {opening:{...s.opening,homeVisited:true},coach:5} : {}), ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });

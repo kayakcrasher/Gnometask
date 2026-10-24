@@ -17,7 +17,7 @@ export function SoundPanel() {
           <h3 className="font-display text-lg font-bold">
             The little music box
           </h3>
-          <p className="text-[11px] text-bark">Eight original island themes</p>
+          <p className="text-[11px] text-bark">{THEMES.length} original island themes</p>
         </div>
         <button
           type="button"

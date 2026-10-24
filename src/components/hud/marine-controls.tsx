@@ -44,7 +44,7 @@ export function MarineControls() {
       : null;
   return (
     <>
-      <div className="fixed bottom-40 left-3 z-30 flex max-w-[70vw] flex-wrap gap-2">
+      <div className={`fixed ${s.afloat ? "bottom-72" : "bottom-40"} left-3 z-30 flex max-w-[70vw] flex-wrap gap-2`}>
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -52,25 +52,6 @@ export function MarineControls() {
         >
           Bank & harbour
         </button>
-        {s.afloat && (
-          <>
-            <button
-              type="button"
-              disabled={!!s.fishing}
-              onClick={() => s.castLine("sea", s.gnomeX, s.gnomeY, s.afloat!)}
-              className={`${btn} bg-gold text-ink`}
-            >
-              {s.fishing ? "Fishing…" : "Fish from boat"}
-            </button>
-            <button
-              type="button"
-              onClick={() => s.sailTo("dock")}
-              className={`${btn} bg-parchment text-pine`}
-            >
-              Moor nearby
-            </button>
-          </>
-        )}
       </div>
       {open &&
         createPortal(

@@ -1,3 +1,4 @@
+import { useGraphics } from "@/lib/game/graphics";
 import {OpenOceanControls} from "./hud/open-ocean";
 import {NorthernSeas} from "./hud/northern-seas";
 import {MarineControls} from "./hud/marine-controls";
@@ -30,6 +31,7 @@ import { cn } from "@/lib/utils";
 export function AppShell() {
   const tickOpening=useGame(s=>s.tickOpening);
   useEffect(()=>{const id=window.setInterval(()=>tickOpening(1),1000);return()=>window.clearInterval(id);},[tickOpening]);
+  useEffect(()=>useGraphics.getState().load(),[]);
   const hydrate = useGame((s) => s.hydrate);
   const named = useGame((s) => s.named);
   const atHome = useGame((s) => s.atHome);

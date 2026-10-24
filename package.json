@@ -27,7 +27,8 @@
     "build:apk": "node scripts/build-apk.mjs",
     "check:opening": "node scripts/check-opening.mjs",
     "check:consistency": "node scripts/check-consistency.mjs",
-    "check:types": "tsc --noEmit"
+    "check:types": "tsc --noEmit",
+    "check:visual-motion": "node scripts/check-visual-motion.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

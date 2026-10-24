@@ -164,11 +164,13 @@ function Mast({
 }
 
 function Oars({ rowing }: { rowing?: boolean }) {
+  const strength=useRef(0);
   const left = useRef<THREE.Group>(null);
   const right = useRef<THREE.Group>(null);
-  useFrame(({ clock }) => {
-    const stroke = rowing ? Math.sin(clock.elapsedTime * 4.5) * 0.55 : 0;
-    const dip = rowing ? Math.cos(clock.elapsedTime * 4.5) * 0.16 : 0;
+  useFrame(({ clock },dt) => {
+    strength.current+=((rowing?1:0)-strength.current)*(1-Math.exp(-4*Math.min(dt,.08)));
+    const stroke = Math.sin(clock.elapsedTime * 3.8) * .5 * strength.current;
+    const dip = Math.cos(clock.elapsedTime * 3.8) * .14 * strength.current;
     if (left.current) {
       left.current.rotation.y = stroke;
       left.current.rotation.z = dip;

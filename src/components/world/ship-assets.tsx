@@ -110,10 +110,18 @@ function SquareSail({
     g.computeVertexNormals();
     return g;
   }, [height, width]);
+  const rest=useMemo(()=>new Float32Array(geometry.getAttribute('position').array),[geometry]);
+  const normalFrame=useRef(0);
   useEffect(() => () => geometry.dispose(), [geometry]);
-  useFrame(({ clock }) => {
-    if (cloth.current)
-      cloth.current.rotation.y = Math.sin(clock.elapsedTime * 1.2 + z) * 0.045;
+  useFrame(({clock})=>{
+    const positions=geometry.getAttribute('position');
+    for(let i=0;i<positions.count;i++){
+      const x=rest[i*3]!,y=rest[i*3+1]!,edge=Math.sin(Math.PI*(x/width+.5))*Math.sin(Math.PI*(y/(height*.55)+.5));
+      positions.setZ(i,rest[i*3+2]!+Math.sin(clock.elapsedTime*1.6+x*1.4+z)*height*.018*edge);
+    }
+    positions.needsUpdate=true;
+    if(++normalFrame.current%3===0)geometry.computeVertexNormals();
+    if(cloth.current)cloth.current.rotation.y=Math.sin(clock.elapsedTime*.7+z)*.025;
   });
   return (
     <group position={[0, 0, z]}>

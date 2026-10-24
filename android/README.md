@@ -68,3 +68,7 @@ The title artwork and original theme remain. The arrival supports advancing, ski
 ## Consistency fixes (0.1.6)
 
 This build fixes home-visit progression, home recovery during save migration, entry to buildings during combat/travel, and island departures from northern and remote harbours. Raid boats must be seaworthy and not reserved for freight; disabled hulls cannot run freight contracts. The capital's public harbour is consistently named Port Victoria. See [the bug-hunt report](../docs/bug-hunt-2026-10-24.md) for reproductions and verification. Existing saves can continue without starting a new game.
+
+## Fluid sailing and clearer rendering (0.1.7)
+
+Rendering no longer falls below one CSS pixel per pixel. Menu → Graphics quality offers Balanced, Sharp and Smooth, with antialiasing and persistent preferences. The intro uses one animation clock and eased motion. Pappy has an elder model with spectacles, silver hair and a walking stick; his hand is attached to his waving arm. Sailing now has acceleration, gradual turns, swell, billowing sails, fading wakes and smoothly moving fleet/freight ships. Sea controls are separated so chart and zoom buttons remain reachable. See [rendering and motion validation](../docs/fluid-rendering-2026-10-24.md). Existing saves can continue; choose New game to replay the intro.

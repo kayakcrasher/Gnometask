@@ -1,4 +1,4 @@
-import { AdaptiveResolution, INITIAL_DPR, MOBILE_GRAPHICS } from "./mobile-graphics";
+import { AdaptiveResolution, useCanvasDpr, MOBILE_GRAPHICS } from "./mobile-graphics";
 import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -139,6 +139,7 @@ function IsleScene() {
 }
 
 export function GoblinIsle() {
+  const dpr=useCanvasDpr();
   const abroad = useGame((s) => s.abroad);
   const leave = useGame((s) => s.leaveIsle);
   const speech = useGame((s) => s.speech);
@@ -147,7 +148,7 @@ export function GoblinIsle() {
   if (raidVisit || abroad !== "mucktooth") return null;
   return (
     <div className="fixed inset-0 z-10 bg-[#3d6a66]">
-      <Canvas dpr={INITIAL_DPR} gl={{antialias:false,powerPreference:"high-performance"}} camera={{ position: [0, 7.5, 8.5], fov: 42 }} shadows={!MOBILE_GRAPHICS}>
+      <Canvas dpr={dpr} gl={{antialias:true,powerPreference:"high-performance"}} camera={{ position: [0, 7.5, 8.5], fov: 42 }} shadows={!MOBILE_GRAPHICS}>
         <AdaptiveResolution />
         <IsleScene />
       </Canvas>
