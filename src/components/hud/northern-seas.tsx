@@ -1,3 +1,4 @@
+import {TownOutlook} from "./town-outlook";
 import {NeighbourDirectory} from "./neighbours";
 import {NEIGHBOUR_EVENT} from "@/lib/game/neighbours";
 import {PROJECT_WORK} from "@/lib/game/thimblehaven";
@@ -141,6 +142,7 @@ export function NorthernSeas() {
                   <p className="rounded-xl bg-gold/20 p-3 text-sm">
                     {s.thimble.news}
                   </p>
+                  <TownOutlook/>
                   <p className="text-sm italic">{thimbleRemark(s)}</p>
                   <p className="text-xs">
                     {s.thimble.residents.length} households ·{" "}

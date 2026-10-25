@@ -94,3 +94,9 @@ Open Thimblehaven council → Neighbours. Walk over to say hello, discover favou
 gifts and visit furnished homes. Friendships, letters, arriving families and
 household-funded extensions persist. Public works now show construction stages
 and open after their builders finish. Previously completed works remain built.
+
+### 0.1.11 — Understand town growth
+
+Open Thimblehaven council → Your town → Growth forecast & what to do next.
+View projected household savings, arrivals/departures and levy income, with
+specific advice about housing, safety, markets and supporting struggling families.
