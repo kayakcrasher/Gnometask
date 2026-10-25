@@ -21,7 +21,7 @@ export function arrivalStep(elapsed:number,dt:number,hurry:boolean,paused=false)
   // A stalled render or returning from another app must never jump down the plank.
   return Math.min(7,elapsed+Math.min(.08,dt)*(hurry?2.2:1));
 }
-export function sailingVelocity(current:number,cruise:number,remaining:number,dt:number){
+export function sailingVelocity(current:number,cruise:number,remaining:number,dt:number,response=2.2){
   const target=Math.min(cruise,Math.sqrt(Math.max(0,2*cruise*1.2*remaining)));
-  return current+(target-current)*(1-Math.exp(-2.2*Math.min(.1,Math.max(0,dt))));
+  return current+(target-current)*(1-Math.exp(-response*Math.min(.1,Math.max(0,dt))));
 }

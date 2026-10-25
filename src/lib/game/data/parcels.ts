@@ -1,3 +1,5 @@
+import polygonClipping from "polygon-clipping";
+import { WORLD_BOUNDS } from "./frontier";
 import { FRONTIER_SETTLEMENTS } from "./frontier";
 import type { MultiPolygon } from "polygon-clipping";
 import { NPCS } from "./npcs";
@@ -88,7 +90,22 @@ function buildParcels(): Parcel[] {
   }
   for(const y of [-3500,-3300])out.push({id:`thimble-${y}`,x:2140,y,w:200,h:180,price:2200,owner:null,ownerName:null,northern:true,requiredRoad:"thimble-road",district:"Thimblehaven"});
   out.push({id:"thimble-home",x:2130,y:-3160,w:180,h:180,price:0,owner:null,ownerName:null,district:"Thimblehaven"});
-  return out.map(p=>{const land=parcelLand(p);return {...p,land,usableArea:landArea(land)};});
+  // Keep all historical IDs. Fill remaining countryside without selling any
+  // overlapping rectangle twice; clipped boundaries preserve roads and water.
+  const historical = [...out];
+  const grid = 240;
+  for(let x=WORLD_BOUNDS.minX;x<WORLD_BOUNDS.maxX;x+=grid)
+    for(let y=WORLD_BOUNDS.minY;y<WORLD_BOUNDS.maxY;y+=grid){
+      const rect={x,y,w:grid,h:grid};
+      let land=parcelLand(rect);
+      if(!land.length)continue;
+      const overlaps=historical.filter(p=>p.x<x+grid&&p.x+p.w>x&&p.y<y+grid&&p.y+p.h>y);
+      if(overlaps.length)land=polygonClipping.difference(land,...overlaps.map(p=>[[[p.x,p.y],[p.x+p.w,p.y],[p.x+p.w,p.y+p.h],[p.x,p.y+p.h],[p.x,p.y]]] as MultiPolygon[number]));
+      const area=landArea(land);
+      if(area<1000)continue;
+      out.push({id:`island-${x}-${y}`, ...rect,price:Math.round(90+area/100+Math.hypot(x-280,y-520)/15), owner:null,ownerName:null,land,usableArea:area,district:y< -800?"Island frontier":"Island countryside"});
+    }
+  return out.map(p=>{const land=p.land??parcelLand(p);return {...p,land,usableArea:landArea(land)};});
 }
 
 export const PARCELS: Parcel[] = buildParcels();

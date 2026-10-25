@@ -235,7 +235,8 @@ export function CivicLife({ poses = {},pos }: { poses?: Record<string, NpcPose>;
               });
             }}
           >
-            <group rotation={[0, ({ down: 0, up: Math.PI, left: -Math.PI / 2, right: Math.PI / 2 })[pose?.facing ?? "down"], 0]}><GnomeRig hat={g.hat} coat={g.coat} scale={1.15} beard={g.good} walking={pose?.walking ?? false} gesture={pose?.walking ? null : gesture} /></group>
+            <group rotation={[0, ({ down: 0, up: Math.PI, left: -Math.PI / 2, right: Math.PI / 2 })[pose?.facing ?? "down"], 0]}><mesh position={[0,0.9,0]}><cylinderGeometry args={[0.65,0.65,2,8]}/><meshBasicMaterial visible={false}/></mesh>
+            <GnomeRig hat={g.hat} coat={g.coat} scale={1.15} beard={g.good} walking={pose?.walking ?? false} gesture={pose?.walking ? null : gesture} /></group>
             {g.job === "mason" || g.job === "carpenter" ? (
               <mesh position={[0.22, 0.55, 0.16]} rotation={[0.4, 0, 0.6]} castShadow>
                 <boxGeometry args={[0.05, 0.28, 0.05]} />

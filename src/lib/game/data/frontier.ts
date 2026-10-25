@@ -80,11 +80,11 @@ export const FRONTIER_SIGHTS = [
   },
   {
     id: "grove",
-    name: "Bramblewood Picnic",
+    name: "Bramblewood National Park",
     x: 800,
     y: -1900,
     description:
-      "A little picnic shelter in a very large wood. The sign asks visitors to leave a crumb for the birds.",
+      "Protected woodland for every gnome. Walk, picnic and watch the birds; homes and roads belong outside the park.",
   },
 ];
 export function inlandWater(x: number, y: number, pad = 0) {

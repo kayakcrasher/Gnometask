@@ -1,3 +1,4 @@
+import { windSpeedFactor, hullHandling } from "@/lib/game/sea-weather";
 import { sailingVelocity } from "@/lib/game/visual-motion";
 import {oceanLandAt} from "@/lib/game/ocean-world";
 import {portDestination,portNavigationRoute} from "@/lib/game/ports";
@@ -93,8 +94,8 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
         const dx = target.x - cur.x, dy = target.y - cur.y;
         const distance = Math.hypot(dx, dy);
         const sea = Boolean(state.afloat);
-        const maximum = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat]) : state.transport.mounted ? CART_SPEED : SPEED;
-        const speed=sea?(cruiseRef.current=sailingVelocity(cruiseRef.current,maximum,routeRef.current.length===1?distance:Infinity,dt)):maximum;
+        const maximum = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat])*windSpeedFactor(state.afloat,Math.atan2(dy,dx),cur.x,cur.y,state.ports.parts[state.afloat]) : state.transport.mounted ? CART_SPEED : SPEED;
+        const speed=sea?(cruiseRef.current=sailingVelocity(cruiseRef.current,maximum,routeRef.current.length===1?distance:Infinity,dt,hullHandling(state.afloat!).acceleration)):maximum;
         const step = Math.min(distance, speed * dt);
         const tx = cur.x + dx / (distance || 1) * step, ty = cur.y + dy / (distance || 1) * step;
         let next: SeaPoint | null = null;

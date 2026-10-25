@@ -28,7 +28,8 @@
     "check:opening": "node scripts/check-opening.mjs",
     "check:consistency": "node scripts/check-consistency.mjs",
     "check:types": "tsc --noEmit",
-    "check:visual-motion": "node scripts/check-visual-motion.mjs"
+    "check:visual-motion": "node scripts/check-visual-motion.mjs",
+    "check:island-life": "node scripts/check-island-life.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

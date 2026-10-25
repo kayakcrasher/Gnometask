@@ -1,3 +1,4 @@
+import { inNationalPark } from "../data/national-park";
 import {oceanLandings} from "../ocean-world";
 import {shipFit} from "../naval";
 import {PUBLIC_PORT,NORTH_LANDING,portSite} from "../ports";
@@ -49,6 +50,7 @@ export function gatherSlice(
       if (s.combat) return;
       const spot = TREE_SPOTS.find((t) => t.id === treeId);
       if (!spot) return;
+      if(inNationalPark(spot.x,spot.y)){set({speech:"Bramblewood National Park is protected. Leave these trees for the birds."});return;}
       const rec = s.trees[treeId];
       const stage = treeStage(rec, Date.now());
       if (stage !== "grown") {
@@ -92,6 +94,7 @@ export function gatherSlice(
       const s = get();
       const spot = TREE_SPOTS.find((t) => t.id === treeId);
       if (!spot) return;
+      if(inNationalPark(spot.x,spot.y)){set({speech:"Bramblewood National Park is protected. Leave these trees for the birds."});return;}
       if (treeStage(s.trees[treeId], Date.now()) !== "gone") {
         set({ speech: "Something is already growing there." });
         return;

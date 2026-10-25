@@ -29,10 +29,14 @@ const poly = (points: [number, number][]) =>
   points.map((p) => p.join(",")).join(" ");
 const VIEWS = {
   All: WORLD_VIEW,
+  Nearby: "",
   Fernmeadow: "750 -1850 1100 950",
   Willowbank: "1700 -2670 1100 1000",
   Bellweather: "2290 -3630 1100 1000",
   Town: "0 80 2050 1400",
+  Thimblehaven: "1700 -3650 1000 1000",
+  West: "-1550 -4550 2400 4300",
+  East: "2700 -4300 1950 4100",
   Sunstep: "2500 100 2100 1500",
   "Noble Reach": "950 -800 1300 1050",
 };
@@ -43,6 +47,8 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
     [picked, setPicked] = useState<string | null>(null);
   const tile = PARCELS.find((p) => p.id === picked) ?? null,
     owned = tile ? s.deeds.includes(tile.id) : false;
+  const nearbyPlots=useMemo(()=>[...PARCELS].filter(p=>(p.usableArea??0)>=1000).sort((a,b)=>Math.hypot(a.x+a.w/2-s.gnomeX,a.y+a.h/2-s.gnomeY)-Math.hypot(b.x+b.w/2-s.gnomeX,b.y+b.h/2-s.gnomeY)).slice(0,16),[s.gnomeX,s.gnomeY]);
+  const plotOptions=tile&&!nearbyPlots.includes(tile)?[tile,...nearbyPlots]:nearbyPlots;
   const home = tile ? s.estate[tile.id] : undefined,
     quote = homeBuildQuote(home?.level ?? 0, s.ownedGear);
   const valuation=tile?landQuote(s,tile):null;
@@ -194,7 +200,7 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
         <>
           <p className="text-xs">
             Gold is yours. Cream belongs to residents. Public road corridors
-            stay clear; the surrounding land can be owned.
+            stay clear. Bramblewood National Park is protected public woodland.
           </p>
           <div className="flex gap-1 overflow-x-auto">
             {(Object.keys(VIEWS) as (keyof typeof VIEWS)[]).map((v) => (
@@ -209,8 +215,12 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
               </button>
             ))}
           </div>
+          <select aria-label="Choose a nearby plot" value={picked??""} onChange={e=>{setPicked(e.target.value||null);setView("Nearby");}} className="min-h-11 w-full rounded-xl bg-parchment px-3 text-xs font-bold text-ink">
+            <option value="">Choose a nearby plot without tapping the map</option>
+            {plotOptions.map(p=><option key={p.id} value={p.id}>{p.district??"Countryside"} · {p.id} · {s.deeds.includes(p.id)?"Yours":p.ownerName??civicParcelOwner(p,s.civic)??`${landQuote(s,p).buy} coins`}</option>)}
+          </select>
           <svg
-            viewBox={VIEWS[view]}
+            viewBox={view==="Nearby"?`${(tile?tile.x+tile.w/2:s.gnomeX)-450} ${(tile?tile.y+tile.h/2:s.gnomeY)-450} 900 900`:VIEWS[view]}
             className="min-h-32 flex-1 rounded-2xl bg-[#1e4d5a]"
             aria-label="Parcel map"
           >
@@ -312,12 +322,12 @@ export function DeedMap({ onClose }: { onClose: () => void }) {
                       ? `${owner}'s ground`
                       : tile.northern
                         ? `${tile.district??"Noble Reach"} parcel`
-                        : "Roadside parcel"}
+                        : `${tile.district??"Roadside"} parcel`}
                 </h2>
                 <button
                   type="button"
                   onClick={() => setPicked(null)}
-                  className="min-h-8 px-2 text-xs font-bold"
+                  className="min-h-11 px-2 text-xs font-bold"
                 >
                   Back to map
                 </button>

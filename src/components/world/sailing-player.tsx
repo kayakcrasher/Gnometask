@@ -1,3 +1,4 @@
+import {hullHandling} from "@/lib/game/sea-weather";
 import {memo,useRef,useMemo,useEffect} from 'react';
 import {useFrame} from '@react-three/fiber';
 import * as THREE from 'three';
@@ -16,7 +17,7 @@ export function SailingPlayer({x,y,heading,moving,disabled,kind,parts,guns,crew,
   const yaw=useRef(heading),strength=useRef(0),initial=useRef(to3(x,y,SEA_LEVEL+.06));
   useFrame(({clock},delta)=>{
     const dt=Math.min(.08,delta),previous=yaw.current;
-    yaw.current=dampAngle(yaw.current,heading,4.5,dt);
+    yaw.current=dampAngle(yaw.current,heading,hullHandling(kind).turn,dt);
     strength.current+=((moving&&!disabled?1:0)-strength.current)*(1-Math.exp(-2.8*dt));
     const p=to3(x,y,SEA_LEVEL+.06),turn=(yaw.current-previous)/Math.max(.001,dt),motion=seaPose(clock.elapsedTime,p[0],p[2],strength.current,turn);
     if(root.current){const target=new THREE.Vector3(...p);if(root.current.position.distanceTo(target)>30)root.current.position.copy(target);else root.current.position.lerp(target,1-Math.exp(-18*dt));root.current.rotation.y=yaw.current;}

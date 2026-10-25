@@ -72,3 +72,10 @@ This build fixes home-visit progression, home recovery during save migration, en
 ## Fluid sailing and clearer rendering (0.1.7)
 
 Rendering no longer falls below one CSS pixel per pixel. Menu → Graphics quality offers Balanced, Sharp and Smooth, with antialiasing and persistent preferences. The intro uses one animation clock and eased motion. Pappy has an elder model with spectacles, silver hair and a walking stick; his hand is attached to his waving arm. Sailing now has acceleration, gradual turns, swell, billowing sails, fading wakes and smoothly moving fleet/freight ships. Sea controls are separated so chart and zoom buttons remain reachable. See [rendering and motion validation](../docs/fluid-rendering-2026-10-24.md). Existing saves can continue; choose New game to replay the intro.
+
+### 0.1.8 — Island life
+
+338 more countryside deeds, Bramblewood National Park, mobile plot selection,
+larger NPC interaction targets, visits to nearby businesses and homes, and
+wind-aware sailing with hull-specific responsiveness. Existing saves remain
+compatible. Open Deeds to browse land; the sailing panel shows the breeze.

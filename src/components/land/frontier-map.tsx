@@ -1,3 +1,4 @@
+import { NATIONAL_PARK } from "@/lib/game/data/national-park";
 import {oceanIslands} from "@/lib/game/ocean-world";
 import { SUNSTEP_DOCK } from "@/lib/game/data/sunstep-dock";
 import {
@@ -44,6 +45,7 @@ export function FrontierMap({ labels = false }: { labels?: boolean }) {
           })}
         </g>
       ))}
+      {labels && <text x={NATIONAL_PARK.x} y={NATIONAL_PARK.y} textAnchor="middle" fontSize={72} fill="#fff0cd" stroke="#35533d" strokeWidth={6} paintOrder="stroke">{NATIONAL_PARK.name} · Protected</text>}
       {FRONTIER_PEAKS.map((p, i) => (
         <g key={i}>
           <path

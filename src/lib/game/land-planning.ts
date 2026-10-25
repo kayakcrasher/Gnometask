@@ -1,3 +1,4 @@
+import { inNationalPark, PARK_RING } from "./data/national-park";
 import { frontierBuildable, FRONTIER_LAKES, FRONTIER_PEAKS } from "./data/frontier";
 import { SUNSTEP_FEATURES } from "./data/sunstep";
 import polygonClipping, { type MultiPolygon } from "polygon-clipping";
@@ -41,7 +42,7 @@ export function parcelLand(rect: LandRect): MultiPolygon {
     ],
     titledLand,
   );
-  return land.length ? polygonClipping.difference(land, corridor, ...occupiedLand, ...protectedLand) : [];
+  return land.length ? polygonClipping.difference(land, corridor, ...localReserves(x,y,w,h), [[PARK_RING]]) : [];
 }
 export function landArea(polys: MultiPolygon) {
   return polys.reduce(
@@ -60,7 +61,8 @@ export function landArea(polys: MultiPolygon) {
     0,
   );
 }
-export function insideParcel(p: LandRect, x: number, y: number) {
+export function insideParcel(p: LandRect & {id?:string;land?:MultiPolygon}, x: number, y: number) {
+  if(p.id?.startsWith("island-") && p.land && !pointInLand(p.land,x,y))return false;
   return x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h;
 }
 export function nearestRoad(x: number, y: number) {
@@ -102,12 +104,17 @@ const FIXED_BUILDINGS = [
   { x: 560, y: 790, w: 35, h: 28 },
 ];
 const occupiedLand: MultiPolygon = FIXED_BUILDINGS.map(({x,y,w,h})=>[[[x-w,y-h],[x+w,y-h],[x+w,y+h],[x-w,y+h],[x-w,y-h]]]);
+// Only send local obstacles through polygon clipping. Island-wide surveying
+// should not process every town's buildings for each distant countryside cell.
+const reserveBounds=[...occupiedLand,...protectedLand].map(p=>({p,minX:Math.min(...p[0]!.map(v=>v[0])),maxX:Math.max(...p[0]!.map(v=>v[0])),minY:Math.min(...p[0]!.map(v=>v[1])),maxY:Math.max(...p[0]!.map(v=>v[1]))}));
+function localReserves(x:number,y:number,w:number,h:number){return reserveBounds.filter(p=>p.minX<x+w&&p.maxX>x&&p.minY<y+h&&p.maxY>y).map(p=>p.p);}
 export function buildingSiteClear(
   x: number,
   y: number,
   others: { x: number; y: number }[] = [],
 ) {
   if (
+    inNationalPark(x,y,36) ||
     !frontierBuildable(x,y) ||
     !Number.isFinite(x) ||
     !Number.isFinite(y) ||
@@ -150,14 +157,19 @@ export function buildingSiteClear(
     }
   return true;
 }
+export function pointInLand(land: MultiPolygon, x:number,y:number) {
+ const ringContains=(r:number[][])=>{let inside=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i]!,b=r[j]!;if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;};
+ return land.some(p=>ringContains(p[0]!)&&!p.slice(1).some(ringContains));
+}
 export function parcelBuildingSpot(
   rect: LandRect,
   others: { x: number; y: number }[] = [],
 ) {
+  const deedLand=(rect as LandRect & {land?:MultiPolygon}).land??parcelLand(rect);
   const candidates: { x: number; y: number; distance: number }[] = [];
   for (let x = rect.x + 30; x <= rect.x + rect.w - 30; x += 20)
     for (let y = rect.y + 28; y <= rect.y + rect.h - 28; y += 20) {
-      if (buildingSiteClear(x, y, others))
+      if ([-26,26].every(dx=>[-24,24].every(dy=>pointInLand(deedLand,x+dx,y+dy))) && buildingSiteClear(x, y, others))
         candidates.push({ x, y, distance: nearestRoad(x, y).distance });
     }
   return candidates.sort((a, b) => a.distance - b.distance)[0] ?? null;
@@ -214,7 +226,7 @@ export function developedRoads(
 
 /** Narrow construction clearance for streets, distinct from a house footprint. */
 export function roadSiteClear(x:number,y:number,others:{x:number;y:number}[]=[]){
- if(!frontierBuildable(x,y,28)||!Number.isFinite(x)||!Number.isFinite(y)||nobleRise(x,y)>.15)return false;
+ if(inNationalPark(x,y,20)||!frontierBuildable(x,y,28)||!Number.isFinite(x)||!Number.isFinite(y)||nobleRise(x,y)>.15)return false;
  if(![-13,13].every(dx=>[-13,13].every(dy=>onGrass(x+dx,y+dy)||onDesert(x+dx,y+dy))))return false;
  if(Math.hypot(x-520,y-190)<135)return false;
  return !FIXED_BUILDINGS.some(b=>Math.abs(x-b.x)<b.w+13&&Math.abs(y-b.y)<b.h+13)&&!others.some(b=>Math.abs(x-b.x)<39&&Math.abs(y-b.y)<37);

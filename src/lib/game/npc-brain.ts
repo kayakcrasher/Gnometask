@@ -191,6 +191,10 @@ export function npcRoutine(
       activity,
       wait: 12 + (seed % 7),
     };
+  if (activity === "visiting") {
+    const destinations=[...CAPITOL_SHOPS,...PUBS,...obstacles].filter(p=>Math.hypot(p.x-home.x,p.y-home.y)>35&&Math.hypot(p.x-home.x,p.y-home.y)<190);
+    if(destinations.length){const visit=destinations[seed%destinations.length]!;return {point:safeNpcSpot({x:visit.x,y:visit.y+34},obstacles),activity,wait:8+seed%9};}
+  }
   const radius = home.stay ? 12 : activity === "working" ? 35 : 140;
   const angle = ((seed % 360) * Math.PI) / 180;
   let point = {
