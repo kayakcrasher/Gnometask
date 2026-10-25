@@ -1,3 +1,4 @@
+import {Discoveries} from "./discoveries";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGame } from "@/lib/game/store";
@@ -116,6 +117,7 @@ export function OpenOceanControls() {
                   Close ocean chart
                 </button>
               </header>
+              <Discoveries onTravel={()=>setOpen(false)}/>
               <p className="text-sm">
                 Eight islands, six little harbour towns and roaming pirates.{" "}
                 {s.ocean.discovered.length}/{islands.length} islands sighted.

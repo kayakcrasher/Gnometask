@@ -32,7 +32,8 @@
     "check:island-life": "node scripts/check-island-life.mjs",
     "check:town-notices": "node scripts/check-town-notices.mjs",
     "check:neighbours": "node scripts/check-neighbours.mjs",
-    "check:town-outlook": "node scripts/check-town-outlook.mjs"
+    "check:town-outlook": "node scripts/check-town-outlook.mjs",
+    "check:discoveries": "node scripts/check-discoveries.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

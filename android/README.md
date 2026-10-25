@@ -100,3 +100,10 @@ and open after their builders finish. Previously completed works remain built.
 Open Thimblehaven council → Your town → Growth forecast & what to do next.
 View projected household savings, arrivals/departures and levy income, with
 specific advice about housing, safety, markets and supporting struggling families.
+
+### 0.1.12 — Coastal discoveries
+
+Open Ocean chart → Discoveries. Sail to three abandoned cargo wrecks, recover
+maps and follow two landmark clues ashore. Each treasure rewards a keepsake
+shown in your cottage. These discoveries have no sinking timer or deadline;
+existing naval combat wrecks retain their usual rules.

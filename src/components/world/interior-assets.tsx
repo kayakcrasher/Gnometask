@@ -1,3 +1,4 @@
+import {TreasureShelf} from "./discovery-wrecks";
 import {neighbourProfile} from "@/lib/game/neighbours";
 import { AdaptiveResolution, useCanvasDpr, MOBILE_GRAPHICS } from "./mobile-graphics";
 import { CottageMusicBox } from "./music-box";
@@ -445,7 +446,7 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
         </mesh>
         <RoomPlant x={2.6} z={1.8} />
         <ShopFurniture id={id} />
-        {id === "cottage" && <CozyTouches />}
+        {id === "cottage" && <><CozyTouches/><TreasureShelf/></>}
         {id === "neighbor"&&<><group position={[0,0,-1.5]}><GnomeRig hat="hat-moss" coat={profile.coat} beard gesture="wave"/></group><mesh position={[-.3,.018,.5]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[1.1,1.7]}/><meshStandardMaterial color={profile.coat}/></mesh><mesh position={[-3.28,1.8,-1.1]}><boxGeometry args={[.05,.7,.8]}/><meshStandardMaterial color={profile.coat}/></mesh></>}
       </InteriorCanvas>
       <button

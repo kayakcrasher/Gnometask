@@ -1,0 +1,21 @@
+import {build} from 'esbuild-wasm';
+const r=await build({stdin:{resolveDir:process.cwd(),contents:`
+import assert from 'node:assert/strict';
+import {useGame} from './src/lib/game/store';
+import {defaultSave,migrate} from './src/lib/game/save';
+import {UI_SEED,snap} from './src/lib/game/store/persist';
+import {TREASURES,salvageSites,coerceExploration} from './src/lib/game/exploration';
+import {navigableWater,seaRoute} from './src/lib/game/sailing';
+import {walkableLand} from './src/lib/game/world3';
+const g=useGame.getState,set=useGame.setState;let n=0;function reset(){set({...defaultSave(),...UI_SEED,named:true,atHome:false,hydrated:true,coins:1000});}function test(name,f){reset();f();n++;console.log('✓ '+name);}
+function aboard(id='lantern'){const p=salvageSites(g().ocean.seed).find(t=>t.id===id);set({afloat:'row',gnomeX:p.x,gnomeY:p.y});return p;}
+test('coastal sites are stable, navigable and reachable from their harbour',()=>{for(let seed=1;seed<=40;seed++){const a=salvageSites(seed);assert.deepEqual(a,salvageSites(seed));assert.equal(new Set(a.map(p=>p.x+','+p.y)).size,3);for(const p of a)assert(navigableWater(p.x,p.y));}for(const p of salvageSites(1013))assert(seaRoute(p.id==='compass'?{x:-35,y:530}:{x:1650,y:-3230},p));});
+test('every treasure clue is on walkable land',()=>{for(const t of TREASURES)for(const c of t.clues)assert(walkableLand(c.x,c.y),t.id);});
+test('salvage consumes no ship and pays once while unlocking its map',()=>{aboard();g().salvageDiscovery('lantern');assert.equal(g().coins,1040);assert.equal(g().goods.cloth,1);assert.equal(g().skills.sailing,25);assert.equal(g().afloat,'row');g().salvageDiscovery('lantern');assert.equal(g().coins,1040);assert.deepEqual(g().exploration.salvaged,['lantern']);});
+test('remote, disabled, combat, fishing and rescue states cannot claim salvage',()=>{const p=aboard();for(const patch of [{gnomeX:0},{naval:{...g().naval,integrity:{row:0}}},{combat:{phase:'won'}},{fishing:{}},{naval:{...g().naval,rescue:{}}},{atHome:true},{afloat:null}]){const before=g();set(patch);g().salvageDiscovery('lantern');assert.equal(g().coins,1000);set({gnomeX:p.x,naval:before.naval,combat:null,fishing:null,atHome:false,afloat:'row'});}});
+test('maps require salvage and two ordered local searches before rewarding a keepsake',()=>{const t=TREASURES[0];set({gnomeX:t.clues[0].x,gnomeY:t.clues[0].y});g().searchTreasure(t.id);assert(!g().exploration.steps[t.id]);aboard();g().salvageDiscovery(t.id);for(let i=0;i<2;i++){const c=t.clues[i];set({afloat:null,gnomeX:c.x,gnomeY:c.y});g().searchTreasure(t.id);assert.equal(g().exploration.steps[t.id],i+1);}assert.equal(g().coins,1160);assert.equal(g().skills.crafting,40);assert.deepEqual(g().exploration.claimed,['lantern']);g().searchTreasure(t.id);assert.equal(g().coins,1160);});
+test('out-of-order searches and searches from boats cannot advance clues',()=>{aboard();g().salvageDiscovery('lantern');const c=TREASURES[0].clues[1];set({afloat:null,gnomeX:c.x,gnomeY:c.y});g().searchTreasure('lantern');assert.equal(g().exploration.steps.lantern,0);const first=TREASURES[0].clues[0];set({afloat:'row',gnomeX:first.x,gnomeY:first.y});g().searchTreasure('lantern');assert.equal(g().exploration.steps.lantern,0);});
+test('all three distinct journeys retain rewards and progress through migration',()=>{for(const t of TREASURES){aboard(t.id);g().salvageDiscovery(t.id);for(const c of t.clues){set({afloat:null,gnomeX:c.x,gnomeY:c.y});g().searchTreasure(t.id);}}const loaded=migrate(snap(g()));assert.equal(loaded.exploration.claimed.length,3);assert.equal(loaded.coins,1720);const old=snap(g());delete old.exploration;assert.deepEqual(migrate(old).exploration.salvaged,[]);});
+test('malformed exploration is bounded and cannot invent unlocked or duplicate maps',()=>{const x=coerceExploration({salvaged:['lantern','lantern','fake'],steps:{lantern:Infinity},claimed:['lantern','fake']});assert.deepEqual(x.salvaged,['lantern']);assert.equal(x.steps.lantern,0);assert.deepEqual(x.claimed,[]);});
+console.log(n+' discovery checks passed');
+`},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent',alias:{'@':process.cwd()+'/src'}});try{await import('data:text/javascript;base64,'+Buffer.from(r.outputFiles[0].text).toString('base64'));}catch(e){console.error(e.message);process.exit(1);}

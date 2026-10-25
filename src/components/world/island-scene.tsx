@@ -1,5 +1,6 @@
 import { SailingPlayer } from "./sailing-player";
 import { NearbyWorld, NearbyRegion, AdaptiveResolution, MOBILE_GRAPHICS, useCanvasDpr } from "./mobile-graphics";
+import {DiscoveryWrecks} from "./discovery-wrecks";
 import {OpenOceanScene} from "./open-ocean";
 import {shipFit} from "@/lib/game/naval";
 import {PlayerHarbours} from "./player-harbours";
@@ -280,7 +281,7 @@ function SceneBody({
       <CountryRoads />
       <EstateHomes /><PlayerCity />
       <PassengerWagons pos={pos} />
-      <OpenOceanScene onWalk={onWalk}/><PlayerHarbours walkTo={walkTo}/><FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
+      <DiscoveryWrecks/><OpenOceanScene onWalk={onWalk}/><PlayerHarbours walkTo={walkTo}/><FutureSunstepHarbour pos={pos}/><NorthernWaystation/>
       <RoadCrew />
       <NorthernScenery />
       <FrontierLandscape onWalk={onWalk} pos={pos} />

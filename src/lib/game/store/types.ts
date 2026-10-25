@@ -18,6 +18,8 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    salvageDiscovery:(id:string)=>void;
+    searchTreasure:(id:string)=>void;
     chatNeighbour:(id:string)=>void;
     giftNeighbour:(id:string,gift:import("../neighbours").NeighbourGift)=>void;
     visitNeighbour:(id:string)=>void;

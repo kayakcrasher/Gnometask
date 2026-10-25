@@ -228,6 +228,7 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  exploration:import("./exploration").Exploration;
   neighbourhood:import("./neighbours").Neighbourhood;
   townProgress:import("./town-progress").TownProgress;
   thimble:import("./thimblehaven").Thimblehaven;

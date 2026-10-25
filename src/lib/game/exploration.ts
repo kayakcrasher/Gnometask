@@ -1,0 +1,10 @@
+import {navigableWater} from './sailing';
+export const TREASURES=[
+ {id:'lantern',name:'The lamplighter’s chart',relic:'Captain’s lantern',clues:[{x:800,y:-1900,text:'Find the picnic lookout in Bramblewood National Park. Look beneath the bench; leave the woodland undisturbed.'},{x:660,y:-2470,text:'Where the mountains fit inside a mirror, a lookout keeps a little light. Search the Mirror Lake viewpoint.'}]},
+ {id:'compass',name:'The wandering compass',relic:'Snowbell compass',clues:[{x:660,y:-2470,text:'Begin at the Mirror Lake viewpoint, where the peaks look back at themselves.'},{x:-50,y:-3100,text:'Follow the snowbells to the old cairns. Search the Snowbell Pass lookout.'}]},
+ {id:'shell',name:'A sailor’s way home',relic:'Thimble Bay shell',clues:[{x:800,y:-1900,text:'A picnic shelter in a very large wood holds the first note. Visit Bramblewood’s lookout.'},{x:1560,y:-2610,text:'Between the northern arms, find the lookout over Thimble Bay. Your last clue waits on dry land.'}]},
+] as const;
+export type Exploration={salvaged:string[];steps:Record<string,number>;claimed:string[]};
+export const emptyExploration=():Exploration=>({salvaged:[],steps:{},claimed:[]});
+export function coerceExploration(raw:unknown):Exploration{const out=emptyExploration();if(!raw||typeof raw!=='object')return out;const r=raw as Partial<Exploration>;for(const t of TREASURES)if(Array.isArray(r.salvaged)&&r.salvaged.includes(t.id)){out.salvaged.push(t.id);const step=r.steps?.[t.id];out.steps[t.id]=typeof step==='number'&&Number.isFinite(step)?Math.max(0,Math.min(2,Math.floor(step))):0;if(Array.isArray(r.claimed)&&r.claimed.includes(t.id)&&out.steps[t.id]===2)out.claimed.push(t.id);}return out;}
+export function salvageSites(seed:number){return TREASURES.map((t,i)=>{const base=i===0?{x:1650,y:-3230}:i===1?{x:-35,y:530}:{x:1820,y:-3470};const offset=(seed>>>0)%8;for(let j=0;j<32;j++){const a=(j+offset)*Math.PI/4,r=160+Math.floor(j/8)*100,x=base.x+Math.cos(a)*r,y=base.y+Math.sin(a)*r;if(navigableWater(x,y))return {...t,x,y};}return {...t,...base};});}
