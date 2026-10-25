@@ -1,3 +1,4 @@
+import {recordNoticeVisits} from "../town-progress";
 import { freshOpening, openingPeaceful } from "../opening";
 import { playerHomeDoor } from "../city";
 import {emptyOcean,setOceanSeed} from "../ocean-world";
@@ -217,7 +218,8 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     },
     leaveInterior: () => set({ interior: null }),
     setGnomePos: (x: number, y: number) => {
-      set({ gnomeX: x, gnomeY: y });
+      const s=get();
+      set({ gnomeX: x, gnomeY: y, townProgress:(!s.atHome&&!s.interior&&!s.abroad&&!s.combat)?recordNoticeVisits(s,x,y):s.townProgress });
       scheduleWrite(get);
     },
     setFollowWalk: (on: boolean) => set({ followWalk: on }),

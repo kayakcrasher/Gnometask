@@ -1,3 +1,4 @@
+import { NOTICEBOARD } from "./town-progress";
 import { inNationalPark, PARK_RING } from "./data/national-park";
 import { frontierBuildable, FRONTIER_LAKES, FRONTIER_PEAKS } from "./data/frontier";
 import { SUNSTEP_FEATURES } from "./data/sunstep";
@@ -87,7 +88,9 @@ export function nearestRoad(x: number, y: number) {
     }
   return best;
 }
+const NOTICEBOARD_SITE={...NOTICEBOARD,w:20,h:12};
 const FIXED_BUILDINGS = [
+  NOTICEBOARD_SITE,
   {...SUNSTEP_FEATURES.hotel,w:35,h:28},
   {...SUNSTEP_FEATURES.fountain,w:50,h:50},
   {...SUNSTEP_FEATURES.oasis,w:65,h:65},
@@ -112,6 +115,7 @@ export function buildingSiteClear(
   x: number,
   y: number,
   others: { x: number; y: number }[] = [],
+  preserveExisting = false,
 ) {
   if (
     inNationalPark(x,y,36) ||
@@ -132,7 +136,7 @@ export function buildingSiteClear(
     return false;
   if (
     FIXED_BUILDINGS.some(
-      (b) => Math.abs(x - b.x) < b.w + 27 && Math.abs(y - b.y) < b.h + 25,
+      (b) => (!preserveExisting || b!==NOTICEBOARD_SITE) && Math.abs(x - b.x) < b.w + 27 && Math.abs(y - b.y) < b.h + 25,
     )
   )
     return false;
@@ -225,9 +229,9 @@ export function developedRoads(
 }
 
 /** Narrow construction clearance for streets, distinct from a house footprint. */
-export function roadSiteClear(x:number,y:number,others:{x:number;y:number}[]=[]){
+export function roadSiteClear(x:number,y:number,others:{x:number;y:number}[]=[],preserveExisting=false){
  if(inNationalPark(x,y,20)||!frontierBuildable(x,y,28)||!Number.isFinite(x)||!Number.isFinite(y)||nobleRise(x,y)>.15)return false;
  if(![-13,13].every(dx=>[-13,13].every(dy=>onGrass(x+dx,y+dy)||onDesert(x+dx,y+dy))))return false;
  if(Math.hypot(x-520,y-190)<135)return false;
- return !FIXED_BUILDINGS.some(b=>Math.abs(x-b.x)<b.w+13&&Math.abs(y-b.y)<b.h+13)&&!others.some(b=>Math.abs(x-b.x)<39&&Math.abs(y-b.y)<37);
+ return !FIXED_BUILDINGS.some(b=>(!preserveExisting||b!==NOTICEBOARD_SITE)&&Math.abs(x-b.x)<b.w+13&&Math.abs(y-b.y)<b.h+13)&&!others.some(b=>Math.abs(x-b.x)<39&&Math.abs(y-b.y)<37);
 }

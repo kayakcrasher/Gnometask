@@ -1,3 +1,4 @@
+import { recordNoticeVisits } from "../town-progress";
 import { inNationalPark } from "../data/national-park";
 import {oceanLandings} from "../ocean-world";
 import {shipFit} from "../naval";
@@ -146,6 +147,7 @@ export function gatherSlice(
         set({
           gnomeX: near.id==='capital'?PLACE_ANCHORS.dock.x:near.x, gnomeY: near.id==='capital'?PLACE_ANCHORS.dock.y:near.y,
           afloat: null, sailHome: false, popup: null, interior: null,
+          townProgress:recordNoticeVisits({...s,afloat:null},near.id==='capital'?PLACE_ANCHORS.dock.x:near.x,near.id==='capital'?PLACE_ANCHORS.dock.y:near.y),
           selectedPlace: "dock", speech: `Moored safely at ${near.name}.`,
         });
         sfx("open");

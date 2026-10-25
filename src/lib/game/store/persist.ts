@@ -44,6 +44,7 @@ export function snap(s: GameSave): GameSave {
   return {
     version: s.version,
     opening: s.opening,
+    townProgress:s.townProgress,
     gnomeName: s.gnomeName,
     named: s.named,
     hat: s.hat,

@@ -79,3 +79,11 @@ Rendering no longer falls below one CSS pixel per pixel. Menu → Graphics quali
 larger NPC interaction targets, visits to nearby businesses and homes, and
 wind-aware sailing with hull-specific responsiveness. Existing saves remain
 compatible. Open Deeds to browse land; the sailing panel shows the breeze.
+
+### 0.1.9 — Town milestones and neighbour notices
+
+Tap the wooden noticeboard beside your Thimblehaven home, or open Thimblehaven
+council → Noticeboard. Visit your home, claim the first milestone and accept up
+to three optional favours. Return to the board with goods or reports for payment.
+No deadlines. Grow the town towards its charter to unlock better commissions.
+Older saves retain their town and inventory and begin with an empty board.

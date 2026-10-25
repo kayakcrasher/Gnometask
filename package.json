@@ -29,7 +29,8 @@
     "check:consistency": "node scripts/check-consistency.mjs",
     "check:types": "tsc --noEmit",
     "check:visual-motion": "node scripts/check-visual-motion.mjs",
-    "check:island-life": "node scripts/check-island-life.mjs"
+    "check:island-life": "node scripts/check-island-life.mjs",
+    "check:town-notices": "node scripts/check-town-notices.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

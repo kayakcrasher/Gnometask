@@ -169,6 +169,11 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
     setWalking(true);
   }, [stop]);
 
+  useEffect(()=>{
+    const handle=(event:Event)=>{const p=(event as CustomEvent<{x:number;y:number}>).detail;if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))walkTo(p.x,p.y);};
+    window.addEventListener("hollow-watch:notice-walk",handle);
+    return()=>window.removeEventListener("hollow-watch:notice-walk",handle);
+  },[walkTo]);
   useEffect(() => {
     if (!sailHome || !afloat) return;
     useGame.setState({ sailHome: false });

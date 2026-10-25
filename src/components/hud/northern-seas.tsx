@@ -1,5 +1,7 @@
+import {TownNoticeboard} from "./town-noticeboard";
+import {NOTICEBOARD_EVENT,TOWN_MILESTONES} from "@/lib/game/town-progress";
 import {fleetSeeds} from "@/lib/game/naval";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useGame } from "@/lib/game/store";
 import {
@@ -18,8 +20,9 @@ const btn =
 export function NorthernSeas() {
   const s = useGame(),
     [open, setOpen] = useState(false),
-    [tab, setTab] = useState<"town" | "naval">("town"),
+    [tab, setTab] = useState<"town" | "naval" | "board">("town"),
     [hull, setHull] = useState("row");
+  useEffect(()=>{const openBoard=()=>{setTab("board");setOpen(true);};window.addEventListener(NOTICEBOARD_EVENT,openBoard);return()=>window.removeEventListener(NOTICEBOARD_EVENT,openBoard);},[]);
   if (
     !s.named ||
     s.atHome ||
@@ -105,7 +108,7 @@ export function NorthernSeas() {
                   {s.coins.toLocaleString()} coins · Naval Warfare {warfare}
                 </p>
                 <nav className="flex gap-2">
-                  {(["town", "naval"] as const).map((t) => (
+                  {(["town", "board", "naval"] as const).map((t) => (
                     <button
                       key={t}
                       type="button"
@@ -113,12 +116,12 @@ export function NorthernSeas() {
                       onClick={() => setTab(t)}
                       className={`${btn} ${tab === t ? "bg-pine text-parchment" : "bg-pine/10"}`}
                     >
-                      {t === "town" ? "Your northern town" : "Naval command"}
+                      {t === "town" ? "Your town" : t === "board" ? "Noticeboard" : "Naval command"}
                     </button>
                   ))}
                 </nav>
               </div>
-              {tab === "town" ? (
+              {tab === "board" ? <TownNoticeboard onTravel={()=>setOpen(false)}/> : tab === "town" ? (
                 <div className="space-y-3">
                   <h3 className="font-display text-xl font-bold">
                     Your home. Your little frontier town.
@@ -129,6 +132,7 @@ export function NorthernSeas() {
                     improvements, provide room for newcomers and connect the
                     town to the island.
                   </p>
+                  <button type="button" className={`${btn} w-full bg-pine text-parchment`} onClick={()=>setTab("board")}>Town milestones & neighbour notices · {s.townProgress.claimed.length}/{TOWN_MILESTONES.length}</button>
                   <p className="rounded-xl bg-gold/20 p-3 text-sm">
                     {s.thimble.news}
                   </p>

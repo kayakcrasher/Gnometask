@@ -18,6 +18,11 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    claimTownMilestone:(id:string)=>void;
+    acceptNotice:(id:import("../town-progress").NoticeId)=>void;
+    handInNotice:(id:import("../town-progress").NoticeId)=>void;
+    abandonNotice:(id:import("../town-progress").NoticeId)=>void;
+    refreshNotices:()=>void;
     tickOpening:(dt:number)=>void;
     requestTow:()=>void;
     boardWreck:(id:string)=>void;

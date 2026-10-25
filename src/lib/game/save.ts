@@ -1,3 +1,4 @@
+import {emptyTownProgress,coerceTownProgress} from "./town-progress";
 import { settledOpening, coerceOpening, openingPeaceful } from "./opening";
 import {emptyOcean,coerceOcean,setOceanSeed} from "./ocean-world";
 import {emptyThimble,coerceThimble,THIMBLE_HOME,starterThimbleHome} from "./thimblehaven";
@@ -30,7 +31,7 @@ import { boatById } from "./data/boats";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -100,6 +101,7 @@ export function defaultSave(): GameSave {
     saplings: 0,
     deeds: ["thimble-home"],
     city: emptyCity(),
+    townProgress:emptyTownProgress(),
     thimble:emptyThimble(),
     ocean:emptyOcean(),
     naval:emptyNaval(),
@@ -367,6 +369,7 @@ export function migrate(raw: unknown): GameSave {
     logs: typeof s.logs === "number" ? s.logs : 0,
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: [...new Set([...asStringArray(s.deeds, []), "thimble-home"])],
+    townProgress:coerceTownProgress(s.townProgress),
     thimble:coerceThimble(s.thimble),
     ocean,
     naval:coerceNaval(s.naval,asStringArray(s.hulls,[]),Boolean(s.cannons)),
@@ -376,7 +379,7 @@ export function migrate(raw: unknown): GameSave {
     roadWorks: coerceRoadWorks(s.roadWorks),
     transport:coerceTransport(s.transport,coerceRoadWorks(s.roadWorks).completed),
     estate: Object.fromEntries(Object.entries(s.estate && typeof s.estate === "object" ? s.estate : {}).filter(([id,h]) => {
-      const p=parcelAt(id);return p && asStringArray(s.deeds,[]).includes(id) && h && Number.isFinite(h.x) && Number.isFinite(h.y) && Number.isInteger(h.level) && h.level>=1 && h.level<=3 && insideParcel(p,h.x,h.y) && buildingSiteClear(h.x,h.y);
+      const p=parcelAt(id);return p && asStringArray(s.deeds,[]).includes(id) && h && Number.isFinite(h.x) && Number.isFinite(h.y) && Number.isInteger(h.level) && h.level>=1 && h.level<=3 && insideParcel(p,h.x,h.y) && buildingSiteClear(h.x,h.y,[],true);
     })),
     shares: asFishBag(s.shares),
     waveDay: typeof s.waveDay === "number" ? Math.max(0, Math.floor(s.waveDay)) : 0,

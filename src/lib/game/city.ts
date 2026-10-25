@@ -115,6 +115,7 @@ export function citySiteError(
   kind: CityKind,
   x: number,
   y: number,
+  preserveExisting = false,
 ): string | null {
   if (kind === "home" && s.city.buildings.some((b) => b.kind === "home"))
     return "Your home is already in your city.";
@@ -134,7 +135,7 @@ export function citySiteError(
       ...Object.values(s.estate),
       ...s.city.buildings,
       ...s.civic.plots.filter((p) => p.stories > 0),
-    ]) ||
+    ], preserveExisting) ||
     s.city.roads.some((r) => nearRoad(x, y, r, 28))
   )
     return "Keep buildings clear of roads, water, mountains and other buildings.";
@@ -176,6 +177,7 @@ export function cityRoadError(
   s: GameSave,
   a: RoadPoint,
   b: RoadPoint,
+  preserveExisting = false,
 ): string | null {
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
   if (!Number.isFinite(len) || len < 20 || len > 600)
@@ -216,7 +218,7 @@ export function cityRoadError(
       nearRoad(x, y, r, 6),
     );
     if (owned && !junction) newGround = true;
-    if ((!owned && !junction) || !roadSiteClear(x, y, occupied))
+    if ((!owned && !junction) || !roadSiteClear(x, y, occupied, preserveExisting))
       return "Roads must stay on your land and meet public roads without crossing homes, water or steep ground.";
   }
   return newGround
@@ -511,7 +513,7 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
       ![...a, ...b].every(Number.isFinite)
     )
       continue;
-    if (cityRoadError(state, a, b)) continue;
+    if (cityRoadError(state, a, b, true)) continue;
     out.roads.push({
       id: `city-road-${out.nextId++}`,
       points: [a, b],
@@ -531,7 +533,7 @@ export function coerceCity(raw: unknown, s: GameSave): PlayerCity {
     )
       continue;
     // Saved buildings retain their progression even if the Hall is later reset.
-    if (!(b.kind==='home'&&b.parcel==='thimble-home'&&b.x===THIMBLE_HOME.x&&b.y===THIMBLE_HOME.y)&&citySiteError({ ...state, townHallLevel: 5 }, b.kind, b.x, b.y))
+    if (!(b.kind==='home'&&b.parcel==='thimble-home'&&b.x===THIMBLE_HOME.x&&b.y===THIMBLE_HOME.y)&&citySiteError({ ...state, townHallLevel: 5 }, b.kind, b.x, b.y, true))
       continue;
     const p = s.deeds.map(parcelAt).find((p) => p && insideParcel(p, b.x, b.y));
     if (!p) continue;

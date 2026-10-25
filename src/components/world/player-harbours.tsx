@@ -1,3 +1,4 @@
+import {TownNoticeboard3} from "./town-noticeboard";
 import { FluidSeaGroup } from "./sailing-player";
 import { useNearby } from "./mobile-graphics";
 import {fleetSeeds} from "@/lib/game/naval";
@@ -159,6 +160,7 @@ export function PlayerHarbours({
           </p>
         </Html>
       </group>
+      <TownNoticeboard3/>
       {s.thimble.residents.map((r, i) => {
         const spots = [
             [2100, -3230],
