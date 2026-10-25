@@ -1,3 +1,4 @@
+import {NeighbourHomes3} from "./neighbour-homes";
 import {TownNoticeboard3} from "./town-noticeboard";
 import { FluidSeaGroup } from "./sailing-player";
 import { useNearby } from "./mobile-graphics";
@@ -161,39 +162,7 @@ export function PlayerHarbours({
         </Html>
       </group>
       <TownNoticeboard3/>
-      {s.thimble.residents.map((r, i) => {
-        const spots = [
-            [2100, -3230],
-            [2370, -3150],
-            [2390, -3350],
-            [2190, -3520],
-            [2420, -3550],
-            [2050, -2850],
-            [2300, -2850],
-            [2500, -2900],
-          ],
-          p = spots[i]!;
-        return (
-          <group
-            key={r.id}
-            position={to3(p[0]!, p[1]!, groundY(p[0]!, p[1]!))}
-            onClick={(e) => {
-              e.stopPropagation();
-              s.speak(`${r.name}: ${thimbleRemark(s)}`);
-            }}
-          >
-            <HomeAsset
-              id={r.id}
-              level={s.thimble.projects.includes("hall") ? 2 : 1}
-              style="harbour"
-              lantern={s.thimble.projects.includes("well")}
-            />
-            <group position={[1.2, 0, 1.3]}>
-              <GnomeRig hat="hat-moss" beard />
-            </group>
-          </group>
-        );
-      })}
+      <NeighbourHomes3/>
       {s.thimble.projects.includes("well") && (
         <group position={to3(2150, -3010, groundY(2150, -3010))}>
           <Beam at={[0, 0.3, 0]} size={[1, 0.6, 1]} color="#b4b7a1" />

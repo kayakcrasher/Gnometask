@@ -1,3 +1,6 @@
+import {NeighbourDirectory} from "./neighbours";
+import {NEIGHBOUR_EVENT} from "@/lib/game/neighbours";
+import {PROJECT_WORK} from "@/lib/game/thimblehaven";
 import {TownNoticeboard} from "./town-noticeboard";
 import {NOTICEBOARD_EVENT,TOWN_MILESTONES} from "@/lib/game/town-progress";
 import {fleetSeeds} from "@/lib/game/naval";
@@ -20,8 +23,10 @@ const btn =
 export function NorthernSeas() {
   const s = useGame(),
     [open, setOpen] = useState(false),
-    [tab, setTab] = useState<"town" | "naval" | "board">("town"),
+    [tab, setTab] = useState<"town" | "naval" | "board" | "neighbours">("town"),
+    [selectedNeighbour,setSelectedNeighbour]=useState("nim"),
     [hull, setHull] = useState("row");
+  useEffect(()=>{const openNeighbour=(e:Event)=>{const id=(e as CustomEvent<string>).detail;if(id)setSelectedNeighbour(id);setTab("neighbours");setOpen(true);};window.addEventListener(NEIGHBOUR_EVENT,openNeighbour);return()=>window.removeEventListener(NEIGHBOUR_EVENT,openNeighbour);},[]);
   useEffect(()=>{const openBoard=()=>{setTab("board");setOpen(true);};window.addEventListener(NOTICEBOARD_EVENT,openBoard);return()=>window.removeEventListener(NOTICEBOARD_EVENT,openBoard);},[]);
   if (
     !s.named ||
@@ -107,8 +112,8 @@ export function NorthernSeas() {
                 <p className="my-2 text-sm">
                   {s.coins.toLocaleString()} coins · Naval Warfare {warfare}
                 </p>
-                <nav className="flex gap-2">
-                  {(["town", "board", "naval"] as const).map((t) => (
+                <nav className="flex gap-2 overflow-x-auto">
+                  {(["town", "board", "neighbours", "naval"] as const).map((t) => (
                     <button
                       key={t}
                       type="button"
@@ -116,12 +121,12 @@ export function NorthernSeas() {
                       onClick={() => setTab(t)}
                       className={`${btn} ${tab === t ? "bg-pine text-parchment" : "bg-pine/10"}`}
                     >
-                      {t === "town" ? "Your town" : t === "board" ? "Noticeboard" : "Naval command"}
+                      {t === "town" ? "Your town" : t === "board" ? "Noticeboard" : t === "neighbours" ? "Neighbours" : "Naval command"}
                     </button>
                   ))}
                 </nav>
               </div>
-              {tab === "board" ? <TownNoticeboard onTravel={()=>setOpen(false)}/> : tab === "town" ? (
+              {tab === "neighbours" ? <NeighbourDirectory selected={selectedNeighbour} onSelect={setSelectedNeighbour} onTravel={()=>setOpen(false)}/> : tab === "board" ? <TownNoticeboard onTravel={()=>setOpen(false)}/> : tab === "town" ? (
                 <div className="space-y-3">
                   <h3 className="font-display text-xl font-bold">
                     Your home. Your little frontier town.
@@ -167,9 +172,11 @@ export function NorthernSeas() {
                     <article key={p.id} className="rounded-xl bg-pine/10 p-3">
                       <h4 className="font-bold">{p.name}</h4>
                       <p className="my-1 text-xs">{p.description}</p>
+                      {s.thimble.construction?.id===p.id&&<><progress aria-label={`${p.name} construction`} className="my-2 w-full" value={s.thimble.construction.progress} max={PROJECT_WORK[p.id]}/><p className="text-xs">Under construction · {Math.round(s.thimble.construction.progress/PROJECT_WORK[p.id]!*100)}% · Already paid</p></>}
                       <button
                         type="button"
                         disabled={
+                          !!s.thimble.construction ||
                           s.thimble.projects.includes(p.id) ||
                           project?.id !== p.id ||
                           s.coins < p.cost
@@ -179,7 +186,7 @@ export function NorthernSeas() {
                       >
                         {s.thimble.projects.includes(p.id)
                           ? "Built"
-                          : `Fund · ${p.cost.toLocaleString()} coins`}
+                          : s.thimble.construction?.id===p.id ? "Builders at work" : `Fund · ${p.cost.toLocaleString()} coins`}
                       </button>
                     </article>
                   ))}
@@ -227,7 +234,7 @@ export function NorthernSeas() {
                     <button
                       type="button"
                       key={r.id}
-                      onClick={() => s.speak(`${r.name}: ${thimbleRemark(s)}`)}
+                      onClick={() => {setSelectedNeighbour(r.id);setTab("neighbours");}}
                       className={`${btn} block w-full bg-pine/10 text-left`}
                     >
                       {r.name} · {r.purse} coins · Talk

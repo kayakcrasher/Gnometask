@@ -210,13 +210,13 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     },
     enterInterior: (id: InteriorId) => {
       const s=get();
-      if(!canEnter(id === "chart"))return;
+      if(id==="neighbor"||!canEnter(id === "chart"))return;
       const door=playerHomeDoor(s);
       const homeVisit=id==="cottage"&&!s.afloat&&Math.hypot(s.gnomeX-door.x,s.gnomeY-door.y)<90;
       set({ interior: id, popup: null, panel: "place", ...(homeVisit ? {opening:{...s.opening,homeVisited:true},coach:5} : {}), ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });
       if(homeVisit)scheduleWrite(get);
     },
-    leaveInterior: () => set({ interior: null }),
+    leaveInterior: () => set({ interior: null,visitingNeighbour:null }),
     setGnomePos: (x: number, y: number) => {
       const s=get();
       set({ gnomeX: x, gnomeY: y, townProgress:(!s.atHome&&!s.interior&&!s.abroad&&!s.combat)?recordNoticeVisits(s,x,y):s.townProgress });

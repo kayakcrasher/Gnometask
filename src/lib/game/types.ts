@@ -38,6 +38,7 @@ export type ShopKind =
 export type PanelId = "place" | "chores" | "inventory" | "menu";
 
 export type InteriorId =
+  | "neighbor"
   | "cottage"
   | "hatshop"
   | "armory"
@@ -227,6 +228,7 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  neighbourhood:import("./neighbours").Neighbourhood;
   townProgress:import("./town-progress").TownProgress;
   thimble:import("./thimblehaven").Thimblehaven;
   ocean:import("./ocean-world").OceanSave;
@@ -320,6 +322,7 @@ export type GameUi = {
   creatureRespawns:Record<string,number>;
   popup: GamePopup | null;
   interior: InteriorId | null;
+  visitingNeighbour:string|null;
   casinoVenue: string | null;
   casinoResult: { spin: number; stake: number; pay: number; label: string } | null;
   raids: Raid[];

@@ -1,3 +1,4 @@
+import {neighbourHome} from "@/lib/game/neighbours";
 import { useMemo, useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import { Html } from "@react-three/drei";
@@ -131,9 +132,14 @@ export function FrontierLandscape({
     open = useGame((s) => s.openPopup),
     buildings = useGame((s) => s.city.buildings),
     estate = useGame((s) => s.estate),
-    plots = useGame((s) => s.civic.plots);
+    plots = useGame((s) => s.civic.plots),
+    residents=useGame(s=>s.thimble.residents),
+    homes=useGame(s=>s.neighbourhood.homes);
   const groves = useMemo(() => {
     const occupied = [
+      ...residents.map((r,i)=>neighbourHome(r.id,i)),
+      ...Object.keys(homes).map(id=>neighbourHome(id)),
+      {x:2150,y:-3010},{x:2280,y:-2950},{x:2410,y:-3000},{x:2520,y:-3190},{x:2070,y:-3060},
       ...buildings,
       ...Object.values(estate),
       ...plots.filter((p) => p.stories > 0),
@@ -144,7 +150,7 @@ export function FrontierLandscape({
         (t) => !occupied.some((b) => Math.hypot(t.x - b.x, t.y - b.y) < 65),
       ),
     })).filter((g) => g.trees.length > 0);
-  }, [buildings, estate, plots]);
+  }, [buildings, estate, plots,residents,homes]);
   return (
     <group>
       <mesh

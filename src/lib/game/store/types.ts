@@ -18,6 +18,10 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    chatNeighbour:(id:string)=>void;
+    giftNeighbour:(id:string,gift:import("../neighbours").NeighbourGift)=>void;
+    visitNeighbour:(id:string)=>void;
+    readNeighbourLetter:(id:string)=>void;
     claimTownMilestone:(id:string)=>void;
     acceptNotice:(id:import("../town-progress").NoticeId)=>void;
     handInNotice:(id:import("../town-progress").NoticeId)=>void;

@@ -96,6 +96,7 @@ export function snap(s: GameSave): GameSave {
     city: s.city,
     economy:{...s.economy,threats:(s as GameSave&{raids?:import("../types").Raid[]}).raids??s.economy?.threats??[]},
     thimble:s.thimble,
+    neighbourhood:s.neighbourhood,
     naval:s.naval,
     ocean:s.ocean,
     bank:s.bank,
@@ -228,6 +229,7 @@ export const UI_SEED: Pick<
   | "clearedPack"
   | "creatureRespawns"
   | "popup"
+  | "visitingNeighbour"
   | "interior"
   | "casinoVenue"
   | "casinoResult"
@@ -254,6 +256,7 @@ export const UI_SEED: Pick<
   clearedPack: [],
   creatureRespawns:{},
   popup: null,
+  visitingNeighbour:null,
   interior: null,
   casinoVenue: null,
   casinoResult: null,

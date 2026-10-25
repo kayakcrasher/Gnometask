@@ -1,3 +1,4 @@
+import {emptyNeighbourhood,coerceNeighbourhood} from "./neighbours";
 import {emptyTownProgress,coerceTownProgress} from "./town-progress";
 import { settledOpening, coerceOpening, openingPeaceful } from "./opening";
 import {emptyOcean,coerceOcean,setOceanSeed} from "./ocean-world";
@@ -31,7 +32,7 @@ import { boatById } from "./data/boats";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -101,6 +102,7 @@ export function defaultSave(): GameSave {
     saplings: 0,
     deeds: ["thimble-home"],
     city: emptyCity(),
+    neighbourhood:emptyNeighbourhood(),
     townProgress:emptyTownProgress(),
     thimble:emptyThimble(),
     ocean:emptyOcean(),
@@ -369,6 +371,7 @@ export function migrate(raw: unknown): GameSave {
     logs: typeof s.logs === "number" ? s.logs : 0,
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: [...new Set([...asStringArray(s.deeds, []), "thimble-home"])],
+    neighbourhood:coerceNeighbourhood(s.neighbourhood),
     townProgress:coerceTownProgress(s.townProgress),
     thimble:coerceThimble(s.thimble),
     ocean,

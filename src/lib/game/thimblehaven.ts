@@ -50,7 +50,9 @@ export const TOWN_PROJECTS = [
       "An expanded council house, public garden and room for eight families.",
   },
 ] as const;
-export type TownResident = { id: string; name: string; purse: number };
+export type HomeWork={target:number;progress:number};
+export type TownResident = { id: string; name: string; purse: number; homeLevel?:number; work?:HomeWork; arrival?:number };
+export const PROJECT_WORK:Record<string,number>={well:6,market:8,depot:10,cottages:12,hall:16};
 export type Thimblehaven = {
   version: 1;
   projects: string[];
@@ -60,13 +62,14 @@ export type Thimblehaven = {
   spent: number;
   tax: number;
   news: string;
+  construction?:{id:string;progress:number};
 };
 export const emptyThimble = (): Thimblehaven => ({
   version: 1,
   projects: [],
   residents: [
-    { id: "nim", name: "Nim Nettlewick", purse: 120 },
-    { id: "holly", name: "Holly Bracken", purse: 120 },
+    { id: "nim", name: "Nim Nettlewick", purse: 120,homeLevel:1 },
+    { id: "holly", name: "Holly Bracken", purse: 120,homeLevel:1 },
   ],
   beat: 0,
   revenue: 0,
@@ -118,19 +121,27 @@ export function coerceThimble(v: unknown): Thimblehaven {
       )
       .slice(0, cap)
       .map((r) => ({
-        ...r,
+        id:r.id,
+        homeLevel:Number.isInteger(r.homeLevel)?Math.max(0,Math.min(3,r.homeLevel!)):(out.projects.includes("hall")?2:1),
+        ...(r.work&&Number.isInteger(r.work.target)&&Number.isFinite(r.work.progress)&&r.work.target>(r.homeLevel??(out.projects.includes("hall")?2:1))&&r.work.target<=3?{work:{target:Math.floor(r.work.target),progress:Math.max(0,Math.min(9,Math.floor(r.work.progress)))}}:{}),
+        ...(Number.isFinite(r.arrival)?{arrival:Math.max(0,Math.min(3,Math.floor(r.arrival!)))}:{}),
         name: r.name.slice(0, 30),
         purse: Math.max(0, Math.floor(r.purse)),
       }));
   for (const k of ["beat", "revenue", "spent"] as const)
     if (Number.isFinite(t[k])) out[k] = Math.max(0, Math.floor(t[k]!));
+  if(t.construction&&t.construction.id===TOWN_PROJECTS[out.projects.length]?.id&&Number.isFinite(t.construction.progress))out.construction={id:t.construction.id,progress:Math.max(0,Math.min(PROJECT_WORK[t.construction.id]!-1,Math.floor(t.construction.progress)))};
   out.tax = [0, 1, 2, 3].includes(t.tax!) ? t.tax! : 1;
   out.news = typeof t.news === "string" ? t.news.slice(0, 300) : out.news;
   return out;
 }
 export function stepThimble(s: GameSave) {
-  const t = s.thimble,
-    beat = t.beat + 1;
+  const beat = s.thimble.beat + 1;
+  let t={...s.thimble,residents:s.thimble.residents.map(r=>{
+    if(r.work){const progress=r.work.progress+1,needed=r.work.target===1?4:r.work.target===2?6:10;return progress>=needed?{...r,homeLevel:r.work.target,work:undefined,...(r.work.target===1?{arrival:0}:{})}:{...r,work:{...r.work,progress}};}
+    return r.arrival!==undefined&&r.arrival<3?{...r,arrival:r.arrival+1}:r;
+  })};
+  if(t.construction){const progress=t.construction.progress+1;if(progress>=PROJECT_WORK[t.construction.id]!){const p=TOWN_PROJECTS.find(p=>p.id===t.construction!.id)!;t={...t,construction:undefined,projects:[...t.projects,p.id],news:`${p.name} is open! The crew has taken down the scaffolding.`};}else t={...t,construction:{...t.construction,progress}};}
   if (beat % 10) return { thimble: { ...t, beat }, coins: s.coins };
   const c = economicClimate(s),
     cap = t.projects.includes("hall")
@@ -164,7 +175,8 @@ export function stepThimble(s: GameSave) {
     ];
     const name = names.find((n) => !residents.some((r) => r.name === n));
     if (name) {
-      residents.push({ id: "family-" + name.split(" ")[0], name, purse: 80 });
+      const id="family-"+name.split(" ")[0],existing=s.neighbourhood.homes[id]??0;
+      residents.push({ id, name, purse: existing?80:40,homeLevel:existing,...(existing?{}:{work:{target:1,progress:0}}),arrival:0 });
       news = `${name} has moved to Thimblehaven. Bring a pie, not a planning objection.`;
     }
   } else if (
@@ -176,6 +188,11 @@ export function stepThimble(s: GameSave) {
     residents = residents.filter((r) => r !== leaving);
     news = `${leaving.name} has left for steadier work. Thimblehaven needs a healthier economy.`;
   }
+  // Household extensions are funded once from their own savings.
+  if(c.jobs>=2)residents=residents.map(r=>{const level=r.homeLevel??1,target=level+1,cost=target===2?120:320;
+    if(!r.work&&level>=1&&level<3&&t.projects.includes(target===2?"cottages":"hall")&&r.purse>=cost+40)return {...r,purse:r.purse-cost,work:{target,progress:0}};
+    return r;
+  });
   let income = 0;
   residents = residents.map((r) => {
     const paid = Math.min(t.tax, r.purse);

@@ -1,3 +1,4 @@
+import {neighbourProfile} from "@/lib/game/neighbours";
 import { AdaptiveResolution, useCanvasDpr, MOBILE_GRAPHICS } from "./mobile-graphics";
 import { CottageMusicBox } from "./music-box";
 import { useGame } from "@/lib/game/store";
@@ -199,7 +200,7 @@ function Table({ x = 0, z = 0 }: { x?: number; z?: number }) {
   );
 }
 function ShopFurniture({ id }: { id: InteriorId }) {
-  const cottage = id === "cottage",
+  const cottage = id === "cottage" || id === "neighbor",
     dock = id === "dockhouse",
     hall = id === "townhall";
   return (
@@ -389,6 +390,7 @@ function CozyTouches() {
   );
 }
 export function InteriorPreview({ id }: { id: InteriorId }) {
+  const host=useGame(s=>s.visitingNeighbour),profile=neighbourProfile(host??"nim");
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
@@ -444,6 +446,7 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
         <RoomPlant x={2.6} z={1.8} />
         <ShopFurniture id={id} />
         {id === "cottage" && <CozyTouches />}
+        {id === "neighbor"&&<><group position={[0,0,-1.5]}><GnomeRig hat="hat-moss" coat={profile.coat} beard gesture="wave"/></group><mesh position={[-.3,.018,.5]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[1.1,1.7]}/><meshStandardMaterial color={profile.coat}/></mesh><mesh position={[-3.28,1.8,-1.1]}><boxGeometry args={[.05,.7,.8]}/><meshStandardMaterial color={profile.coat}/></mesh></>}
       </InteriorCanvas>
       <button
         type="button"

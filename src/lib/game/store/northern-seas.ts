@@ -1,3 +1,4 @@
+import {addNeighbourLetter} from "../neighbours";
 import { rescuePorts } from "../ocean-rescue";
 import { gunLimit, hullStrength, shipFit, fleetSeeds } from "../naval";
 import { TOWN_PROJECTS, stepThimble } from "../thimblehaven";
@@ -59,16 +60,16 @@ export function northernSeasSlice(
     fundThimble: (id) => {
       const s = get(),
         p = TOWN_PROJECTS[s.thimble.projects.length];
-      if (!ready() || p?.id !== id || s.coins < p.cost) return;
+      if (!ready() || s.thimble.construction || p?.id !== id || s.coins < p.cost) return;
       set({
         coins: s.coins - p.cost,
         thimble: {
           ...s.thimble,
-          projects: [...s.thimble.projects, id],
+          construction:{id,progress:0},
           spent: s.thimble.spent + p.cost,
-          news: `${p.name} completed. Thimblehaven is a little more like home.`,
+          news: `${p.name} is funded. The road crew is putting up the scaffolding.`,
         },
-        speech: `${p.name} is ready. The townsfolk brought sandwiches for the builders.`,
+        speech: `${p.name} is funded. Building continues while you explore; no second payment is needed.`,
       });
       save();
     },
@@ -90,7 +91,14 @@ export function northernSeasSlice(
         (typeof document !== "undefined" && document.hidden)
       )
         return;
-      set(stepThimble(s));
+      const next=stepThimble(s);const homes={...s.neighbourhood.homes};for(const r of [...s.thimble.residents,...next.thimble.residents])if((r.homeLevel??1)>0)homes[r.id]=Math.max(homes[r.id]??0,r.homeLevel??1);let neighbourhood={...s.neighbourhood,homes};
+      for(const r of next.thimble.residents){const old=s.thimble.residents.find(p=>p.id===r.id);
+        if(!old)neighbourhood=addNeighbourLetter(neighbourhood,`arrival-${r.id}-${next.thimble.beat}`,r.name,"I’ve made it to Thimblehaven! My luggage is considerably larger than my savings. Come say hello while my home is being built.");
+        if(old&&(r.homeLevel??1)>(old.homeLevel??1))neighbourhood=addNeighbourLetter(neighbourhood,`home-${r.id}-${r.homeLevel}`,r.name,"The builders have finished! Come and see what I’ve done with the place. I promise there’s a chair for you.");
+      }
+      for(const r of s.thimble.residents)if(!next.thimble.residents.some(p=>p.id===r.id))neighbourhood=addNeighbourLetter(neighbourhood,`leaving-${r.id}-${next.thimble.beat}`,r.name,"I’m leaving to find steadier work. This isn’t goodbye forever. Keep a little light in the window for me.");
+      if(s.thimble.construction&&!next.thimble.construction)neighbourhood=addNeighbourLetter(neighbourhood,`opening-${s.thimble.construction.id}`,"Thimblehaven builders",next.thimble.news);
+      set({...next,neighbourhood});
       save();
     },
     armShip: (id) => {

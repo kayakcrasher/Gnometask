@@ -1,3 +1,4 @@
+import {NeighbourRoom} from "./world/neighbour-room";
 import { useGraphics } from "@/lib/game/graphics";
 import {OpenOceanControls} from "./hud/open-ocean";
 import {NorthernSeas} from "./hud/northern-seas";
@@ -103,6 +104,7 @@ export function AppShell() {
             <InventoryView />
             <MenuView />
             <InteriorView />
+            <NeighbourRoom/>
             {interior === "bank" ? <BankRoom /> : null}
             {interior === "casino" ? <CasinoRoom /> : null}
             {interior === "exchange" ? <ExchangeRoom /> : null}

@@ -1,0 +1,21 @@
+import {useGame} from "@/lib/game/store";
+import {neighbourProfile,neighbourHome,emptyMemory,friendshipLabel,type NeighbourGift} from "@/lib/game/neighbours";
+import {neighbourAvailable} from "@/lib/game/store/neighbours";
+import {useState} from "react";
+const btn="min-h-11 rounded-xl px-3 py-2 text-sm font-bold disabled:opacity-40";
+export function NeighbourActions({id,onVisit}:{id:string;onVisit?:()=>void}){
+ const s=useGame(),[gift,setGift]=useState<NeighbourGift>("carrot"),p=neighbourProfile(id),m=s.neighbourhood.people[id]??emptyMemory(),r=s.thimble.residents.find(r=>r.id===id),local=neighbourAvailable(s,id);
+ const amount=gift==="sprat"?(s.fishBag.sprat??0):gift==="carrot"?(s.produce.carrot??0):s.bread;
+ if(!r)return <p>This neighbour has moved away. Their letters and your friendship remain.</p>;
+ return <div className="space-y-2"><h3 className="font-display text-xl font-bold">{r.name}</h3><p className="text-sm">{p.trait}</p><p className="text-sm font-bold">{friendshipLabel(m.points)} · {m.points}/100</p><progress className="w-full accent-[#64866c]" aria-label="Friendship" value={m.points} max={100}/><p className="text-xs">{m.chats>0?`Favourite gift: ${p.gift}. `:"Say hello to discover their favourite gift. "}{r.purse<20?"Money is tight.":"Settling into town."} {r.work?"Builders are working on their home.":`Home level ${r.homeLevel??1}.`}</p>
+ <button type="button" className={`${btn} bg-pine text-parchment`} disabled={!local} onClick={()=>s.chatNeighbour(id)}>Say hello</button>
+ <label className="block text-xs font-bold">A little gift<select aria-label="Neighbour gift" value={gift} onChange={e=>setGift(e.target.value as NeighbourGift)} className="my-1 min-h-11 w-full rounded-xl bg-pine/10 px-3">{(["carrot","sprat","bread"] as const).map(g=><option key={g} value={g}>{g} · {g==="carrot"?s.produce.carrot??0:g==="sprat"?s.fishBag.sprat??0:s.bread} in bag</option>)}</select></label><button type="button" className={`${btn} bg-gold`} disabled={!local||amount<1||!m.chats} onClick={()=>s.giftNeighbour(id,gift)}>Give one {gift}</button>
+ {s.interior!=="neighbor"&&<button type="button" className={`${btn} ml-2 bg-pine/10`} disabled={!local||!m.chats||(r.homeLevel??1)<1} onClick={()=>{s.visitNeighbour(id);if(useGame.getState().interior==="neighbor")onVisit?.();}}>Visit their home</button>}
+ {!local&&<p className="text-xs">Come ashore and walk to their home to chat or give a gift.</p>}<p className="text-xs">A chat earns friendship again after a little exploring. Gifts need more time between visits. No friendship decays while you’re away.</p><p role="status" className="rounded-xl bg-pine/10 p-3 text-sm">{s.speech}</p></div>;
+}
+export function NeighbourDirectory({selected,onSelect,onTravel}:{selected:string;onSelect:(id:string)=>void;onTravel:()=>void}){
+ const s=useGame(),r=s.thimble.residents.find(r=>r.id===selected),id=r?.id??s.thimble.residents[0]?.id;
+ return <div className="space-y-3"><h3 className="font-display text-xl font-bold">People make a town</h3><p className="text-sm">Make friends, bring a small gift, and drop in for a housewarming. Friendships and letters stay with you if someone moves away.</p><select aria-label="Choose a neighbour" className="min-h-11 w-full rounded-xl bg-pine/10 px-3" value={id??""} onChange={e=>onSelect(e.target.value)}>{s.thimble.residents.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select>
+ {id&&<><NeighbourActions key={id} id={id} onVisit={onTravel}/><button type="button" className={`${btn} w-full bg-pine/10`} disabled={!!s.afloat||!!s.transport.ride} onClick={()=>{const h=neighbourHome(id);onTravel();window.dispatchEvent(new CustomEvent("hollow-watch:notice-walk",{detail:{x:h.x+24,y:h.y+28}}));}}>Walk to their home</button></>}
+ <h3 className="font-display text-lg font-bold">Your letters · {s.neighbourhood.letters.filter(l=>!l.read).length} unread</h3>{!s.neighbourhood.letters.length&&<p className="text-sm">Letters will arrive as families settle, homes grow, and friendships deepen.</p>}{s.neighbourhood.letters.map(l=><details key={l.id} onToggle={e=>{if(e.currentTarget.open&&!l.read)s.readNeighbourLetter(l.id);}} className="rounded-xl bg-gold/15 p-3"><summary className="min-h-11 cursor-pointer text-sm font-bold">{l.read?"":"● "}{l.from}</summary><p className="mt-2 text-sm">{l.text}</p></details>)}</div>;
+}

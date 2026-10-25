@@ -87,3 +87,10 @@ council → Noticeboard. Visit your home, claim the first milestone and accept u
 to three optional favours. Return to the board with goods or reports for payment.
 No deadlines. Grow the town towards its charter to unlock better commissions.
 Older saves retain their town and inventory and begin with an empty board.
+
+### 0.1.10 — Neighbours and visible growth
+
+Open Thimblehaven council → Neighbours. Walk over to say hello, discover favourite
+gifts and visit furnished homes. Friendships, letters, arriving families and
+household-funded extensions persist. Public works now show construction stages
+and open after their builders finish. Previously completed works remain built.
