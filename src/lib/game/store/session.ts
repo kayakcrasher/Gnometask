@@ -210,7 +210,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     },
     enterInterior: (id: InteriorId) => {
       const s=get();
-      if(id==="neighbor"||!canEnter(id === "chart"))return;
+      if(id==="ship-cabin"||id==="neighbor"||!canEnter(id === "chart"))return;
       const door=playerHomeDoor(s);
       const homeVisit=id==="cottage"&&!s.afloat&&Math.hypot(s.gnomeX-door.x,s.gnomeY-door.y)<90;
       set({ interior: id, popup: null, panel: "place", ...(homeVisit ? {opening:{...s.opening,homeVisited:true},coach:5} : {}), ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });

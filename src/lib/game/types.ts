@@ -38,6 +38,7 @@ export type ShopKind =
 export type PanelId = "place" | "chores" | "inventory" | "menu";
 
 export type InteriorId =
+  | "ship-cabin"
   | "neighbor"
   | "cottage"
   | "hatshop"
@@ -230,6 +231,7 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  shipLife:import("./ship-life").ShipLife;
   exploration:import("./exploration").Exploration;
   neighbourhood:import("./neighbours").Neighbourhood;
   townProgress:import("./town-progress").TownProgress;

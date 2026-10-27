@@ -34,7 +34,8 @@
     "check:neighbours": "node scripts/check-neighbours.mjs",
     "check:town-outlook": "node scripts/check-town-outlook.mjs",
     "check:discoveries": "node scripts/check-discoveries.mjs",
-    "check:deep-fishing": "node scripts/check-deep-fishing.mjs"
+    "check:deep-fishing": "node scripts/check-deep-fishing.mjs",
+    "check:ship-life": "node scripts/check-ship-life.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

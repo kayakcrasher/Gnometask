@@ -18,7 +18,7 @@ export function indoorLayout(id: InteriorId): IndoorLayout {
     spawn: { x: 0, z: 2.2 },
   };
   const plant = { x: 2.6, z: 1.8, w: 0.35, d: 0.35 };
-  if (id === "cottage" || id === "neighbor")
+  if (id === "cottage" || id === "neighbor" || id === "ship-cabin")
     return {
       ...base,
       boxes: [
@@ -26,6 +26,7 @@ export function indoorLayout(id: InteriorId): IndoorLayout {
         { x: 2, z: -1.3, w: 0.7, d: 1.05 },
         { x: -2.4, z: -1.6, w: 0.6, d: 0.4 },
         plant,
+        ...(id==="ship-cabin"?[{x:0,z:-1.8,w:1.1,d:.4}]:[]),
         ...(id==="neighbor"?[{x:0,z:-1.5,w:.4,d:.4}]:[]),
       ],
     };

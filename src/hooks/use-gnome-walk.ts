@@ -1,3 +1,4 @@
+import {helmCourse,throttleFactor,crewOnDuty} from "@/lib/game/ship-life";
 import { windSpeedFactor, hullHandling } from "@/lib/game/sea-weather";
 import { sailingVelocity } from "@/lib/game/visual-motion";
 import {oceanLandAt} from "@/lib/game/ocean-world";
@@ -10,7 +11,7 @@ import { clamp } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import type { GnomeFacing } from "@/components/land/gnome";
 import { walkableLand } from "@/lib/game/world3";
-import { HARBOUR_APPROACH, navigableWater, SEA_BOUNDS, seaRoute, sailingSpeed, type SeaPoint } from "@/lib/game/sailing";
+import { HARBOUR_APPROACH, clearSeaSegment, navigableWater, SEA_BOUNDS, seaRoute, sailingSpeed, type SeaPoint } from "@/lib/game/sailing";
 
 const SPEED = 260;
 type Waypoint = SeaPoint & { arrive?: () => void };
@@ -94,10 +95,14 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
         const dx = target.x - cur.x, dy = target.y - cur.y;
         const distance = Math.hypot(dx, dy);
         const sea = Boolean(state.afloat);
-        const maximum = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat])*windSpeedFactor(state.afloat,Math.atan2(dy,dx),cur.x,cur.y,state.ports.parts[state.afloat]) : state.transport.mounted ? CART_SPEED : SPEED;
+        const maximum = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat])*windSpeedFactor(state.afloat,Math.atan2(dy,dx),cur.x,cur.y,state.ports.parts[state.afloat])*throttleFactor(state.shipLife.speed)*(crewOnDuty(state,state.afloat,"deckhand")?1.06:1) : state.transport.mounted ? CART_SPEED : SPEED;
         const speed=sea?(cruiseRef.current=sailingVelocity(cruiseRef.current,maximum,routeRef.current.length===1?distance:Infinity,dt,hullHandling(state.afloat!).acceleration)):maximum;
-        const step = Math.min(distance, speed * dt);
-        const tx = cur.x + dx / (distance || 1) * step, ty = cur.y + dy / (distance || 1) * step;
+        const course=sea?helmCourse(yawRef.current,Math.atan2(dx,dy),state.afloat!,dt,crewOnDuty(state,state.afloat!,"navigator")):null;
+        const assisted=sea&&distance<60;
+        const step = Math.min(distance, sea?45:Infinity, speed * dt*(course&&!assisted?course.alignment:assisted?.5:1));
+        let tx = cur.x + (course&&!assisted?course.x:dx/(distance||1))*step, ty = cur.y + (course&&!assisted?course.y:dy/(distance||1))*step;
+        if(sea&&!clearSeaSegment(cur,{x:tx,y:ty})){tx=cur.x+dx/(distance||1)*step*.25;ty=cur.y+dy/(distance||1)*step*.25;}
+
         let next: SeaPoint | null = null;
         if (legalAt(sea, tx, ty)) next = { x: tx, y: ty };
         else if (!sea && legalAt(false, tx, cur.y)) next = { x: tx, y: cur.y };
@@ -108,7 +113,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
         } else {
           if (distance > 0.001) {
             setFacing(facingOf(dx, dy));
-            yawRef.current = Math.atan2(dx, dy);
+            yawRef.current = sea?Math.atan2(tx-cur.x,ty-cur.y):Math.atan2(dx, dy);
             setYaw(yawRef.current);
           }
           if (sea && distance > 0) {
@@ -126,7 +131,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
           followRef.current = next;
           speedRef.current = speed;
           setWalking(true);
-          if (distance <= step + 0.001) {
+          if (Math.hypot(target.x-next.x,target.y-next.y) < .05) {
             routeRef.current.shift();
             if (!routeRef.current.length) {
               state.setGnomePos(next.x, next.y);
@@ -169,6 +174,12 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
     setWalking(true);
   }, [stop]);
 
+  useEffect(()=>{
+    const anchor=()=>{stop();const p=posRef.current;useGame.getState().setGnomePos(p.x,p.y);};
+    const nudge=(event:Event)=>{const s=useGame.getState();if(!s.afloat||s.interior||s.combat||s.naval.rescue||s.naval.boarding||s.fishing)return;const side=(event as CustomEvent<number>).detail;if(side!==-1&&side!==1)return;const h=yawRef.current+side*Math.PI/6,p=posRef.current;walkTo(p.x+Math.sin(h)*300,p.y+Math.cos(h)*300);};
+    window.addEventListener("hollow-watch:anchor",anchor);window.addEventListener("hollow-watch:rudder",nudge);
+    return()=>{window.removeEventListener("hollow-watch:anchor",anchor);window.removeEventListener("hollow-watch:rudder",nudge);};
+  },[stop,walkTo]);
   useEffect(()=>{
     const handle=(event:Event)=>{const p=(event as CustomEvent<{x:number;y:number}>).detail;if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))walkTo(p.x,p.y);};
     window.addEventListener("hollow-watch:notice-walk",handle);

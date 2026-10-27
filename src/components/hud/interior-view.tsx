@@ -15,6 +15,7 @@ import { levelFromXp } from "@/lib/game/xp";
 import { cn } from "@/lib/utils";
 
 const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[] }> = {
+  "ship-cabin":{title:"Captain’s cabin",blurb:"A quiet place above the waterline."},
   neighbor: {title:"A neighbour’s home",blurb:"Come in and put your feet up."},
   chart: { title: "Enemy islands", blurb: "Chart a course from the harbour." },
   cottage: {
@@ -269,7 +270,7 @@ export function InteriorView() {
   const cottageHp = useGame((s) => s.buildingHp.cottage);
   const cottageLevel = useGame((s) => s.cottageLevel ?? 0);
   const upgradeCottage = useGame((s) => s.upgradeCottage);
-  if (!interior || interior === "neighbor" || interior === "chart" || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
+  if (!interior || interior === "ship-cabin" || interior === "neighbor" || interior === "chart" || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
   const meta = COPY[interior];
   const cottageHurt = cottageHp < BUILDING_MAX.cottage;
 

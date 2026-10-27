@@ -18,6 +18,10 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    hireShipCrew:(hull:string,role:import("../ship-life").CrewRole)=>void;
+    setShipSpeed:(speed:import("../ship-life").ShipLife["speed"])=>void;
+    enterShipCabin:()=>void;
+    shipMeal:()=>void;
     salvageDiscovery:(id:string)=>void;
     searchTreasure:(id:string)=>void;
     chatNeighbour:(id:string)=>void;

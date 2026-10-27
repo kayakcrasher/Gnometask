@@ -114,3 +114,11 @@ Casts now show an eased float, line, bite ripples and a reel-in arc. Fish activi
 marks nearby water. At Fishing 60, visit Bank & harbour → Fleet & parts to fit a
 45,000-coin deepwater rig to an eligible hull. Sail clear of land for giant bluefin
 (60), Sunspire marlin (75) and abyssal grouper (90). Normal fishing stays available.
+
+### 0.1.14 — Ships and crews
+
+Hire specialists through Thimblehaven council → Naval command after selecting
+an owned larger ship at a harbour. Open Ship helm aboard for speed settings,
+port/starboard nudges, Stop ship and Enter ship cabin. Cabins are walkable and
+pause the ship; return to deck and choose a new course to resume. Specialists
+have distance-based wages, separate from cannon crews.

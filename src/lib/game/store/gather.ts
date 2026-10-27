@@ -200,9 +200,11 @@ export function gatherSlice(
       const before = s.sailingDistance ?? 0;
       const total = before + distance;
       const xp = (Math.floor(total / SAILING_XP_DISTANCE) - Math.floor(before / SAILING_XP_DISTANCE)) * boat.xp;
+      const wage=(Math.floor(total/SAILING_XP_DISTANCE)-Math.floor(before/SAILING_XP_DISTANCE))*(s.shipLife.crew[boat.id]?.length??0)*2;
       const gained = xp ? withXp(s.skills, { sailing: xp }) : null;
       set({
         gnomeX: x, gnomeY: y, sailingDistance: total,
+        coins:Math.max(0,s.coins-wage),
         ...(gained ? { skills: gained.skills, speech: gained.ding ?? `+${xp} Sailing XP. Steady on the water.` } : {}),
       });
       scheduleWrite(get);

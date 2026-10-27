@@ -383,7 +383,7 @@ function SceneBody({
       <Kenney name="log_large" position={to3(70, 250, 0.08)} scale={1.0} />
       {save.afloat ? (
         <SailingPlayer x={pos.x} y={pos.y} heading={face} moving={walking} disabled={(save.naval.integrity[save.afloat]??1)<=0}
-          kind={boatById(save.afloat)?.id??"row"} parts={save.ports.parts[save.afloat]??[]} guns={shipFit(save.naval,save.afloat).guns} crew={shipFit(save.naval,save.afloat).crew}
+          kind={boatById(save.afloat)?.id??"row"} parts={save.ports.parts[save.afloat]??[]} guns={shipFit(save.naval,save.afloat).guns} crew={shipFit(save.naval,save.afloat).crew+(save.shipLife.crew[save.afloat]?.length??0)}
           hat={save.hat} equipment={save.equipment} showPlayer={!save.naval.boarding&&!save.transport.ride}/>
       ) : null}
       {save.transport.mounted&&!save.afloat&&<group position={p3} rotation={[0,face,0]}><TravelCartAsset moving={walking} rider/></group>}

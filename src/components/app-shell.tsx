@@ -1,3 +1,5 @@
+import {ShipHelm} from "./hud/ship-controls";
+import {ShipCabin} from "./world/ship-cabin";
 import {NeighbourRoom} from "./world/neighbour-room";
 import { useGraphics } from "@/lib/game/graphics";
 import {OpenOceanControls} from "./hud/open-ocean";
@@ -92,6 +94,8 @@ export function AppShell() {
       <TransportControls />
       <MarineControls/>
       <NorthernSeas/>
+      <ShipHelm/>
+      <ShipCabin/>
       <OpenOceanControls/>
       <StarterLoanChoice/>
       <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>

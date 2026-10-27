@@ -1,4 +1,5 @@
 import {TownOutlook} from "./town-outlook";
+import {ShipCrewPanel} from "./ship-controls";
 import {NeighbourDirectory} from "./neighbours";
 import {NEIGHBOUR_EVENT} from "@/lib/game/neighbours";
 import {PROJECT_WORK} from "@/lib/game/thimblehaven";
@@ -260,6 +261,7 @@ export function NorthernSeas() {
                       ))}
                     </select>
                   </label>
+                  <ShipCrewPanel hull={hull}/>
                   <BoatShowroom
                     kind={selected.id}
                     parts={s.ports.parts[hull] ?? []}

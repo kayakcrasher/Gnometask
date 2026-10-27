@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.kayakcrasher.gnometask" android:versionCode="14" android:versionName="0.1.13-deep-fishing">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.kayakcrasher.gnometask" android:versionCode="15" android:versionName="0.1.14-ships-and-crew">
     <!-- WebView needs normal network capability for its virtual HTTPS origin.
          Every request is served locally or blocked by MainActivity. -->
     <uses-permission android:name="android.permission.INTERNET" />
