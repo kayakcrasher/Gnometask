@@ -107,3 +107,10 @@ Open Ocean chart → Discoveries. Sail to three abandoned cargo wrecks, recover
 maps and follow two landmark clues ashore. Each treasure rewards a keepsake
 shown in your cottage. These discoveries have no sinking timer or deadline;
 existing naval combat wrecks retain their usual rules.
+
+### 0.1.13 — Smooth fishing and offshore giants
+
+Casts now show an eased float, line, bite ripples and a reel-in arc. Fish activity
+marks nearby water. At Fishing 60, visit Bank & harbour → Fleet & parts to fit a
+45,000-coin deepwater rig to an eligible hull. Sail clear of land for giant bluefin
+(60), Sunspire marlin (75) and abyssal grouper (90). Normal fishing stays available.

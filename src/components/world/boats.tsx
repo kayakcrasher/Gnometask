@@ -511,6 +511,9 @@ function BoatFittings({
           ))}
         </>
       )}
+      {parts.includes("deep-rig")&&<group position={[0,.65,-.3]}>
+        {[-1,1].map(side=><group key={side}><mesh position={[side*.42,.3,0]} rotation={[0,0,-side*.65]}><cylinderGeometry args={[.018,.025,1.1,6]}/><meshStandardMaterial color="#a7b9ad"/></mesh><mesh position={[side*.3,0,0]} rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[.095,.095,.12,10]}/><meshStandardMaterial color="#7e8d8b"/></mesh></group>)}
+      </group>}
       {parts.includes("rack") && (
         <>
           {[-1, 1].map((v) => (

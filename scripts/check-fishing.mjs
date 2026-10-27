@@ -18,9 +18,9 @@ test('every setup has a price and construction and upgrades get more expensive',
  for(const [kind,b] of Object.entries(CITY_BUILDINGS)){assert(b.coins>0);const city=emptyCity();const first=citySetupCost(city,kind);city.buildings.push({kind});assert(citySetupCost(city,kind)>first);assert(cityUpgradeCost({kind,level:2}).coins>cityUpgradeCost({kind,level:1}).coins);}
  assert(HOME_UPGRADE_COST[3]>HOME_UPGRADE_COST[2]&&HOME_UPGRADE_COST[2]>HOME_UPGRADE_COST[1]);s.coins=10000;for(let i=1;i<=3;i++){const before=s.coins;s.upgradeCottage();assert.equal(s.coins,before-HOME_UPGRADE_COST[i]);}
 });
-test('twenty fish are reachable and shore, level and hull gates hold',()=>{
- assert.equal(FISH.length,20);assert.equal(new Set(FISH.map(f=>f.id)).size,20);
- for(const fish of FISH){const pool=FISH.filter(f=>f.sea===fish.sea&&f.need<=fish.need&&(!fish.sea||f.boat<=fish.boat));const total=pool.reduce((n,f)=>n+f.weight,0),index=pool.indexOf(fish),rng=(pool.slice(0,index).reduce((n,f)=>n+f.weight,0)+fish.weight/2)/total;assert.equal(rollFish(fish.sea?'sea':'shore',fish.need,fish.boat,0,()=>rng).id,fish.id);}
+test('ordinary and giant fish are reachable with their own gates and shore, level and hull gates hold',()=>{
+ assert.equal(FISH.filter(f=>!f.giant).length,20);assert.equal(FISH.length,23);assert.equal(new Set(FISH.map(f=>f.id)).size,23);
+ for(const fish of FISH){const pool=FISH.filter(f=>(!f.giant||fish.giant)&&f.sea===fish.sea&&f.need<=fish.need&&(!fish.sea||f.boat<=fish.boat));const total=pool.reduce((n,f)=>n+f.weight,0),index=pool.indexOf(fish),rng=(pool.slice(0,index).reduce((n,f)=>n+f.weight,0)+fish.weight/2)/total;assert.equal(rollFish(fish.sea?'sea':'shore',fish.need,fish.boat,0,()=>rng,!!fish.giant).id,fish.id);}
  for(let i=0;i<100;i++){const fish=rollFish('shore',1,1,0,()=>i/100);assert(!fish.sea&&fish.need<=1);const sea=rollFish('sea',6,2,0,()=>i/100);assert(sea.sea&&sea.need<=6&&sea.boat<=2);}
 });
 test('aquarium setup is paid, full tanks reject deposits atomically and fish return safely',()=>{

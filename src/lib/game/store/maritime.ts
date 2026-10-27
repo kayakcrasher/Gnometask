@@ -1,3 +1,5 @@
+import {supportsDeepRig,DEEP_RIG_LEVEL} from "../deep-fishing";
+import {levelFromXp} from "../xp";
 import { oceanLandings, oceanLanding } from "../ocean-world";
 import { STARTER_LOANS, accrueBank } from "../bank";
 import {
@@ -214,6 +216,7 @@ export function maritimeSlice(
         s.ports.shipments.some((t) => t.boat === id)
       )
         return;
+      if(part.id==="deep-rig"&&(!supportsDeepRig(id)||levelFromXp(s.skills.fishing)<DEEP_RIG_LEVEL)){set({speech:"The deepwater rig needs Fishing 60 and a suitable fishing or large working hull."});return;}
       const harbours = [
         PUBLIC_PORT,
         NORTH_LANDING,

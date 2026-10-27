@@ -18,9 +18,11 @@ export type FishId =
   | "salmon"
   | "tuna"
   | "moonfish"
-  | "leviathan";
+  | "leviathan" | "bluefin-giant" | "sunspire-marlin" | "abyssal-grouper";
 
 export type FishDef = {
+  giant?: boolean;
+  size?: number;
   id: FishId;
   name: string;
   /** Higher weight is more common. */
@@ -37,6 +39,9 @@ export type FishDef = {
 };
 
 export const FISH: FishDef[] = [
+  {id:"bluefin-giant",name:"Giant bluefin tuna",weight:5,price:850,xp:650,need:60,sea:true,boat:3,color:"#4478a6",shadow:"#203c55",giant:true,size:2.4},
+  {id:"sunspire-marlin",name:"Sunspire marlin",weight:3,price:1450,xp:950,need:75,sea:true,boat:3,color:"#7a91c4",shadow:"#293b65",giant:true,size:3.1},
+  {id:"abyssal-grouper",name:"Abyssal grouper",weight:2,price:2400,xp:1450,need:90,sea:true,boat:3,color:"#658278",shadow:"#29443d",giant:true,size:3.6},
   {
     id: "sprat",
     name: "Sprat",
@@ -289,8 +294,10 @@ export function rollFish(
   boatRank: number,
   rod: number,
   rng: () => number = Math.random,
+  giants = false,
 ): FishDef | null {
   const pool = FISH.filter((f) => {
+    if (f.giant && (!giants || where!=="sea")) return false;
     if (level < f.need) return false;
     if (where === "shore") return !f.sea;
     return f.sea && boatRank >= f.boat;

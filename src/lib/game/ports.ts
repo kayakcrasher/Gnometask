@@ -51,6 +51,7 @@ export const PUBLIC_PORT = {
 };
 export type Dock = { site: string; level: number; style: DockStyle };
 export const BOAT_PARTS = [
+  {id:"deep-rig",name:"Deepwater winch & outriggers",price:45000,description:"Fishing 60. Fits Fisher, barge, coaster, packet, expedition and megayacht hulls. Unlocks giant fish in open sea, clear of shore."},
   {
     id: "rigging",
     name: "Silkleaf rigging",

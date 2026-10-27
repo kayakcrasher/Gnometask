@@ -1,3 +1,4 @@
+import {supportsDeepRig} from "@/lib/game/deep-fishing";
 import {oceanLandings} from "@/lib/game/ocean-world";
 import { shipFit } from "@/lib/game/naval";
 import { BoatShowroom } from "./boat-showroom";
@@ -169,6 +170,7 @@ export function MarineControls() {
                     boat”. Rowboats catch shallow-water species; larger boats
                     unlock deep-water fish as Fishing improves.
                   </p>
+                  <p className="text-xs">Giant bluefin unlocks at Fishing 60, Sunspire marlin at 75, and abyssal grouper at 90. All require the deepwater rig and open sea well clear of shores and islands. Ordinary fish still use your normal rod.</p>
                   <h3 className="font-bold">
                     Boat parts · fitted to this hull
                   </h3>
@@ -184,6 +186,7 @@ export function MarineControls() {
                       <button
                         type="button"
                         disabled={
+                          (p.id==="deep-rig"&&(!supportsDeepRig(hull)||levelFromXp(s.skills.fishing)<60)) ||
                           !owned ||
                           !!s.afloat ||
                           busy ||

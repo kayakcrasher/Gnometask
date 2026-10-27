@@ -1,5 +1,9 @@
+import {Html} from "@react-three/drei";
+import {fishingMotion} from "@/lib/game/deep-fishing";
+import {navigableWater} from "@/lib/game/sailing";
+import {useMemo} from "react";
 import { useNearby } from "./mobile-graphics";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useGame } from "@/lib/game/store";
@@ -95,6 +99,7 @@ export function OceanLife() {
       {SCHOOLS.filter(s=>near(s.cx,s.cy,100)).map((s) => (
         <School key={`${s.cx}-${s.cy}`} {...s} />
       ))}
+      <FishActivity/>
       <Buoy x={-30} y={430} />
       <Buoy x={20} y={700} />
       <Buoy x={120} y={820} />
@@ -103,46 +108,44 @@ export function OceanLife() {
 }
 
 export function CastLine() {
-  const fishing = useGame((s) => s.fishing);
-  const rod = useRef<THREE.Group>(null);
-  const shadow = useRef<THREE.Mesh>(null);
-  const fish = useRef<THREE.Group>(null);
-  useFrame(() => {
-    if (!fishing || !rod.current || !shadow.current || !fish.current) return;
-    const t = Math.min(1, (Date.now() - fishing.started) / 2600);
-    const cast = Math.sin(Math.min(1, t / 0.28) * Math.PI);
-    rod.current.rotation.x = -0.4 - cast * 1.15;
-    const swim = t < 0.72 ? t / 0.72 : 1;
-    const dart = t < 0.72 ? Math.sin(t * 28) * 0.18 : (t - 0.72) / 0.28;
-    shadow.current.position.x = (swim - 0.5) * 0.8 + (1 - dart) * 0.3;
-    shadow.current.scale.setScalar(0.7 + (1 - t) * 0.5);
-    fish.current.visible = t > 0.55;
-    fish.current.position.x = shadow.current.position.x;
-    fish.current.position.y = t > 0.82 ? (t - 0.82) * 1.4 : -0.05;
-  });
-  if (!fishing) return null;
-  const splash = to3(fishing.x, fishing.y, -0.2);
-  return (
-    <group position={splash}>
-      <group ref={rod} position={[0.35, 0.7, 0.2]}>
-        <mesh position={[0, 0.28, 0]} castShadow>
-          <boxGeometry args={[0.03, 0.62, 0.03]} />
-          <meshStandardMaterial color="#6b4423" />
-        </mesh>
-        <mesh position={[0.02, 0.58, -0.35]}>
-          <boxGeometry args={[0.012, 0.012, 0.7]} />
-          <meshStandardMaterial color="#f4efe4" />
-        </mesh>
-      </group>
-      <mesh ref={shadow} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
-        <circleGeometry args={[0.22, 16]} />
-        <meshStandardMaterial color={fishing.shadow} transparent opacity={0.55} />
-      </mesh>
-      <group ref={fish}>
-        <FishBody color={fishing.color} />
-      </group>
-    </group>
-  );
+ const fishing=useGame(s=>s.fishing),gx=useGame(s=>s.gnomeX),gy=useGame(s=>s.gnomeY);
+ const label=useRef<HTMLSpanElement>(null);
+ const rod=useRef<THREE.Group>(null),bobber=useRef<THREE.Group>(null),fish=useRef<THREE.Group>(null),shadow=useRef<THREE.Mesh>(null),rings=useRef<THREE.Group>(null);
+ const positions=useMemo(()=>new Float32Array(6),[]),line=useMemo(()=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(positions,3));return g;},[positions]);
+ useEffect(()=>()=>line.dispose(),[line]);
+ useFrame(({clock})=>{
+  if(!fishing||!rod.current||!bobber.current||!fish.current||!shadow.current||!rings.current)return;
+  const t=Math.min(1,(Date.now()-fishing.started)/(fishing.duration??2600)),m=fishingMotion(t),cast=m.cast,reel=m.reel,time=clock.elapsedTime;
+  if(label.current)label.current.textContent=m.phase;
+  const reach=2.2*cast*(1-reel),lift=Math.sin(cast*Math.PI)*1.1*(1-reel);
+  bobber.current.position.set(reach,.05+lift+Math.sin(time*4)*.025-m.bite*.06*(1-reel),0);
+  rod.current.rotation.z=-.45+Math.sin(cast*Math.PI)*.7-m.bite*.15+reel*.4;
+  shadow.current.position.set(2.2+Math.sin(time*1.7)*.35,.012,Math.cos(time*1.7)*.25);
+  shadow.current.scale.set((fishing.size??1)*.75,1,.4);
+  shadow.current.visible=t>.2&&t<.84;
+  fish.current.visible=t>.72;fish.current.position.set(reach,.03+Math.sin(reel*Math.PI)*.65,0);fish.current.rotation.y=Math.sin(time*7)*.25;
+  rings.current.position.set(reach,.018,0);rings.current.visible=t>.2&&t<.92;rings.current.scale.setScalar(.65+(time%1.2)*.5+m.bite*.3);
+  positions.set([0,1.1,0,bobber.current.position.x,bobber.current.position.y,0]);line.attributes.position.needsUpdate=true;line.computeBoundingSphere();
+ });
+ if(!fishing)return null;
+ const base=fishing.where==='sea'?to3(gx,gy,SEA_LEVEL):to3(fishing.x,fishing.y,SEA_LEVEL);
+ return <group position={base}>
+  <Html center position={[0,1.8,0]} style={{pointerEvents:"none"}}><span ref={label} className="whitespace-nowrap rounded-full bg-pine/85 px-3 py-1 text-xs font-bold text-parchment">Casting</span></Html>
+  <group ref={rod}><mesh position={[0,.6,0]}><cylinderGeometry args={[.025,.04,1.2,6]}/><meshStandardMaterial color="#86664c"/></mesh></group>
+  <lineSegments geometry={line}><lineBasicMaterial color="#eee6c9" transparent opacity={.8}/></lineSegments>
+  <group ref={bobber}><mesh><sphereGeometry args={[.065,8,6]}/><meshStandardMaterial color="#c85845"/></mesh><mesh position={[0,.08,0]}><cylinderGeometry args={[.012,.012,.12,5]}/><meshStandardMaterial color="#f7e8c0"/></mesh></group>
+  <mesh ref={shadow} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[.35,16]}/><meshBasicMaterial color={fishing.shadow} transparent opacity={.4} depthWrite={false}/></mesh>
+  <group ref={fish} scale={fishing.size??1}><FishBody color={fishing.color}/></group>
+  <group ref={rings}>{[.22,.4].map(r=><mesh key={r} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[r,r+.012,24]}/><meshBasicMaterial color="#d1e5d2" transparent opacity={.45} depthWrite={false}/></mesh>)}</group>
+ </group>;
+}
+function ActivityRing({x,y}:{x:number;y:number}){
+ const root=useRef<THREE.Group>(null);useFrame(({clock})=>{if(root.current){root.current.rotation.y=clock.elapsedTime*.3;root.current.scale.setScalar(.8+Math.sin(clock.elapsedTime*1.8+x)*.12);}});
+ return <group ref={root} position={to3(x,y,SEA_LEVEL+.025)}>{[.4,.65].map(r=><mesh key={r} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[r,r+.013,20]}/><meshBasicMaterial color="#badbc9" transparent opacity={.32} depthWrite={false}/></mesh>)}<group position={[.25,.005,0]} scale={[.6,.2,.3]}><FishBody color="#315f66"/></group></group>;
+}
+function FishActivity(){const x=useGame(s=>s.gnomeX),y=useGame(s=>s.gnomeY),cx=Math.floor(x/280),cy=Math.floor(y/280);
+ const spots=useMemo(()=>{const out:{x:number;y:number}[]=[];for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const px=(cx+a)*280+90,py=(cy+b)*280+120;if(navigableWater(px,py))out.push({x:px,y:py});}return out;},[cx,cy]);
+ return <group>{spots.map(p=><ActivityRing key={`${p.x}-${p.y}`} {...p}/>)}</group>;
 }
 
 const WASH = [

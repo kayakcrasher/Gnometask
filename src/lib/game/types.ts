@@ -185,6 +185,8 @@ export type TreeSave = {
 };
 
 export type FishingCast = {
+  duration?: number;
+  size?:number;
   id: number;
   started: number;
   where: "shore" | "sea";

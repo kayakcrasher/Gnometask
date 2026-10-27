@@ -1,3 +1,4 @@
+import {offshoreFishing,supportsDeepRig} from "../deep-fishing";
 import { recordNoticeVisits } from "../town-progress";
 import { inNationalPark } from "../data/national-park";
 import {oceanLandings} from "../ocean-world";
@@ -340,7 +341,7 @@ export function gatherSlice(
 
     castLine: (where, x, y, boatId) => {
       const s = get();
-      if (s.combat || s.fishing || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
+      if (!s.named || s.atHome || s.interior || s.abroad || s.bank.pending || s.transport.ride || s.combat || s.fishing || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
       if (where === "shore" && s.afloat) {
         set({ speech: "Return to the harbour before fishing from the shore.", popup: null });
         return;
@@ -358,7 +359,8 @@ export function gatherSlice(
         return;
       }
       const rank = activeBoat ? BOAT_RANK[activeBoat.id] : 1;
-      const fish = rollFish(where === "sea" && rank < 2 ? "shore" : where, lv, rank, rod) ?? (where === "sea" ? rollFish("shore",lv,rank,rod) : null);
+      const giants=!!activeBoat&&lv>=60&&supportsDeepRig(activeBoat.id)&&!!s.ports.parts[activeBoat.id]?.includes("deep-rig")&&offshoreFishing(s.gnomeX,s.gnomeY);
+      const fish = rollFish(where === "sea" && rank < 2 ? "shore" : where, lv, rank, rod,Math.random,giants) ?? (where === "sea" ? rollFish("shore",lv,rank,rod) : null);
       if (!fish) {
         set({
           speech:
@@ -370,8 +372,9 @@ export function gatherSlice(
         return;
       }
       const id = Date.now();
+      const duration=fish.giant?6500:activeBoat&&s.ports.parts[activeBoat.id]?.includes("rack")?2000:2600;
       set({
-        fishing: { id, started: id, where, fishId: fish.id, color: fish.color, shadow: fish.shadow,
+        fishing: { id, started: id,duration,size:fish.size??1, where, fishId: fish.id, color: fish.color, shadow: fish.shadow,
           x: where === "sea" ? s.gnomeX : x, y: where === "sea" ? s.gnomeY : y },
         popup: null,
         speech: where === "sea" ? "The rod bends over the deep water." : "The line kisses the shallows.",
@@ -400,7 +403,7 @@ export function gatherSlice(
         });
         sfx("buy");
         scheduleWrite(get);
-      }, activeBoat&&s.ports.parts[activeBoat.id]?.includes("rack")?2000:2600);
+      }, duration);
     },
 
     sellFish: (id) => {
