@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import {useGame} from "@/lib/game/store";
+import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Kenney } from "./kenney";
@@ -80,22 +81,24 @@ function IslandMesh({ onWalk }: { onWalk: (x: number, y: number) => void }) {
 
 const waterVert = `
   uniform float uTime;
+  uniform vec2 uOrigin;
   varying float vWave;
   varying float vDist;
   varying vec2 vUv;
   void main() {
     vec3 p = position;
-    float dist = length(p.xy);
+    vec2 sea = p.xy + uOrigin;
+    float dist = length(sea);
     // The island shore sits about 70 units out. Keep that band flat so the sea cannot climb the town.
     float offshore = smoothstep(82.0, 130.0, dist);
     float amp = mix(0.025, 0.16, offshore);
-    float swell = sin(p.x * 0.18 + uTime * 0.55) * amp + cos(p.y * 0.14 + uTime * 0.38) * amp * 0.65;
-    float chop = sin(p.x * 0.7 + p.y * 0.35 + uTime * 1.1) * amp * 0.2;
+    float swell = sin(sea.x * 0.18 + uTime * 0.55) * amp + cos(sea.y * 0.14 + uTime * 0.38) * amp * 0.65;
+    float chop = sin(sea.x * 0.7 + sea.y * 0.35 + uTime * 1.1) * amp * 0.2;
     float w = clamp(swell + chop, -0.04, mix(0.045, 0.16, offshore));
     p.z += w;
     vWave = w;
     vDist = dist;
-    vUv = uv;
+    vUv = sea / 1800.0 + 0.5;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
   }
 `;
@@ -124,11 +127,13 @@ const waterFrag = `
 `;
 
 function Water({ onWalk }: { onWalk: (x: number, y: number) => void }) {
+  const mesh=useRef<THREE.Mesh>(null);
   const mat = useMemo(
     () =>
       new THREE.ShaderMaterial({
         uniforms: {
           uTime: { value: 0 },
+          uOrigin: {value: new THREE.Vector2()},
           uShallow: { value: new THREE.Color("#5eebdc") },
           uDeep: { value: new THREE.Color("#148fb5") },
           uSand: { value: new THREE.Color("#f3e2b0") },
@@ -143,9 +148,13 @@ function Water({ onWalk }: { onWalk: (x: number, y: number) => void }) {
   );
   useFrame(({ clock }) => {
     mat.uniforms.uTime!.value = clock.elapsedTime;
+    const s=useGame.getState(),x=Math.round(s.gnomeX/1000)*50,z=Math.round(s.gnomeY/1000)*50;
+    if(mesh.current)mesh.current.position.set(x,SEA_LEVEL,z);
+    mat.uniforms.uOrigin!.value.set(x,-z);
   });
   return (
     <mesh
+      ref={mesh}
       rotation={[-Math.PI / 2, 0, 0]}
       position={[0, SEA_LEVEL, 0]}
       material={mat}

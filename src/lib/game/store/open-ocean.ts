@@ -1,5 +1,5 @@
-import { oceanIslands, oceanLandings } from "../ocean-world";
-import { planTow, tugPosition, rescuePorts } from "../ocean-rescue";
+import { oceanIslandsNear, oceanLandings } from "../ocean-world";
+import { planTow, tugPosition, rescuePort } from "../ocean-rescue";
 import { scheduleWrite } from "./persist";
 import type { GameState, StoreGet, StoreSet } from "./types";
 export function openOceanSlice(
@@ -108,7 +108,7 @@ export function openOceanSlice(
     },
     buyIslandBread: () => {
       const s = get();
-      const port = oceanLandings().find(
+      const port = oceanLandings(s.gnomeX,s.gnomeY).find(
         (p) => p.town && Math.hypot(s.gnomeX - p.x, s.gnomeY - p.y) < 400,
       );
       if (!ready() || s.afloat || !port || s.coins < 6) return;
@@ -159,7 +159,7 @@ export function openOceanSlice(
               "Little Lifeline is alongside. Captain Mallow secures the towline and takes your damaged boat in hand.",
           });
         } else if (r.elapsed >= r.duration) {
-          const port = rescuePorts().find((p) => p.id === r.port)!;
+          const port = rescuePort(r.port)!;
           naval = {
             ...naval,
             rescue: null,
@@ -200,7 +200,7 @@ export function openOceanSlice(
         get().requestTow();
         return;
       }
-      const discovered = oceanIslands(s.ocean.seed).filter(
+      const discovered = oceanIslandsNear(s.gnomeX,s.gnomeY,1600,s.ocean.seed).filter(
         (i) =>
           Math.hypot(s.gnomeX - i.x, s.gnomeY - i.y) <
             Math.max(i.rx, i.ry) + 650 && !s.ocean.discovered.includes(i.id),
@@ -209,7 +209,7 @@ export function openOceanSlice(
         set({
           ocean: {
             ...s.ocean,
-            discovered: [...s.ocean.discovered, ...discovered.map((i) => i.id)],
+            discovered: [...s.ocean.discovered, ...discovered.map((i) => i.id)].slice(-512),
           },
           speech: `Land ahead: ${discovered[0]!.name}. ${discovered[0]!.town ? "A little town and a public harbour." : "A quiet, uninhabited islet with a landing."}`,
         });

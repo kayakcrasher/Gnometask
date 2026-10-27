@@ -1,3 +1,4 @@
+import {CHARTED_SEAS} from "./ocean-world";
 import { boatById } from "./data/boats";
 import { onIsland } from "./world3";
 import { levelFromXp } from "./xp";
@@ -6,21 +7,23 @@ export type SeaPoint = { x: number; y: number };
 export const HARBOUR_APPROACH: SeaPoint = { x: -35, y: 530 };
 export const DOCKING_RANGE = 100;
 export const SAILING_XP_DISTANCE = 600;
-export const SEA_BOUNDS = { minX: -11000, maxX: 12000, minY: -13000, maxY: 10000 };
+export const SEA_BOUNDS = CHARTED_SEAS;
+export const MAX_SEA_ROUTE = 30000;
 
 export function sailingSpeed(id: string, xp: number, parts:readonly string[]=[]) {
   return (1+(parts.includes("engine")?.2:0)+(parts.includes("rigging")?.12:0)) * (boatById(id)?.speed ?? 180) * (1 + Math.min(0.25, (levelFromXp(xp) - 1) * 0.01));
 }
 
+const HULL_CLEARANCE = [[0, 0], [12, 0], [-12, 0], [0, 12], [0, -12]];
+
 /** Leave clearance for the hull instead of letting its centre scrape the beach. */
 export function navigableWater(x: number, y: number) {
-  if (!Number.isFinite(x) || !Number.isFinite(y) || x < SEA_BOUNDS.minX || x > SEA_BOUNDS.maxX
-    || y < SEA_BOUNDS.minY || y > SEA_BOUNDS.maxY) return false;
-  return [[0, 0], [12, 0], [-12, 0], [0, 12], [0, -12]].every(([dx, dy]) => !onIsland(x + dx!, y + dy!));
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+  return HULL_CLEARANCE.every(([dx, dy]) => !onIsland(x + dx!, y + dy!));
 }
 
 export function clearSeaSegment(a: SeaPoint, b: SeaPoint) {
-  if (![a.x, a.y, b.x, b.y].every(Number.isFinite)) return false;
+  if (![a.x, a.y, b.x, b.y].every(Number.isFinite) || Math.hypot(b.x-a.x,b.y-a.y)>MAX_SEA_ROUTE) return false;
   const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 10));
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
@@ -31,6 +34,7 @@ export function clearSeaSegment(a: SeaPoint, b: SeaPoint) {
 
 /** A* water routes, simplified into visible legs. Boats can sail around headlands. */
 export function seaRoute(start: SeaPoint, target: SeaPoint): SeaPoint[] | null {
+  if (Math.hypot(target.x-start.x,target.y-start.y)>MAX_SEA_ROUTE) return null;
   if (!navigableWater(start.x, start.y) || !navigableWater(target.x, target.y)) return null;
   if (clearSeaSegment(start, target)) return [target];
   const grid = Math.hypot(target.x-start.x,target.y-start.y)>3000?160:48;

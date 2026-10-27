@@ -22,7 +22,7 @@ export function raidAccess(
     (s.naval?.integrity[b.id] ?? 1) > 0 && !s.ports?.shipments.some(t=>t.boat===b.id);
   const candidates = owned.filter(b=>BOAT_RANK[b.id]>=BOAT_RANK[isle.boatNeed]);
   const boat = s.afloat ? owned.find(b=>b.id===s.afloat&&usable(b)) : [...candidates].reverse().find(usable);
-  const harbours = [PUBLIC_PORT,NORTH_LANDING,...oceanLandings(),
+  const harbours = [PUBLIC_PORT,NORTH_LANDING,...oceanLandings(s.gnomeX,s.gnomeY),
     ...(s.ports?.docks??[]).flatMap(d=>{const p=portSite(d.site);return p?[p]:[];})];
   const harbour = harbours.filter(p=>Math.hypot(s.gnomeX-p.x,s.gnomeY-p.y)<=150)
     .sort((a,b)=>Math.hypot(s.gnomeX-a.x,s.gnomeY-a.y)-Math.hypot(s.gnomeX-b.x,s.gnomeY-b.y))[0] ?? null;

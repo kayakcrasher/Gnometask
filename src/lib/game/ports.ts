@@ -158,6 +158,7 @@ const NORTH_LANE: SeaPoint[] = [
 ];
 const routes = new Map<string, SeaPoint[] | null>();
 export function shippingRoute(origin: string, destination: string) {
+  if(routes.size>=128)routes.clear();
   const key = getOceanSeed() + ":" + origin + ">" + destination;
   if (routes.has(key)) return routes.get(key) ?? null;
   const a = portDestination(origin),
@@ -192,6 +193,15 @@ export function portNavigationRoute(
 ): SeaPoint[] | null {
   const target = portDestination(targetId);
   if (!target) return null;
+  const distance=Math.hypot(target.water.x-start.x,target.water.y-start.y);
+  if(distance>10000){
+    const heading=Math.atan2(target.water.y-start.y,target.water.x-start.x);
+    for(const offset of [0,.3,-.3,.6,-.6,1,-1]){
+      const end={x:start.x+Math.cos(heading+offset)*6000,y:start.y+Math.sin(heading+offset)*6000};
+      const route=seaRoute(start,end);if(route)return route;
+    }
+    return null;
+  }
   if (clearSeaSegment(start, target.water)) return [target.water];
   const choices = [PUBLIC_PORT, NORTH_LANDING, ...PORT_SITES].sort(
     (a, b) =>
@@ -204,7 +214,7 @@ export function portNavigationRoute(
     const lane = shippingRoute(source.id, targetId);
     if (lane) return [source.water, ...lane];
   }
-  return null;
+  return seaRoute(start,target.water);
 }
 export function routeLength(route: SeaPoint[], start: SeaPoint) {
   let n = 0;

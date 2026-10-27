@@ -5,7 +5,7 @@ import {NEIGHBOUR_EVENT} from "@/lib/game/neighbours";
 import {PROJECT_WORK} from "@/lib/game/thimblehaven";
 import {TownNoticeboard} from "./town-noticeboard";
 import {NOTICEBOARD_EVENT,TOWN_MILESTONES} from "@/lib/game/town-progress";
-import {fleetSeeds} from "@/lib/game/naval";
+import {vesselSeed} from "@/lib/game/naval";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useGame } from "@/lib/game/store";
@@ -65,7 +65,7 @@ export function NorthernSeas() {
           <strong>
             {battle.name} · {battle.hp} hull
           </strong>
-          <progress aria-label="Enemy ship health" value={battle.hp} max={fleetSeeds().find(v=>v.id===battle.id)?.hp??battle.hp} className="mt-1 h-3 w-full accent-[#d6aa60]"/>
+          <progress aria-label="Enemy ship health" value={battle.hp} max={vesselSeed(battle.id)?.hp??battle.hp} className="mt-1 h-3 w-full accent-[#d6aa60]"/>
           <p className="text-xs">
             Your hull {s.naval.integrity[s.afloat!] ?? hullStrength(s.afloat!)}{" "}
             · {s.naval.ammo} shot · Reload {s.naval.cooldown.toFixed(1)}s

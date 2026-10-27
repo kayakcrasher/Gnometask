@@ -2,8 +2,7 @@ import {Discoveries} from "./discoveries";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGame } from "@/lib/game/store";
-import { oceanIslands, oceanLandAt } from "@/lib/game/ocean-world";
-import { SEA_BOUNDS } from "@/lib/game/sailing";
+import { oceanIslandsNear, oceanLandAt, oceanDanger, oceanChartBounds } from "@/lib/game/ocean-world";
 import { ISLAND_POLY, DESERT_POLY } from "@/lib/game/world3";
 import { boatById } from "@/lib/game/data/boats";
 import { hullStrength } from "@/lib/game/naval";
@@ -21,7 +20,8 @@ export function OpenOceanControls() {
     s.abroad
   )
     return null;
-  const islands = oceanIslands(s.ocean.seed),
+  const bounds=oceanChartBounds(s.gnomeX,s.gnomeY),danger=oceanDanger(s.gnomeX,s.gnomeY);
+  const islands = oceanIslandsNear(s.gnomeX,s.gnomeY,danger?8500:18000,s.ocean.seed).filter(i=>i.x+i.rx>=bounds.minX&&i.x-i.rx<=bounds.maxX&&i.y+i.ry>=bounds.minY&&i.y-i.ry<=bounds.maxY),
     local = oceanLandAt(s.gnomeX, s.gnomeY),
     rescue = s.naval.rescue,
     wreck = s.naval.wrecks.find((w) => w.id === s.naval.boarding);
@@ -119,14 +119,15 @@ export function OpenOceanControls() {
               </header>
               <Discoveries onTravel={()=>setOpen(false)}/>
               <p className="text-sm">
-                Eight islands, six little harbour towns and roaming pirates.{" "}
-                {s.ocean.discovered.length}/{islands.length} islands sighted.
-                Your world’s islands stay in the same places when you save.
+                The familiar archipelago opens into endless seeded seas. Sail beyond the chart to find new islands, harbour towns and pirates. Your discoveries stay in the same places.
+              </p>
+              <p className="my-2 rounded-xl bg-pine/10 p-3 text-sm font-bold">{danger ? `Frontier danger ${danger} · stronger pirates and larger catches` : 'Charted waters · familiar fishing and patrols'}<br />Position {Math.round(s.gnomeX)}, {Math.round(s.gnomeY)} · {s.ocean.discovered.length} recent island sightings</p>
+              <p className="text-xs">High-level frontier giants still need a deepwater rig. Greater distance raises pirate hull strength and guns. Nearby harbour towns offer repairs and free rescue towing.
               </p>
               <svg
                 role="img"
                 aria-label="Archipelago chart"
-                viewBox={`${SEA_BOUNDS.minX} ${SEA_BOUNDS.minY} ${SEA_BOUNDS.maxX - SEA_BOUNDS.minX} ${SEA_BOUNDS.maxY - SEA_BOUNDS.minY}`}
+                viewBox={`${bounds.minX} ${bounds.minY} ${bounds.maxX - bounds.minX} ${bounds.maxY - bounds.minY}`}
                 className="my-3 h-64 w-full rounded-2xl bg-[#315b70]"
               >
                 <polygon
@@ -184,6 +185,7 @@ export function OpenOceanControls() {
                   strokeWidth={60}
                 />
               </svg>
+              {s.afloat && !s.naval.battle && <div className="my-3 grid grid-cols-2 gap-2" aria-label="Explore ocean bearings">{[['North',0,-6000],['East',6000,0],['South',0,6000],['West',-6000,0]].map(([name,dx,dy])=><button type="button" key={name} disabled={!!s.fishing||!!s.naval.rescue||!!s.naval.boarding} className={`${btn} bg-pine/10`} onClick={()=>{setOpen(false);window.dispatchEvent(new CustomEvent('hollow-watch:notice-walk',{detail:{x:s.gnomeX+Number(dx),y:s.gnomeY+Number(dy)}}));}}>Explore {name} · next stretch</button>)}</div>}
               {s.afloat && (
                 <div className="mb-3 flex flex-wrap gap-2">
                   <button

@@ -129,3 +129,13 @@ Open the satchel or aquarium to track 23 fish species, read their requirements a
 claim one-time collection rewards. Sell spares keeps one of each bag species and
 sprats for accepted town orders. Cast completion, cabin mooring/naval guards,
 cook healing messages, loaded aquarium capacity and phone satchel bounds are fixed.
+
+### 0.1.16 — Endless seas
+
+Sail beyond the familiar chart to generate new islands, harbour towns and pirate
+patrols. Ocean chart follows you offshore and offers four exploration bearings.
+Distance raises frontier danger, enemy strength and fish lengths. Rig-equipped
+ships can find wandering sailfin (Fishing 65 / danger 2), stormjaw tuna (80 / 5)
+and crown leviathan (95 / 9). Personal length records appear in the journal.
+Generated ports support paid supplies, repairs, crew and rescue towing. Homeward
+courses navigate in safe stages rather than searching the whole ocean at once.

@@ -2,7 +2,7 @@ import {NeighbourHomes3} from "./neighbour-homes";
 import {TownNoticeboard3} from "./town-noticeboard";
 import { FluidSeaGroup } from "./sailing-player";
 import { useNearby } from "./mobile-graphics";
-import {fleetSeeds} from "@/lib/game/naval";
+import {vesselSeed} from "@/lib/game/naval";
 import { navigableWater } from "@/lib/game/sailing";
 import { thimbleRemark, THIMBLE_HOME } from "@/lib/game/thimblehaven";
 import { GnomeRig } from "./gnome-rig";
@@ -218,7 +218,7 @@ export function PlayerHarbours({
                 );
             }}
           >
-            <BoatMesh kind={v.kind} guns={v.guns} faction={v.side} />{Math.hypot(v.x-s.gnomeX,v.y-s.gnomeY)<850&&<Html center position={[0,3.4,0]}><div className="pointer-events-none w-32 rounded-lg bg-ink/85 p-1 text-center text-[10px] text-parchment"><p>{v.name}</p><progress aria-label={`${v.name} health`} max={fleetSeeds().find(e=>e.id===v.id)?.hp??v.hp} value={v.hp} className="h-2 w-full accent-[#c78f63]"/><span>{v.hp} hull</span></div></Html>}
+            <BoatMesh kind={v.kind} guns={v.guns} faction={v.side} />{Math.hypot(v.x-s.gnomeX,v.y-s.gnomeY)<850&&<Html center position={[0,3.4,0]}><div className="pointer-events-none w-32 rounded-lg bg-ink/85 p-1 text-center text-[10px] text-parchment"><p>{v.name}</p><progress aria-label={`${v.name} health`} max={vesselSeed(v.id)?.hp??v.hp} value={v.hp} className="h-2 w-full accent-[#c78f63]"/><span>{v.hp} hull</span></div></Html>}
           </FluidSeaGroup>
         ))}
       {s.naval.battle &&

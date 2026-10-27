@@ -36,7 +36,8 @@
     "check:discoveries": "node scripts/check-discoveries.mjs",
     "check:deep-fishing": "node scripts/check-deep-fishing.mjs",
     "check:ship-life": "node scripts/check-ship-life.mjs",
-    "check:angler": "node scripts/check-angler.mjs"
+    "check:angler": "node scripts/check-angler.mjs",
+    "check:endless-seas": "node scripts/check-endless-seas.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

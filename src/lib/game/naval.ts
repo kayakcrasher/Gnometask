@@ -1,7 +1,7 @@
-import { oceanIslands } from "./ocean-world";
+import { oceanIslands, oceanIslandsNear, frontierIsland, type OceanIsland } from "./ocean-world";
 import { navigableWater } from "./sailing";
 import {
-  rescuePorts,
+  rescuePort,
   coerceRescue,
   type EnemyWreck,
   type TowRescue,
@@ -9,6 +9,7 @@ import {
 import { boatById, type BoatId } from "./data/boats";
 export type ShipFit = { guns: number; crew: number };
 export type SeaVessel = {
+  tier?: number;
   id: string;
   name: string;
   kind: BoatId;
@@ -100,6 +101,25 @@ export function roamingPirates(): SeaVessel[] {
 }
 export function fleetSeeds() {
   return [...SEA_VESSELS, ...roamingPirates()];
+}
+export function frontierPirate(island: OceanIsland): SeaVessel {
+  const tier=island.danger??1,x=island.x+island.rx+600,y=island.y-island.ry-350;
+  return {id:`rover-${island.id}`,name:`${island.name} corsair · danger ${tier}`,kind:tier<3?'pirate':tier<6?'brig':'frigate',side:'enemy',
+    x,y,hp:100+tier*55,guns:Math.min(24,2+Math.floor(tier*1.2)),reward:220+tier*150,respawn:0,tier,patrol:{x,y,r:110}};
+}
+export function vesselSeed(id: string) {
+  const island=id.startsWith('rover-')?frontierIsland(id.slice(6)):null;
+  return island?frontierPirate(island):fleetSeeds().find(v=>v.id===id);
+}
+/** Keep only nearby frontier encounters. Cooldowns survive unloading in the bounded ocean ledger. */
+export function streamOceanVessels(n: Naval, x: number, y: number, defeated: Record<string,number> = {}) {
+  const seeds=[...fleetSeeds(),...oceanIslandsNear(x,y).filter(i=>i.frontier).map(frontierPirate)];
+  for(const v of n.vessels)if(!seeds.some(p=>p.id===v.id)&&(v.id===n.battle||n.wrecks.some(w=>w.id===v.id)))seeds.push(v);
+  return seeds.map(seed=>{
+    const old=n.vessels.find(v=>v.id===seed.id);if(old)return old;
+    const remaining=Math.max(0,(defeated[seed.id]??0)-n.clock);
+    return remaining?{...seed,hp:0,respawn:Math.min(600,remaining)}:seed;
+  });
 }
 export const gunLimit = (id: string) =>
   ({
@@ -193,7 +213,12 @@ export function coerceNaval(
   for (const k of ["cooldown", "enemyCooldown"] as const)
     if (Number.isFinite(raw[k])) out[k] = Math.max(0, Math.min(6, raw[k]!));
   out.auto = raw.auto !== false;
-  out.vessels = fleetSeeds().map((seed) => {
+  const seeds=[...fleetSeeds()];
+  for(const r of (Array.isArray(raw.vessels)?raw.vessels:[]).slice(-128)) {
+    const island=typeof r?.id==='string'&&r.id.startsWith('rover-')?frontierIsland(r.id.slice(6)):null;
+    if(island&&!seeds.some(v=>v.id===r.id))seeds.push(frontierPirate(island));
+  }
+  out.vessels = seeds.map((seed) => {
     const r = Array.isArray(raw.vessels)
       ? raw.vessels.find((v) => v?.id === seed.id)
       : null;
@@ -220,7 +245,7 @@ export function coerceNaval(
   });
   if (raw.moored && typeof raw.moored === "object")
     for (const [boat, port] of Object.entries(raw.moored)) {
-      if (owned.includes(boat) && rescuePorts().some((p) => p.id === port))
+      if (owned.includes(boat) && rescuePort(port))
         out.moored[boat] = port;
     }
   out.clock =

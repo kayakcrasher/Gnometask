@@ -1,12 +1,12 @@
 import { useNearby } from "./mobile-graphics";
-import { rescuePorts } from "@/lib/game/ocean-rescue";
+import { rescuePort } from "@/lib/game/ocean-rescue";
 import { boatById } from "@/lib/game/data/boats";
 import { shipFit } from "@/lib/game/naval";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Html, Line } from "@react-three/drei";
 import * as THREE from "three";
 import { useGame } from "@/lib/game/store";
-import { oceanIslands, type OceanIsland } from "@/lib/game/ocean-world";
+import { oceanIslandsNear, type OceanIsland } from "@/lib/game/ocean-world";
 import { to3, to2, shapePts } from "@/lib/game/world3";
 import { SEA_LEVEL } from "@/lib/game/data/water";
 import {
@@ -37,6 +37,7 @@ function IslandGround({
       }),
     [island],
   );
+  useEffect(()=>()=>meshes.forEach(g=>g.dispose()),[meshes]);
   return (
     <group>
       {meshes.map((g, index) => (
@@ -111,7 +112,7 @@ export function OpenOceanScene({
 }) {
   const near = useNearby();
   const s = useGame(),
-    islands = oceanIslands(s.ocean.seed),
+    islands = oceanIslandsNear(s.gnomeX,s.gnomeY,3500,s.ocean.seed),
     rescue = s.naval.rescue;
   const tug = rescue
     ? rescue.phase === "towing"
@@ -263,7 +264,7 @@ export function OpenOceanScene({
       ))}
       {Object.entries(s.naval.moored).map(([id, portId]) => {
         if (s.afloat === id || s.naval.rescue?.boat === id) return null;
-        const port = rescuePorts().find((p) => p.id === portId),
+        const port = rescuePort(portId),
           boat = boatById(id);
         return port && boat ? (
           <group

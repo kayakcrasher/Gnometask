@@ -1,5 +1,5 @@
 import { NORTH_LANDING, PUBLIC_PORT } from "./ports";
-import { oceanLandings } from "./ocean-world";
+import { oceanLanding, oceanLandings } from "./ocean-world";
 import { seaRoute, clearSeaSegment, type SeaPoint } from "./sailing";
 export type EnemyWreck = {
   id: string;
@@ -20,11 +20,12 @@ export type TowRescue = {
   duration: number;
   returnDuration: number;
 };
-export const rescuePorts = () => [
+export const rescuePorts = (x?:number,y?:number) => [
   PUBLIC_PORT,
   NORTH_LANDING,
-  ...oceanLandings().filter((p) => p.town),
+  ...oceanLandings(x,y,16000).filter((p) => p.town),
 ];
+export function rescuePort(id:string){return id==='capital'?PUBLIC_PORT:id==='north-landing'?NORTH_LANDING:(oceanLanding(id)?.town?oceanLanding(id):null);}
 export function waterPathLength(path: SeaPoint[]) {
   return path
     .slice(1)
@@ -47,7 +48,7 @@ export function alongWaterPath(path: SeaPoint[], fraction: number) {
   return { ...path.at(-1)!, heading: 0 };
 }
 export function planTow(boat: string, origin: SeaPoint): TowRescue | null {
-  for (const port of rescuePorts().sort(
+  for (const port of rescuePorts(origin.x,origin.y).sort(
     (a, b) =>
       Math.hypot(origin.x - a.water.x, origin.y - a.water.y) -
       Math.hypot(origin.x - b.water.x, origin.y - b.water.y),
@@ -78,7 +79,7 @@ export function coerceRescue(v: unknown, owned: string[]): TowRescue | null {
   const t = v as TowRescue;
   if (
     !owned.includes(t.boat) ||
-    !rescuePorts().some((p) => p.id === t.port) ||
+    !rescuePort(t.port) ||
     !["coming", "towing"].includes(t.phase) ||
     ![t.elapsed, t.duration, t.returnDuration].every(
       (n) => Number.isFinite(n) && n >= 0,
@@ -98,7 +99,7 @@ export function coerceRescue(v: unknown, owned: string[]): TowRescue | null {
     !path.slice(1).every((p, i) => clearSeaSegment(path[i]!, p))
   )
     return null;
-  const port = rescuePorts().find((p) => p.id === t.port)!;
+  const port = rescuePort(t.port)!;
   if (
     Math.hypot(path.at(-1)!.x - port.water.x, path.at(-1)!.y - port.water.y) > 1
   )

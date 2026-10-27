@@ -186,6 +186,7 @@ export type TreeSave = {
 };
 
 export type FishingCast = {
+  length?: number;
   duration?: number;
   size?:number;
   id: number;

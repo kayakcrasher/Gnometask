@@ -33,7 +33,7 @@ export function AnglerJournal() {
     <div className="my-2 flex flex-wrap gap-1" aria-label="Journal filters">{[['all', 'All fish'], ['missing', 'Still to find'], ['recorded', 'Recorded']].map(([id, label]) => <button type="button" key={id} aria-pressed={filter === id} onClick={() => setFilter(id)} className={`${button} ${filter === id ? 'bg-pine text-parchment' : 'bg-white/50'}`}>{label}</button>)}</div>
     <ul className="max-h-72 space-y-2 overflow-y-auto" aria-label="Fish field guide">{fish.map(f => <li key={f.id} className="rounded-xl bg-white/40 p-2 text-xs">
       <p className="font-bold"><span aria-hidden="true" style={{ color: f.color }}>● </span>{f.name} · {s.angler.catches[f.id] ? `${s.angler.catches[f.id]} recorded` : 'Not recorded'}</p>
-      <p>{fishHabitat(f)}</p><p className="text-bark">{f.price} coins · {f.xp} Fishing XP{level < f.need ? ` · ${f.need - level} more Fishing levels needed` : ''}</p>
+      <p>{fishHabitat(f)}</p>{!!s.angler.best?.[f.id]&&<p className="font-bold text-pine">Record length {s.angler.best[f.id].toFixed(2)} m</p>}<p className="text-bark">{f.price} coins · {f.xp} Fishing XP{level < f.need ? ` · ${f.need - level} more Fishing levels needed` : ''}</p>
     </li>)}</ul>
     {!fish.length && <p className="text-xs">No entries here yet. Every little sprat is a beginning.</p>}
     <p role="status" className="mt-2 text-xs">{s.speech}</p>

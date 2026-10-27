@@ -11,7 +11,7 @@ import { clamp } from "@/lib/utils";
 import { useGame } from "@/lib/game/store";
 import type { GnomeFacing } from "@/components/land/gnome";
 import { walkableLand } from "@/lib/game/world3";
-import { HARBOUR_APPROACH, clearSeaSegment, navigableWater, SEA_BOUNDS, seaRoute, sailingSpeed, type SeaPoint } from "@/lib/game/sailing";
+import { HARBOUR_APPROACH, clearSeaSegment, navigableWater, seaRoute, sailingSpeed, type SeaPoint } from "@/lib/game/sailing";
 
 const SPEED = 260;
 type Waypoint = SeaPoint & { arrive?: () => void };
@@ -153,8 +153,9 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
     if ((state.combat&&!useGame.getState().combat?.retreating) || state.atHome || state.interior || state.abroad || state.fishing || state.transport.ride || state.naval.rescue || state.naval.boarding) return;
     const sea = Boolean(state.afloat);
     const wide=sea||!!oceanLandAt(state.gnomeX,state.gnomeY);
-    const nx = clamp(x, wide ? SEA_BOUNDS.minX : WORLD_BOUNDS.minX, wide ? SEA_BOUNDS.maxX : WORLD_BOUNDS.maxX);
-    const ny = clamp(y, wide ? SEA_BOUNDS.minY : WORLD_BOUNDS.minY, wide ? SEA_BOUNDS.maxY : WORLD_BOUNDS.maxY);
+    if (!Number.isFinite(x)||!Number.isFinite(y)) return;
+    const nx = wide ? x : clamp(x, WORLD_BOUNDS.minX, WORLD_BOUNDS.maxX);
+    const ny = wide ? y : clamp(y, WORLD_BOUNDS.minY, WORLD_BOUNDS.maxY);
     const spot = nearestLegal(sea, nx, ny);
     if (!spot) { stop(); return; }
     const route = suppliedRoute??(sea ? seaRoute(posRef.current, spot) : landRoute(posRef.current, spot));
@@ -188,13 +189,18 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   useEffect(() => {
     if (!sailHome || !afloat) return;
     useGame.setState({ sailHome: false });
-    walkTo(HARBOUR_APPROACH.x, HARBOUR_APPROACH.y, () => useGame.getState().sailTo("dock"),portNavigationRoute(posRef.current,"capital")??undefined);
+    useGame.setState({portCourse:"capital"});
   }, [sailHome, afloat, walkTo]);
 
   useEffect(()=>{
     if(!portCourse||!afloat)return;
     const port=portDestination(portCourse);useGame.setState({portCourse:null});
-    if(port)walkTo(port.water.x,port.water.y,()=>useGame.getState().sailTo("dock"),portNavigationRoute(posRef.current,portCourse)??undefined);
+    if(port){
+      const route=portNavigationRoute(posRef.current,portCourse);
+      if(!route){useGame.getState().speak("No safe harbour course found. Sail into clearer water and try again.");return;}
+      const end=route.at(-1)!;
+      walkTo(end.x,end.y,()=>{const s=useGame.getState();if(Math.hypot(s.gnomeX-port.water.x,s.gnomeY-port.water.y)<100)s.sailTo("dock");else useGame.setState({portCourse});},route);
+    }
   },[portCourse,afloat,walkTo]);
   return { pos, facing, yaw, walking, marker, walkTo, yawRef, posRef, speedRef };
 }

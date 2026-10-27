@@ -1,5 +1,6 @@
+import {oceanDanger} from "../ocean-world";
 import { ANGLER_AWARDS, speciesCaught, spareFishSale, anglerAvailable } from '../angler';
-import {offshoreFishing,supportsDeepRig} from "../deep-fishing";
+import {offshoreFishing,supportsDeepRig,fishLength} from "../deep-fishing";
 import { recordNoticeVisits } from "../town-progress";
 import { inNationalPark } from "../data/national-park";
 import {oceanLandings} from "../ocean-world";
@@ -135,7 +136,7 @@ export function gatherSlice(
     sailTo: (dest, boatId) => {
       const s = get();
       if (!s.named || s.atHome || s.interior || s.abroad || s.combat || s.fishing || s.bank.pending || s.transport.ride || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
-      const harbours=[PUBLIC_PORT,NORTH_LANDING,...oceanLandings(),...s.ports.docks.map(d=>portSite(d.site)!)];
+      const harbours=[PUBLIC_PORT,NORTH_LANDING,...oceanLandings(s.gnomeX,s.gnomeY),...s.ports.docks.map(d=>portSite(d.site)!)];
       if (dest === "dock") {
         if (!s.afloat) {
           set({ speech: "You are already ashore.", popup: null });
@@ -363,7 +364,8 @@ export function gatherSlice(
       }
       const rank = activeBoat ? BOAT_RANK[activeBoat.id] : 1;
       const giants=!!activeBoat&&lv>=60&&supportsDeepRig(activeBoat.id)&&!!s.ports.parts[activeBoat.id]?.includes("deep-rig")&&offshoreFishing(s.gnomeX,s.gnomeY);
-      const fish = rollFish(where === "sea" && rank < 2 ? "shore" : where, lv, rank, rod,Math.random,giants) ?? (where === "sea" ? rollFish("shore",lv,rank,rod) : null);
+      const danger=where==="sea"?oceanDanger(s.gnomeX,s.gnomeY):0;
+      const fish = rollFish(where === "sea" && rank < 2 ? "shore" : where, lv, rank, rod,Math.random,giants,danger) ?? (where === "sea" ? rollFish("shore",lv,rank,rod) : null);
       if (!fish) {
         set({
           speech:
@@ -376,7 +378,8 @@ export function gatherSlice(
       }
       const id = Date.now();
       const duration=fish.giant?6500:activeBoat&&s.ports.parts[activeBoat.id]?.includes("rack")?2000:2600;
-      const cast = { id, started: id, duration, size: fish.size ?? 1, where, fishId: fish.id, color: fish.color, shadow: fish.shadow,
+      const length=fishLength(fish,danger),baseLength=fishLength(fish,0);
+      const cast = { id, started: id, duration, length, size: Math.min(20,(fish.size ?? 1)*(length/baseLength)), where, fishId: fish.id, color: fish.color, shadow: fish.shadow,
         x: where === "sea" ? s.gnomeX : x, y: where === "sea" ? s.gnomeY : y };
       set({
         fishing: cast,
@@ -398,12 +401,12 @@ export function gatherSlice(
         const gained = withXp(now.skills, { fishing: caught.xp });
         set({
           fishing: null,
-          angler: { ...now.angler, catches: { ...now.angler.catches, [caught.id]: Math.min(100000, (now.angler.catches[caught.id] ?? 0) + 1) } },
+          angler: { ...now.angler, best:{...now.angler.best,[caught.id]:Math.max(now.angler.best?.[caught.id]??0,cast.length)}, catches: { ...now.angler.catches, [caught.id]: Math.min(100000, (now.angler.catches[caught.id] ?? 0) + 1) } },
           fishBag: { ...now.fishBag, [caught.id]: (now.fishBag[caught.id] ?? 0) + 1 },
           skills: gained.skills,
           speech:
             gained.ding ??
-            `${now.angler.catches[caught.id] ? "A" : "New journal entry:"} ${caught.name.toLowerCase()}! +${caught.xp} Fishing. Sell it, or keep it in the town hall tank.`,
+            `${now.angler.catches[caught.id] ? "A" : "New journal entry:"} ${caught.name.toLowerCase()} (${cast.length.toFixed(2)} m)! +${caught.xp} Fishing. Sell it, or keep it in the town hall tank.`,
           bounceKey: now.bounceKey + 1,
         });
         sfx("buy");

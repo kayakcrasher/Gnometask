@@ -35,7 +35,7 @@ import { boatById } from "./data/boats";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);

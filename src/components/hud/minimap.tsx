@@ -1,5 +1,4 @@
-import {oceanLandAt} from "@/lib/game/ocean-world";
-import { SEA_BOUNDS } from "@/lib/game/sailing";
+import {oceanLandAt,oceanChartBounds,oceanIslandsNear} from "@/lib/game/ocean-world";
 import { IslandAtlas } from "./island-atlas";
 import { WORLD_BOUNDS } from "@/lib/game/data/frontier";
 import { FrontierMap } from "@/components/land/frontier-map";
@@ -36,7 +35,7 @@ export function Minimap({
   npcPoses: Record<string, NpcPose>;
   compassRef: { current: HTMLDivElement | null };
 }) {
-  const afloat=useGame(s=>!!s.afloat),bounds=(afloat||oceanLandAt(pos.x,pos.y))?SEA_BOUNDS:WORLD_BOUNDS,VW=bounds.maxX-bounds.minX,VH=bounds.maxY-bounds.minY;
+  const afloat=useGame(s=>!!s.afloat),bounds=(afloat||oceanLandAt(pos.x,pos.y))?oceanChartBounds(pos.x,pos.y):WORLD_BOUNDS,VW=bounds.maxX-bounds.minX,VH=bounds.maxY-bounds.minY;
   const works=useGame(s=>s.roadWorks),estate=useGame(s=>s.estate),city=useGame(s=>s.city);
   const roads=useMemo(()=>[...developedRoads(works,estate),...city.roads],[works,estate,city.roads]);
   const travel = useGame((s) => s.travelIsle);
@@ -79,6 +78,7 @@ export function Minimap({
         <polygon points={poly(DESERT_POLY)} fill="#e2b15a" />
         <polygon points={poly(ISLAND_POLY)} fill="#6f8f66" />
         <FrontierMap />
+        {(afloat||oceanLandAt(pos.x,pos.y))&&oceanIslandsNear(pos.x,pos.y,9000).map(i=><polygon key={i.id} points={poly(i.shore)} fill="#94ad7b"/>)}
         {roads.map((road) => (
           <polyline
             key={road.id}

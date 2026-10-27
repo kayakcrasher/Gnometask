@@ -18,9 +18,10 @@ export type FishId =
   | "salmon"
   | "tuna"
   | "moonfish"
-  | "leviathan" | "bluefin-giant" | "sunspire-marlin" | "abyssal-grouper";
+  | "leviathan" | "bluefin-giant" | "sunspire-marlin" | "abyssal-grouper" | "frontier-sailfin" | "stormjaw" | "crown-leviathan";
 
 export type FishDef = {
+  minDanger?: number;
   giant?: boolean;
   size?: number;
   id: FishId;
@@ -39,6 +40,9 @@ export type FishDef = {
 };
 
 export const FISH: FishDef[] = [
+  {id:"frontier-sailfin",name:"Wandering sailfin",minDanger:2,giant:true,size:4.2,weight:5,price:1800,xp:1000,need:65,sea:true,boat:3,color:"#63b7ac",shadow:"#295e70"},
+  {id:"stormjaw",name:"Stormjaw tuna",minDanger:5,giant:true,size:5.4,weight:3,price:3500,xp:1800,need:80,sea:true,boat:3,color:"#697ab5",shadow:"#303b65"},
+  {id:"crown-leviathan",name:"Crown leviathan",minDanger:9,giant:true,size:6.2,weight:2,price:6500,xp:2800,need:95,sea:true,boat:3,color:"#d5b96c",shadow:"#71624a"},
   {id:"bluefin-giant",name:"Giant bluefin tuna",weight:5,price:850,xp:650,need:60,sea:true,boat:3,color:"#4478a6",shadow:"#203c55",giant:true,size:2.4},
   {id:"sunspire-marlin",name:"Sunspire marlin",weight:3,price:1450,xp:950,need:75,sea:true,boat:3,color:"#7a91c4",shadow:"#293b65",giant:true,size:3.1},
   {id:"abyssal-grouper",name:"Abyssal grouper",weight:2,price:2400,xp:1450,need:90,sea:true,boat:3,color:"#658278",shadow:"#29443d",giant:true,size:3.6},
@@ -295,8 +299,10 @@ export function rollFish(
   rod: number,
   rng: () => number = Math.random,
   giants = false,
+  danger = 0,
 ): FishDef | null {
   const pool = FISH.filter((f) => {
+    if ((f.minDanger??0)>danger) return false;
     if (f.giant && (!giants || where!=="sea")) return false;
     if (level < f.need) return false;
     if (where === "shore") return !f.sea;

@@ -2,8 +2,8 @@ import { FISH, cleanFishBag, type FishDef } from './data/fish';
 import { noticeTerms } from './town-progress';
 import type { GameSave } from './types';
 
-export type AnglerJournal = { catches: Record<string, number>; claimed: string[] };
-export const emptyAnglerJournal = (): AnglerJournal => ({ catches: {}, claimed: [] });
+export type AnglerJournal = { catches: Record<string, number>; best: Record<string, number>; claimed: string[] };
+export const emptyAnglerJournal = (): AnglerJournal => ({ catches: {}, best: {}, claimed: [] });
 export const ANGLER_AWARDS = [
   { id: 'first-pages', name: 'First pages', species: 3, coins: 60 },
   { id: 'shore-naturalist', name: 'Shore naturalist', species: 8, coins: 200 },
@@ -18,11 +18,13 @@ export function coerceAngler(raw: unknown, bag: unknown, tank: unknown): AnglerJ
     const n = Math.min(100000, Math.max(catches[f.id] ?? 0, (b[f.id] ?? 0) + (t[f.id] ?? 0)));
     if (n) catches[f.id] = n;
   }
-  return { catches, claimed: ANGLER_AWARDS.filter(a => Array.isArray(r.claimed) && r.claimed.includes(a.id)).map(a => a.id) };
+  const best:Record<string,number>={};
+  for(const f of FISH){const n=r.best?.[f.id];if(typeof n==='number'&&Number.isFinite(n)&&n>0&&n<=1000000)best[f.id]=n;}
+  return { catches, best, claimed: ANGLER_AWARDS.filter(a => Array.isArray(r.claimed) && r.claimed.includes(a.id)).map(a => a.id) };
 }
 export const speciesCaught = (journal: AnglerJournal) => FISH.filter(f => (journal.catches[f.id] ?? 0) > 0).length;
 export function fishHabitat(f: FishDef) {
-  return f.giant ? `Offshore water clear of land · Fishing ${f.need} · deepwater rig on a compatible hull`
+  return f.giant ? `Offshore water clear of land · Fishing ${f.need} · deepwater rig on a compatible hull${f.minDanger?` · frontier danger ${f.minDanger}+`:""}`
     : f.sea ? `Open sea · Fishing ${f.need} · boat rank ${f.boat}+`
     : `Shore or rowboat · Fishing ${f.need}`;
 }

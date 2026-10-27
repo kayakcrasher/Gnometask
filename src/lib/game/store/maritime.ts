@@ -220,7 +220,7 @@ export function maritimeSlice(
       const harbours = [
         PUBLIC_PORT,
         NORTH_LANDING,
-        ...oceanLandings().filter((p) => p.town),
+        ...oceanLandings(s.gnomeX,s.gnomeY).filter((p) => p.town),
         ...s.ports.docks.map((d) => portSite(d.site)!),
       ];
       if (

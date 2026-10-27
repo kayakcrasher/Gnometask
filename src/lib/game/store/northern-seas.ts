@@ -1,6 +1,6 @@
 import {addNeighbourLetter} from "../neighbours";
 import { rescuePorts } from "../ocean-rescue";
-import { gunLimit, hullStrength, shipFit, fleetSeeds } from "../naval";
+import { gunLimit, hullStrength, shipFit, streamOceanVessels, vesselSeed } from "../naval";
 import { TOWN_PROJECTS, stepThimble } from "../thimblehaven";
 import { levelFromXp } from "../xp";
 import { withXp, scheduleWrite } from "./persist";
@@ -41,7 +41,7 @@ export function northernSeasSlice(
     const s = get();
     return (
       (!s.afloat &&
-        rescuePorts().some(
+        rescuePorts(s.gnomeX,s.gnomeY).some(
           (p) => Math.hypot(p.x - s.gnomeX, p.y - s.gnomeY) < 300,
         )) ||
       (!s.afloat &&
@@ -242,6 +242,7 @@ export function northernSeasSlice(
       set({
         coins: s.coins - wages,
         skills: gained.skills,
+        ...(won&&enemy.tier?{ocean:{...s.ocean,defeated:Object.fromEntries([...Object.entries(s.ocean.defeated??{}).filter(([,until])=>until>n.clock),[enemy.id,n.clock+600]].slice(-256))}}:{}),
         naval: {
           ...n,
           wrecks: won
@@ -312,7 +313,7 @@ export function northernSeasSlice(
         dt <= 0
       )
         return;
-      const n = s.naval;
+      const n = {...s.naval,vessels:streamOceanVessels(s.naval,s.gnomeX,s.gnomeY,s.ocean.defeated)};
       if (
         !s.afloat &&
         !n.battle &&
@@ -334,7 +335,7 @@ export function northernSeasSlice(
                 respawn: Math.max(0, v.respawn - step),
                 hp:
                   v.respawn <= step
-                    ? fleetSeeds().find((e) => e.id === v.id)!.hp
+                    ? vesselSeed(v.id)?.hp ?? v.hp
                     : v.hp,
               }
             : v,
@@ -342,7 +343,7 @@ export function northernSeasSlice(
       };
       next.vessels = next.vessels.map((v) => {
         if (!v.patrol || v.hp <= 0 || v.id === next.battle) return v;
-        const a = next.clock * 0.035 + Number(v.id.split("-").at(-1) || 0);
+        const a = next.clock * 0.035 + [...v.id].reduce((h,c)=>(Math.imul(h,31)+c.charCodeAt(0))>>>0,0)%100;
         return {
           ...v,
           x: v.patrol.x + Math.cos(a) * v.patrol.r,
