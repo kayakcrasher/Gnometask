@@ -109,6 +109,7 @@ export function snap(s: GameSave): GameSave {
     shares: s.shares,
     waveDay: s.waveDay,
     bones: s.bones,
+    angler: s.angler,
     fishBag: s.fishBag,
     tank: s.tank,
     aquariumLevel:s.aquariumLevel,

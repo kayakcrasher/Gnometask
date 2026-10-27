@@ -1,3 +1,4 @@
+import { AnglerJournal } from "./angler-journal";
 import { useGame } from "@/lib/game/store";
 import {
   FISH,
@@ -72,7 +73,7 @@ export function Aquarium() {
           </svg>
         ))}
       </div>
-      {total > 24 && (
+      {total > visible.length && (
         <p className="mt-1 text-xs">
           Showing a sample of your collection; every fish is listed below.
         </p>
@@ -88,6 +89,7 @@ export function Aquarium() {
           {AQUARIUM_CAPACITY[s.aquariumLevel + 1]} spaces
         </button>
       )}
+      <AnglerJournal />
       <ul className="mt-2 space-y-2">
         {FISH.filter(
           (f) => (s.fishBag[f.id] ?? 0) > 0 || (s.tank[f.id] ?? 0) > 0,

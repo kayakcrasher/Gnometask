@@ -1,3 +1,4 @@
+import {emptyAnglerJournal,coerceAngler} from "./angler";
 import {emptyShipLife,coerceShipLife} from "./ship-life";
 import {emptyExploration,coerceExploration} from "./exploration";
 import {emptyNeighbourhood,coerceNeighbourhood} from "./neighbours";
@@ -34,7 +35,7 @@ import { boatById } from "./data/boats";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -120,6 +121,7 @@ export function defaultSave(): GameSave {
     shares: {},
     waveDay: 0,
     bones: 0,
+    angler: emptyAnglerJournal(),
     fishBag: {},
     tank: {},
     aquariumLevel:0,
@@ -393,6 +395,7 @@ export function migrate(raw: unknown): GameSave {
     shares: asFishBag(s.shares),
     waveDay: typeof s.waveDay === "number" ? Math.max(0, Math.floor(s.waveDay)) : 0,
     bones: typeof s.bones === "number" ? s.bones : 0,
+    angler: coerceAngler(s.angler,s.fishBag,s.tank),
     fishBag: cleanFishBag(s.fishBag),
     tank: cleanFishBag(s.tank),
     aquariumLevel:aquariumLevel(s.aquariumLevel,s.tank),

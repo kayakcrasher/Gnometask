@@ -1,3 +1,4 @@
+import { FishSale } from "./angler-journal";
 import {HOME_UPGRADE_COST} from "@/lib/game/city";
 import {Aquarium} from "./aquarium";
 import { InteriorPreview } from "@/components/world/interior-assets";
@@ -165,10 +166,11 @@ function ProduceStall() {
           </button>
         </div>
       ))}
+      <FishSale />
       {FISH.filter((f) => (fishBag[f.id] ?? 0) > 0).map((f) => (
         <div key={f.id} className="flex items-center gap-2 text-xs font-semibold text-ink">
           <span className="flex-1">{f.name} × {fishBag[f.id]}</span>
-          <button type="button" onClick={() => sellFish(f.id)} className="rounded-full bg-gold px-2 py-1 text-[11px] text-ink">
+          <button type="button" onClick={() => sellFish(f.id)} className="min-h-11 rounded-xl bg-gold px-3 py-2 text-xs text-ink">
             Sell {f.price}
           </button>
         </div>

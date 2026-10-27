@@ -58,7 +58,7 @@ export function noticeLock(s: GameSave, id: NoticeId) {
   if (id === "freight" && !s.townProgress.claimed.includes("market")) return "Earn Market mornings to unlock freight commissions.";
   return null;
 }
-export function noticeTerms(s: GameSave, id: NoticeId) {
+export function noticeTerms(s: Pick<GameSave, "townProgress">, id: NoticeId) {
   const tier = Math.min(4,Math.floor(s.townProgress.round/3));
   const amount = id === "fish" ? 3+tier : id === "harvest" ? 2+tier : id === "patrol" ? 2+tier : id === "freight" ? 5+tier*5 : 1;
   const base = id === "fish" ? amount*2+10 : id === "harvest" ? amount*8+12 : id === "survey" ? 90 : id === "post" ? 150 : id === "patrol" ? amount*30 : amount*12;

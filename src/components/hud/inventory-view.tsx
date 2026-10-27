@@ -1,3 +1,4 @@
+import { AnglerJournal, FishSale } from "./angler-journal";
 import { X } from "lucide-react";
 import { CATALOG, CATALOG_BY_ID } from "@/lib/game/catalog";
 import { useGame } from "@/lib/game/store";
@@ -52,7 +53,7 @@ export function InventoryView() {
   return (
     <div className="absolute inset-0 z-40 bg-ink/45" onClick={() => setPanel("place")}>
       <div
-        className="absolute inset-x-3 bottom-3 mx-auto max-h-[78dvh] w-full max-w-md overflow-y-auto rounded-[24px] bg-parchment p-4 shadow-panel md:inset-x-auto md:bottom-6 md:right-4 md:top-24 md:w-[22rem]"
+        className="absolute inset-x-3 bottom-3 mx-auto max-h-[78dvh] max-w-md overflow-y-auto rounded-[24px] bg-parchment p-4 shadow-panel md:inset-x-auto md:bottom-6 md:right-4 md:top-24 md:w-[22rem]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center gap-2">
@@ -69,6 +70,8 @@ export function InventoryView() {
             <X className="size-4" />
           </button>
         </div>
+        <AnglerJournal />
+        <FishSale />
         <p className="text-xs font-bold uppercase tracking-wide text-bark/50">Skills</p>
         <ul className="mt-1 flex flex-col gap-1.5">
           {SKILL_ORDER.map((id) => {
@@ -204,7 +207,7 @@ export function InventoryView() {
                   <button
                     type="button"
                     onClick={() => sellFish(f.id)}
-                    className="rounded-full bg-gold px-2.5 py-1 text-[11px] font-bold text-ink"
+                    className="min-h-11 rounded-xl bg-gold px-3 py-2 text-xs font-bold text-ink"
                   >
                     Sell {f.price}
                   </button>

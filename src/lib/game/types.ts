@@ -247,6 +247,7 @@ export type GameSave = {
   shares: Record<string, number>;
   waveDay: number;
   bones: number;
+  angler: import("./angler").AnglerJournal;
   fishBag: Record<string, number>;
   tank: Record<string, number>;
   aquariumLevel: number;

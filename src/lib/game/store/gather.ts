@@ -1,3 +1,4 @@
+import { ANGLER_AWARDS, speciesCaught, spareFishSale, anglerAvailable } from '../angler';
 import {offshoreFishing,supportsDeepRig} from "../deep-fishing";
 import { recordNoticeVisits } from "../town-progress";
 import { inNationalPark } from "../data/national-park";
@@ -28,7 +29,7 @@ function treeStage(rec: { stage?: string; choppedAt?: number } | undefined, now:
 export function gatherSlice(
   set: StoreSet,
   get: StoreGet,
-): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "sailStep" | "buyBoat" | "buyCannon" | "advanceCoach" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "stockFish" | "upgradeAquarium" | "returnFish"> {
+): Pick<GameState, "setPraying" | "chopTree" | "plantSapling" | "sellLogs" | "sailTo" | "sailStep" | "buyBoat" | "buyCannon" | "advanceCoach" | "takeSupply" | "welcomeNewcomer" | "takeFlotsam" | "castLine" | "sellFish" | "sellSpareFish" | "claimAnglerAward" | "stockFish" | "upgradeAquarium" | "returnFish"> {
   return {
     setPraying: (on) => {
       const s = get();
@@ -133,7 +134,7 @@ export function gatherSlice(
 
     sailTo: (dest, boatId) => {
       const s = get();
-      if (s.combat || s.fishing || s.bank.pending || s.transport.ride || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
+      if (!s.named || s.atHome || s.interior || s.abroad || s.combat || s.fishing || s.bank.pending || s.transport.ride || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
       const harbours=[PUBLIC_PORT,NORTH_LANDING,...oceanLandings(),...s.ports.docks.map(d=>portSite(d.site)!)];
       if (dest === "dock") {
         if (!s.afloat) {
@@ -375,9 +376,10 @@ export function gatherSlice(
       }
       const id = Date.now();
       const duration=fish.giant?6500:activeBoat&&s.ports.parts[activeBoat.id]?.includes("rack")?2000:2600;
+      const cast = { id, started: id, duration, size: fish.size ?? 1, where, fishId: fish.id, color: fish.color, shadow: fish.shadow,
+        x: where === "sea" ? s.gnomeX : x, y: where === "sea" ? s.gnomeY : y };
       set({
-        fishing: { id, started: id,duration,size:fish.size??1, where, fishId: fish.id, color: fish.color, shadow: fish.shadow,
-          x: where === "sea" ? s.gnomeX : x, y: where === "sea" ? s.gnomeY : y },
+        fishing: cast,
         popup: null,
         speech: where === "sea" ? "The rod bends over the deep water." : "The line kisses the shallows.",
         gnomeX: s.gnomeX,
@@ -387,7 +389,7 @@ export function gatherSlice(
       if (typeof window === "undefined") return;
       window.setTimeout(() => {
         const now = get();
-        if (!now.fishing || now.fishing.id !== id) return;
+        if (now.fishing !== cast) return;
         const caught = FISH_BY_ID[now.fishing.fishId];
         if (!caught) {
           set({ fishing: null });
@@ -396,11 +398,12 @@ export function gatherSlice(
         const gained = withXp(now.skills, { fishing: caught.xp });
         set({
           fishing: null,
+          angler: { ...now.angler, catches: { ...now.angler.catches, [caught.id]: Math.min(100000, (now.angler.catches[caught.id] ?? 0) + 1) } },
           fishBag: { ...now.fishBag, [caught.id]: (now.fishBag[caught.id] ?? 0) + 1 },
           skills: gained.skills,
           speech:
             gained.ding ??
-            `A ${caught.name.toLowerCase()}! +${caught.xp} Fishing. Sell it, or keep it in the town hall tank.`,
+            `${now.angler.catches[caught.id] ? "A" : "New journal entry:"} ${caught.name.toLowerCase()}! +${caught.xp} Fishing. Sell it, or keep it in the town hall tank.`,
           bounceKey: now.bounceKey + 1,
         });
         sfx("buy");
@@ -408,6 +411,22 @@ export function gatherSlice(
       }, duration);
     },
 
+    claimAnglerAward: (id) => {
+      const s = get(), award = ANGLER_AWARDS.find(a => a.id === id);
+      if (!anglerAvailable(s) || !award || s.angler.claimed.includes(id) || speciesCaught(s.angler) < award.species) return;
+      set({ angler: { ...s.angler, claimed: [...s.angler.claimed, id] }, coins: s.coins + award.coins,
+        coinPopKey: s.coinPopKey + 1, speech: `The Hollow Anglers’ Guild awards ${award.coins} coins for ${award.name.toLowerCase()}. Your journal stays with you even after selling fish.` });
+      sfx("win"); scheduleWrite(get);
+    },
+    sellSpareFish: () => {
+      const s = get();
+      if (!anglerAvailable(s)) return;
+      const sale = spareFishSale(s);
+      if (!sale.count) { set({ speech: 'No spare fish to sell. One of each species and sprats for your accepted notice are kept in your bag.' }); return; }
+      set({ fishBag: sale.fishBag, coins: s.coins + sale.coins, coinPopKey: s.coinPopKey + 1,
+        speech: `Sold ${sale.count} spare fish for ${sale.coins} coins. Kept one of each species and sprats for your accepted notice. Aquarium untouched.` });
+      sfx("buy"); scheduleWrite(get);
+    },
     sellFish: (id) => {
       const s = get();
       const have = s.fishBag[id] ?? 0;

@@ -186,7 +186,9 @@ export function northernSeasSlice(
         enemy = s.naval.vessels.find((v) => v.id === id);
       if (
         !ready() ||
+        !!s.interior ||
         !s.afloat ||
+        (s.naval.integrity[s.afloat] ?? 1) <= 0 ||
         s.fishing ||
         s.naval.battle ||
         !enemy ||
@@ -213,6 +215,7 @@ export function northernSeasSlice(
         enemy = n.vessels.find((e) => e.id === n.battle);
       if (
         !ready() ||
+        !!s.interior ||
         !id ||
         !enemy ||
         enemy.hp <= 0 ||

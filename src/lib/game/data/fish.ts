@@ -338,15 +338,8 @@ export function cleanFishBag(raw: unknown): Record<string, number> {
 }
 export function aquariumLevel(raw: unknown, tank: unknown) {
   const count = tankCount(cleanFishBag(tank));
-  if (typeof raw === "number" && Number.isFinite(raw))
-    return Math.max(count > 0 ? 1 : 0, Math.min(4, Math.floor(raw)));
-  return count
-    ? Math.min(
-        4,
-        Math.max(
-          1,
-          AQUARIUM_CAPACITY.findIndex((n) => n >= count),
-        ),
-      )
-    : 0;
+  const fits = AQUARIUM_CAPACITY.findIndex(n => n >= count);
+  const minimum = count ? (fits < 0 ? 4 : fits) : 0;
+  const requested = typeof raw === "number" && Number.isFinite(raw) ? Math.max(0, Math.min(4, Math.floor(raw))) : 0;
+  return Math.max(minimum, requested);
 }

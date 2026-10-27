@@ -122,3 +122,10 @@ an owned larger ship at a harbour. Open Ship helm aboard for speed settings,
 port/starboard nudges, Stop ship and Enter ship cabin. Cabins are walkable and
 pause the ship; return to deck and choose a new course to resume. Specialists
 have distance-based wages, separate from cannon crews.
+
+### 0.1.15 — Angler’s Journal and gameplay fixes
+
+Open the satchel or aquarium to track 23 fish species, read their requirements and
+claim one-time collection rewards. Sell spares keeps one of each bag species and
+sprats for accepted town orders. Cast completion, cabin mooring/naval guards,
+cook healing messages, loaded aquarium capacity and phone satchel bounds are fixed.
