@@ -57,7 +57,7 @@ export function maritimeSlice(
     declineStarterLoan:()=>{const s=get();if(!s.named||s.atHome||!s.bank.pending||s.bank.signed||s.combat||s.abroad||s.afloat)return;set({...townArrival(),bank:{...s.bank,pending:false},speech:'Pappy: No loan, no fuss. Your home is yours all the same. Start small; I believe in you. Mossroot will be there if you change your mind.'});scheduleWrite(get);},
     plotPortCourse: (id) => {
       const s = get();
-      if (s.naval.rescue || s.naval.boarding) return;
+      if (!available() || s.interior) return;
       if (
         s.afloat &&
         portDestination(id) &&

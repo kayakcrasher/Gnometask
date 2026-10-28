@@ -1,3 +1,4 @@
+import {nearestHarbour} from '../harbour-navigation';
 import {addNeighbourLetter} from "../neighbours";
 import { rescuePorts } from "../ocean-rescue";
 import { gunLimit, hullStrength, shipFit, streamOceanVessels, vesselSeed } from "../naval";
@@ -285,22 +286,9 @@ export function northernSeasSlice(
     retreatShip: () => {
       const s = get();
       if (!s.naval.battle) return;
-      const port =
-        Math.hypot(
-          s.gnomeX - NORTH_LANDING.water.x,
-          s.gnomeY - NORTH_LANDING.water.y,
-        ) <
-        Math.hypot(
-          s.gnomeX - PUBLIC_PORT.water.x,
-          s.gnomeY - PUBLIC_PORT.water.y,
-        )
-          ? "north-landing"
-          : "capital";
-      get().plotPortCourse(port);
-      set({
-        speech:
-          "Making for a public harbour. Keep sailing: enemy guns remain active until you leave their range.",
-      });
+      const port=nearestHarbour(s);
+      if(port)get().plotPortCourse(port.id);
+      set({speech:port?`Making for ${port.name}. Enemy guns remain active until you leave their range.`:"No safe harbour course found. Sail into clear water; enemy guns remain active until you leave their range."});
       save();
     },
     tickSeas: (dt) => {

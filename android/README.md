@@ -179,3 +179,11 @@ half speed or call SOS, but must restock before departing again.
 After the harbour town hall, fund Thimblehaven’s large-ship supply dock for
 32,000 coins. Its quartermaster opens when construction completes. Freight
 reserves provisions for the full round trip when dispatched.
+
+### 0.1.21 — Harbour return fixes
+
+Return to harbour now chooses a nearby reachable working port instead of always
+sending you back to Port Victoria. The helm includes Nearest harbour. Stop ship
+also cancels queued navigation, and activities such as fishing or visiting a
+cabin cannot queue a new harbour course. The provisions panel adds Buy what I can
+afford, keeping any coins that cannot buy a whole crate.

@@ -177,7 +177,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   }, [stop]);
 
   useEffect(()=>{
-    const anchor=()=>{stop();const p=posRef.current;useGame.getState().setGnomePos(p.x,p.y);};
+    const anchor=()=>{stop();useGame.setState({portCourse:null,sailHome:false});const p=posRef.current;useGame.getState().setGnomePos(p.x,p.y);};
     const nudge=(event:Event)=>{const s=useGame.getState();if(!s.afloat||s.interior||s.combat||s.naval.rescue||s.naval.boarding||s.fishing)return;const side=(event as CustomEvent<number>).detail;if(side!==-1&&side!==1)return;const h=yawRef.current+side*Math.PI/6,p=posRef.current;walkTo(p.x+Math.sin(h)*300,p.y+Math.cos(h)*300);};
     window.addEventListener("hollow-watch:anchor",anchor);window.addEventListener("hollow-watch:rudder",nudge);
     return()=>{window.removeEventListener("hollow-watch:anchor",anchor);window.removeEventListener("hollow-watch:rudder",nudge);};
@@ -190,7 +190,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
   useEffect(() => {
     if (!sailHome || !afloat) return;
     useGame.setState({ sailHome: false });
-    useGame.setState({portCourse:"capital"});
+    useGame.getState().sailTo("dock");
   }, [sailHome, afloat, walkTo]);
 
   useEffect(()=>{

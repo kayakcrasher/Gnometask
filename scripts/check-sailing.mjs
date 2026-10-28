@@ -69,7 +69,8 @@ const result = await build({
       for(let x=-70;x>=-300;x-=10)state.sailStep(x,470);
       state.sailTo("dock");
       assert.equal(state.afloat,"row","Remote return must sail, not teleport");
-      assert.equal(state.sailHome,true);
+      assert.equal(state.sailHome,false);
+      assert.equal(state.portCourse,"capital");
       assert.equal(state.gnomeX,-300);
       const saved=migrate(snap(state));
       assert.equal(saved.sailingDistance,state.sailingDistance,"Voyage distance must persist");

@@ -1,3 +1,4 @@
+import {nearestHarbour} from '../harbour-navigation';
 import {supplyPorts,departureReady,sailProvisions,provisionHold} from '../ship-supplies';
 import {oceanDanger} from "../ocean-world";
 import { ANGLER_AWARDS, speciesCaught, spareFishSale, anglerAvailable } from '../angler';
@@ -145,12 +146,13 @@ export function gatherSlice(
         }
         const near=[...harbours].sort((a,b)=>Math.hypot(s.gnomeX-a.water.x,s.gnomeY-a.water.y)-Math.hypot(s.gnomeX-b.water.x,s.gnomeY-b.water.y)).find(p=>Math.hypot(s.gnomeX-p.water.x,s.gnomeY-p.water.y)<=DOCKING_RANGE);
         if (!near) {
-          set({ sailHome: true, popup: null, speech: "Sailing back to the town harbour. Tap another patch of water to change course." });
+          const port=nearestHarbour(s);
+          set({ sailHome:false,portCourse:port?.id??null,popup:null,speech:port?`Returning to ${port.name}. Tap the water to change course, or Stop ship to cancel.`:"No safe harbour course found. Sail into clearer water or call SOS for a tow." });
           return;
         }
         set({
           gnomeX: near.id==='capital'?PLACE_ANCHORS.dock.x:near.x, gnomeY: near.id==='capital'?PLACE_ANCHORS.dock.y:near.y,
-          afloat: null, sailHome: false, popup: null, interior: null,
+          afloat: null, sailHome: false, portCourse:null, popup: null, interior: null,
           townProgress:recordNoticeVisits({...s,afloat:null},near.id==='capital'?PLACE_ANCHORS.dock.x:near.x,near.id==='capital'?PLACE_ANCHORS.dock.y:near.y),
           selectedPlace: "dock", speech: `Moored safely at ${near.name}.`,
         });
