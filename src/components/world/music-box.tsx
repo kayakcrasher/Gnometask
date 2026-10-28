@@ -5,7 +5,7 @@ import type { Group } from "three";
 import { useSound } from "@/lib/game/audio/settings";
 import { unlockAudio } from "@/lib/game/juice";
 /** An original little songbird box on the cottage table. */
-export function CottageMusicBox() {
+export function CottageMusicBox({position=[-.96,.69,-.02]}:{position?:[number,number,number]}) {
   const bird = useRef<Group>(null),
     sound = useSound(),
     last = useRef(sound.music || 0.45),
@@ -23,7 +23,7 @@ export function CottageMusicBox() {
   });
   return (
     <group
-      position={[-0.96, 0.69, -0.02]}
+      position={position}
       onClick={(e) => {
         e.stopPropagation();
         toggle();

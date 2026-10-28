@@ -18,6 +18,9 @@ import type {
 export type GameState = GameSave &
   GameUi & {
     combat: CombatState | null;
+    buyHomeFurniture:(kind:import('../home-room').FurnitureKind)=>void;
+    placeHomeFurniture:(id:string,x:number,z:number,turn:number)=>void;
+    storeHomeFurniture:(id:string)=>void;
     hireShipCrew:(hull:string,role:import("../ship-life").CrewRole)=>void;
     setShipSpeed:(speed:import("../ship-life").ShipLife["speed"])=>void;
     enterShipCabin:()=>void;

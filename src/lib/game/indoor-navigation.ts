@@ -1,3 +1,4 @@
+import {emptyHomeRoom,homeLayout} from "./home-room";
 import type { InteriorId } from "./types";
 export type IndoorPoint = { x: number; z: number };
 export type IndoorBox = IndoorPoint & { w: number; d: number };
@@ -10,6 +11,7 @@ export type IndoorLayout = {
   boxes: IndoorBox[];
 };
 export function indoorLayout(id: InteriorId): IndoorLayout {
+  if(id==="cottage")return homeLayout(emptyHomeRoom());
   const base = {
     minX: -3.05,
     maxX: 3.05,
@@ -18,7 +20,7 @@ export function indoorLayout(id: InteriorId): IndoorLayout {
     spawn: { x: 0, z: 2.2 },
   };
   const plant = { x: 2.6, z: 1.8, w: 0.35, d: 0.35 };
-  if (id === "cottage" || id === "neighbor" || id === "ship-cabin")
+  if (id === "neighbor" || id === "ship-cabin")
     return {
       ...base,
       boxes: [

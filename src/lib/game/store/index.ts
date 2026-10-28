@@ -1,3 +1,4 @@
+import {homeRoomSlice} from "./home-room";
 import {shipLifeSlice} from "./ship-life";
 import {explorationSlice} from "./exploration";
 import {neighboursSlice} from "./neighbours";
@@ -40,6 +41,7 @@ export const useGame = create<GameState>((set, get) => ({
   ...neighboursSlice(set,get),
   ...explorationSlice(set,get),
   ...shipLifeSlice(set,get),
+  ...homeRoomSlice(set,get),
   ...maritimeSlice(set,get),
   ...northernSeasSlice(set,get),
   ...openOceanSlice(set,get),

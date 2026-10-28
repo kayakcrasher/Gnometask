@@ -99,6 +99,7 @@ export function snap(s: GameSave): GameSave {
     neighbourhood:s.neighbourhood,
     exploration:s.exploration,
     shipLife:s.shipLife,
+    homeRoom:s.homeRoom,
     naval:s.naval,
     ocean:s.ocean,
     bank:s.bank,

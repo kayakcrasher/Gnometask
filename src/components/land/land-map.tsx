@@ -17,6 +17,8 @@ export function LandMap() {
   const npcPoses = useNpcWander(homes, Boolean(combat || interior || atHome || abroad));
   const [mode, setMode] = useState<"3d" | "2d">("3d");
 
+  // Keep walking state, but release the outdoor renderer while a room is open.
+  if(interior)return null;
   return (
     <div className="absolute inset-0 z-0 isolate min-h-0 overflow-hidden bg-water-deep">
       {mode === "3d" ? (

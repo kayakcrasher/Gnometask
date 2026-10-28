@@ -232,6 +232,7 @@ export type GameSave = {
   saplings: number;
   deeds: string[];
   city: import("./city").PlayerCity;
+  homeRoom:import("./home-room").HomeRoom;
   shipLife:import("./ship-life").ShipLife;
   exploration:import("./exploration").Exploration;
   neighbourhood:import("./neighbours").Neighbourhood;

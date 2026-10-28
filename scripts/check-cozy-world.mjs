@@ -16,7 +16,7 @@ test('all room entrances are safe, furniture is solid and routes stay in bounds'
 });
 test('direction buttons move independently on each axis without cancelling the other axis',()=>{const l=indoorLayout('cottage'),p=l.spawn;assert(indoorStep(l,p,{x:1,z:0},.2).x>p.x);assert(indoorStep(l,p,{x:0,z:-1},.2).z<p.z);assert.deepEqual(indoorStep(l,p,{x:0,z:0},.2),p);});
 test('walking routes go around a table rather than through it and reject blocked destinations',()=>{
- const l=indoorLayout('cottage'),start={x:-1.4,z:1.5},goal={x:-1.4,z:-.9};assert(!indoorSegment(l,start,goal));const path=indoorRoute(l,start,goal);assert(path&&path.length>1);let p=start;for(const q of path){assert(indoorSegment(l,p,q));p=q;}assert.equal(indoorRoute(l,start,{x:-1.4,z:.2}),null);
+ const l=indoorLayout('cottage'),start={x:-1.4,z:1.5},goal={x:-1.4,z:-1.35};assert(!indoorSegment(l,start,goal));const path=indoorRoute(l,start,goal);assert(path&&path.length>1);let p=start;for(const q of path){assert(indoorSegment(l,p,q));p=q;}assert.equal(indoorRoute(l,start,{x:-1.4,z:.2}),null);
 });
 test('wildlife homes and deterministic wander paths respect land, buildings and pond habitat',()=>{
  const anchors={rabbit:[280,700],sheep:[1180,620],cat:[820,520],fox:[220,300],deer:[1620,460],frog:[430,280],hedgehog:[1040,700],chicken:[96,548],duck:[500,190]};

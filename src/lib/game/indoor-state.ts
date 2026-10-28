@@ -7,12 +7,16 @@ export const useIndoor = create<{
   target: IndoorPoint | null;
   direction: IndoorPoint;
   moving: boolean;
+  arranging:boolean;
+  selectedFurniture:string|null;
 }>(() => ({
   room: null,
   position: { x: 0, z: 2.2 },
   target: null,
   direction: { x: 0, z: 0 },
   moving: false,
+  arranging:false,
+  selectedFurniture:null,
 }));
 
 // Match the game's existing __game inspection hook without touching world saves.

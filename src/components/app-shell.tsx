@@ -1,3 +1,4 @@
+import {PlayerHomeRoom} from "./world/player-home-room";
 import {ShipHelm} from "./hud/ship-controls";
 import {ShipCabin} from "./world/ship-cabin";
 import {NeighbourRoom} from "./world/neighbour-room";
@@ -108,6 +109,7 @@ export function AppShell() {
             <InventoryView />
             <MenuView />
             <InteriorView />
+            <PlayerHomeRoom/>
             <NeighbourRoom/>
             {interior === "bank" ? <BankRoom /> : null}
             {interior === "casino" ? <CasinoRoom /> : null}

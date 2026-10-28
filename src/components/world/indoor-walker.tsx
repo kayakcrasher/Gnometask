@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import {homeLayout} from "@/lib/game/home-room";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useIndoor } from "@/lib/game/indoor-state";
 import { PerspectiveCamera } from "three";
 import { useThree, useFrame } from "@react-three/fiber";
@@ -33,6 +34,7 @@ export function IndoorCamera({ id }: { id: InteriorId }) {
   return null;
 }
 export function IndoorControls() {
+  const arranging=useIndoor(s=>s.arranging);
   const room = useGame((s) => s.interior),
     special = ["bank", "pub", "court", "exchange", "casino"].includes(
       room ?? "",
@@ -48,6 +50,7 @@ export function IndoorControls() {
       window.removeEventListener("blur", stop);
     };
   }, []);
+  if(arranging)return null;
   return (
     <div
       className={`pointer-events-none absolute left-2 z-20 ${special ? "top-36" : "bottom-2"}`}
@@ -83,7 +86,8 @@ export function IndoorControls() {
   );
 }
 export function IndoorWalker({ id }: { id: InteriorId }) {
-  const layout = indoorLayout(id),
+  const home=useGame(s=>s.homeRoom);
+  const layout = useMemo(()=>id==="cottage"?homeLayout(home):indoorLayout(id),[id,home]),
     ref = useRef<Group>(null),
     position = useRef({ ...layout.spawn }),
     path = useRef<IndoorPoint[]>([]),
@@ -101,6 +105,8 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
       room: id,
       position: { ...layout.spawn },
       target: null,
+      arranging:false,
+      selectedFurniture:null,
       direction: { x: 0, z: 0 },
       moving: false,
     });
@@ -143,6 +149,7 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
     if (!ref.current) return;
     const state = useIndoor.getState();
     if (state.room !== id) return;
+    if(state.arranging){keys.current.clear();path.current=[];lastTarget.current=null;return;}
     const p = position.current,
       k = keys.current;
     let dx =
@@ -159,6 +166,7 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
         ? (indoorRoute(layout, p, state.target) ?? [])
         : [];
     }
+    if(path.current.length&&!indoorSegment(layout,p,path.current[0]!))path.current=[];
     const speed = 2 * Math.min(dt, 0.05);
     let walked = false;
     if (dx || dz) {
@@ -210,6 +218,8 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
         onClick={(e) => {
           e.stopPropagation();
           const p = { x: e.point.x, z: e.point.z };
+          const editor=useIndoor.getState();
+          if(id==='cottage'&&editor.arranging){if(editor.selectedFurniture){const item=useGame.getState().homeRoom.items.find(i=>i.id===editor.selectedFurniture);if(item)useGame.getState().placeHomeFurniture(item.id,p.x,p.z,item.turn);}return;}
           if (indoorClear(layout, p)) {
             exit.current = false;
             useIndoor.setState({ target: p });

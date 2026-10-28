@@ -1,6 +1,5 @@
-import { FishSale } from "./angler-journal";
-import {HOME_UPGRADE_COST} from "@/lib/game/city";
 import {Aquarium} from "./aquarium";
+import { FishSale } from "./angler-journal";
 import { InteriorPreview } from "@/components/world/interior-assets";
 import { SailingProgress } from "./sailing-progress";
 import { X } from "lucide-react";
@@ -21,7 +20,7 @@ const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[
   chart: { title: "Enemy islands", blurb: "Chart a course from the harbour." },
   cottage: {
     title: "Inside the cottage",
-    blurb: "Your great-grandpa's roof. Tea restores heart. You arrived with empty pockets. Ol Pappy is on the dock.",
+    blurb: "Your own cottage in Thimblehaven. The kettle is on and your favourite chair is waiting.",
   },
   hatshop: {
     title: "Hat shop",
@@ -267,14 +266,8 @@ function HallPanel() {
 export function InteriorView() {
   const interior = useGame((s) => s.interior);
   const leave = useGame((s) => s.leaveInterior);
-  const sipTea = useGame((s) => s.sipTea);
-  const repair = useGame((s) => s.repairBuilding);
-  const cottageHp = useGame((s) => s.buildingHp.cottage);
-  const cottageLevel = useGame((s) => s.cottageLevel ?? 0);
-  const upgradeCottage = useGame((s) => s.upgradeCottage);
-  if (!interior || interior === "ship-cabin" || interior === "neighbor" || interior === "chart" || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
+  if (!interior || interior === "cottage" || interior === "ship-cabin" || interior === "neighbor" || interior === "chart" || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
   const meta = COPY[interior];
-  const cottageHurt = cottageHp < BUILDING_MAX.cottage;
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-pine/88 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:items-center">
@@ -295,40 +288,7 @@ export function InteriorView() {
           </button>
         </div>
         <InteriorPreview id={interior} />
-        {interior === "cottage" ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
-            <Aquarium/>
-            <button
-              type="button"
-              onClick={sipTea}
-              className="h-11 rounded-[14px] bg-pine font-display text-sm font-semibold text-parchment"
-            >
-              Have a cup of tea — restore heart
-            </button>
-            {cottageLevel < 3 ? (
-              <button
-                type="button"
-                onClick={upgradeCottage}
-                className="h-11 rounded-[14px] bg-gold font-display text-sm font-semibold text-ink"
-              >
-                {["", "Stone cottage", "Gardener's cottage", "Manor"][cottageLevel + 1]} · {HOME_UPGRADE_COST[cottageLevel+1]} coins
-              </button>
-            ) : (
-              <p className="text-center font-display text-xs font-semibold text-bark/55">
-                The cottage is a manor. Nothing left to build.
-              </p>
-            )}
-            {cottageHurt ? (
-              <button
-                type="button"
-                onClick={() => repair("cottage")}
-                className="h-11 rounded-[14px] bg-gold font-display text-sm font-semibold text-ink"
-              >
-                Repair the cottage
-              </button>
-            ) : null}
-          </div>
-        ) : interior === "townhall" ? (
+        {interior === "townhall" ? (
           <HallPanel />
         ) : interior === "dockhouse" ? (
           <DockhousePanel />

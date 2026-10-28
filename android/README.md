@@ -139,3 +139,13 @@ ships can find wandering sailfin (Fishing 65 / danger 2), stormjaw tuna (80 / 5)
 and crown leviathan (95 / 9). Personal length records appear in the journal.
 Generated ports support paid supplies, repairs, crew and rescue towing. Homeward
 courses navigate in safe stages rather than searching the whole ocean at once.
+
+### 0.1.17 — Cozy home and movable furniture
+
+Fixed the ashore interior render loop that caused the green/blank home screen.
+Your home now opens as a full-screen walkable room. Arrange furniture lets you
+move, rotate, store and place pieces using taps and mobile buttons. Buy more
+furniture with coins; extra copies get progressively more expensive. Layouts save
+automatically, and placement keeps the front door and walking paths clear.
+Home comforts contains tea, upgrades, repairs and the aquarium. The outdoor
+renderer stops drawing while a room is open.

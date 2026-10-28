@@ -26,7 +26,7 @@ class InteriorBoundary extends Component<
   }
   render() {
     return this.state.failed ? (
-      <div className="h-full w-full bg-gradient-to-br from-[#29473f] to-[#b69a70]" />
+      <div role="alert" className="flex h-full w-full flex-col items-center justify-center gap-3 bg-parchment p-4 text-center text-pine"><p>The room could not be drawn. Your furniture is safe.</p><button type="button" className="min-h-11 rounded-xl bg-gold px-4" onClick={()=>this.setState({failed:false})}>Try room again</button><button type="button" className="min-h-11 rounded-xl bg-pine px-4 text-parchment" onClick={()=>useGame.getState().leaveInterior()}>Leave room</button></div>
     ) : (
       this.props.children
     );
@@ -44,7 +44,7 @@ export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
           dpr={dpr}
           shadows={MOBILE_GRAPHICS ? false : canvasProps.shadows}
           gl={{ antialias: true, powerPreference: "high-performance" }}
-          fallback={<div className="h-full w-full bg-[#3a3541]" />}
+          fallback={<div role="alert" className="flex h-full flex-col items-center justify-center gap-3 bg-parchment p-4 text-pine"><p>Room graphics could not start. Leave and try entering again.</p><button type="button" className="min-h-11 rounded-xl bg-gold px-4" onClick={()=>useGame.getState().leaveInterior()}>Leave room</button></div>}
         >
           <AdaptiveResolution />
           {children}
@@ -391,7 +391,7 @@ function CozyTouches() {
   );
 }
 export function InteriorPreview({ id }: { id: InteriorId }) {
-  const cabinCrew=useGame(s=>s.afloat?s.shipLife.crew[s.afloat]??[]:[]);
+  const cabinCrew=useGame(s=>s.afloat?s.shipLife.crew[s.afloat]:undefined);
   const host=useGame(s=>s.visitingNeighbour),profile=neighbourProfile(host??"nim");
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
@@ -447,7 +447,7 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
         </mesh>
         <RoomPlant x={2.6} z={1.8} />
         <ShopFurniture id={id} />
-        {id === "ship-cabin"&&<><mesh position={[-1.4,.78,.2]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[.9,.6]}/><meshStandardMaterial color="#e4d5a9"/></mesh>{[-1,1].map(v=><mesh key={v} position={[v*1.7,1.75,-2.6]} rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[.35,.35,.06,16]}/><meshStandardMaterial color="#79acb5" emissive="#61969d" emissiveIntensity={.15}/></mesh>)}{cabinCrew.slice(0,3).map((role,i)=><group key={role} position={[-.8+i*.8,0,-1.8]}><GnomeRig hat="hat-night" coat={role==='navigator'?'#4b7188':role==='cook'?'#e4d3aa':'#799469'} scale={.8} beard/></group>)}</>}
+        {id === "ship-cabin"&&<><mesh position={[-1.4,.78,.2]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[.9,.6]}/><meshStandardMaterial color="#e4d5a9"/></mesh>{[-1,1].map(v=><mesh key={v} position={[v*1.7,1.75,-2.6]} rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[.35,.35,.06,16]}/><meshStandardMaterial color="#79acb5" emissive="#61969d" emissiveIntensity={.15}/></mesh>)}{(cabinCrew??[]).slice(0,3).map((role,i)=><group key={role} position={[-.8+i*.8,0,-1.8]}><GnomeRig hat="hat-night" coat={role==='navigator'?'#4b7188':role==='cook'?'#e4d3aa':'#799469'} scale={.8} beard/></group>)}</>}
         {id === "cottage" && <><CozyTouches/><TreasureShelf/></>}
         {id === "neighbor"&&<><group position={[0,0,-1.5]}><GnomeRig hat="hat-moss" coat={profile.coat} beard gesture="wave"/></group><mesh position={[-.3,.018,.5]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[1.1,1.7]}/><meshStandardMaterial color={profile.coat}/></mesh><mesh position={[-3.28,1.8,-1.1]}><boxGeometry args={[.05,.7,.8]}/><meshStandardMaterial color={profile.coat}/></mesh></>}
       </InteriorCanvas>
