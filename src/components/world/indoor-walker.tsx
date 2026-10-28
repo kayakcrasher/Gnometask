@@ -7,9 +7,8 @@ import { Html } from "@react-three/drei";
 import type { Group } from "three";
 import { useGame } from "@/lib/game/store";
 import {
-  indoorClear,
   indoorLayout,
-  indoorRoute,
+  indoorTapRoute,
   indoorSegment,
   indoorStep,
   type IndoorPoint,
@@ -32,58 +31,6 @@ export function IndoorCamera({ id }: { id: InteriorId }) {
     camera.updateProjectionMatrix();
   }, [id, camera, size.width, size.height]);
   return null;
-}
-export function IndoorControls() {
-  const arranging=useIndoor(s=>s.arranging);
-  const room = useGame((s) => s.interior),
-    special = ["bank", "pub", "court", "exchange", "casino"].includes(
-      room ?? "",
-    );
-  const direction = (x: number, z: number) =>
-    useIndoor.setState({ direction: { x, z }, target: null });
-  useEffect(() => {
-    const stop = () => direction(0, 0);
-    window.addEventListener("pointerup", stop);
-    window.addEventListener("blur", stop);
-    return () => {
-      window.removeEventListener("pointerup", stop);
-      window.removeEventListener("blur", stop);
-    };
-  }, []);
-  if(arranging)return null;
-  return (
-    <div
-      className={`pointer-events-none absolute left-2 z-20 ${special ? "top-36" : "bottom-2"}`}
-    >
-      <div
-        className="pointer-events-auto grid grid-cols-3 gap-1 rounded-xl bg-[#18392f]/90 p-1"
-        aria-label="Indoor walking controls"
-      >
-        {[
-          [0, -1, "Walk forward"],
-          [-1, 0, "Walk left"],
-          [0, 1, "Walk back"],
-          [1, 0, "Walk right"],
-        ].map(([x, z, label], i) => (
-          <button
-            key={String(label)}
-            type="button"
-            aria-label={String(label)}
-            style={i === 0 ? { gridColumn: 2 } : { gridRow: 2, gridColumn: i }}
-            className="h-11 w-11 touch-none rounded-lg bg-parchment text-lg font-bold text-ink"
-            onPointerDown={(e) => {
-              e.currentTarget.setPointerCapture(e.pointerId);
-              direction(Number(x), Number(z));
-            }}
-            onPointerUp={() => direction(0, 0)}
-            onPointerCancel={() => direction(0, 0)}
-          >
-            {["↑", "←", "↓", "→"][i]}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 }
 export function IndoorWalker({ id }: { id: InteriorId }) {
   const home=useGame(s=>s.homeRoom);
@@ -134,7 +81,7 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
         }
       },
       up = (e: KeyboardEvent) => keys.current.delete(e.key),
-      blur = () => keys.current.clear();
+      blur = () => {keys.current.clear();useIndoor.setState({direction:{x:0,z:0}});};
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", blur);
@@ -146,7 +93,7 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
     };
   }, [id]);
   useFrame((_, dt) => {
-    if (!ref.current) return;
+    if (!ref.current || document.hidden) return;
     const state = useIndoor.getState();
     if (state.room !== id) return;
     if(state.arranging){keys.current.clear();path.current=[];lastTarget.current=null;return;}
@@ -162,15 +109,19 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
         (k.has("ArrowUp") || k.has("w") ? 1 : 0);
     if (state.target !== lastTarget.current) {
       lastTarget.current = state.target;
-      path.current = state.target
-        ? (indoorRoute(layout, p, state.target) ?? [])
-        : [];
+      const route=state.target?indoorTapRoute(layout,p,state.target):null;
+      path.current=route?.path??[];
+      if(state.target&&!route){exit.current=false;useIndoor.setState({target:null});}
+      else if(route&&Math.hypot(route.target.x-state.target!.x,route.target.z-state.target!.z)>.001){
+        lastTarget.current=route.target;useIndoor.setState({target:route.target});
+      }
     }
-    if(path.current.length&&!indoorSegment(layout,p,path.current[0]!))path.current=[];
+    if(path.current.length&&!indoorSegment(layout,p,path.current[0]!)){path.current=[];useIndoor.setState({target:null});}
     const speed = 2 * Math.min(dt, 0.05);
     let walked = false;
     if (dx || dz) {
       path.current = [];
+      if(state.target){lastTarget.current=null;useIndoor.setState({target:null});}
       const next = indoorStep(layout, p, { x: dx, z: dz }, speed);
       walked = Math.hypot(next.x - p.x, next.z - p.z) > 0.0001;
       Object.assign(p, next);
@@ -187,9 +138,10 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
         p.x += (x / distance) * speed;
         p.z += (z / distance) * speed;
       }
-      ref.current.rotation.y = Math.atan2(x, z);
+      if(distance>.001)ref.current.rotation.y = Math.atan2(x, z);
       walked = true;
     }
+    if(!path.current.length&&state.target&&!dx&&!dz)useIndoor.setState({target:null});
     ref.current.position.set(p.x, 0.045, p.z);
     if (walked !== moving) setMoving(walked);
     timer.current += dt;
@@ -214,26 +166,27 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
     <>
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.035, 0]}
+        position={[(layout.minX+layout.maxX)/2,.035,(layout.minZ+layout.maxZ)/2]}
         onClick={(e) => {
           e.stopPropagation();
+          if(e.delta>8)return;
           const p = { x: e.point.x, z: e.point.z };
           const editor=useIndoor.getState();
           if(id==='cottage'&&editor.arranging){if(editor.selectedFurniture){const item=useGame.getState().homeRoom.items.find(i=>i.id===editor.selectedFurniture);if(item)useGame.getState().placeHomeFurniture(item.id,p.x,p.z,item.turn);}return;}
-          if (indoorClear(layout, p)) {
-            exit.current = false;
-            useIndoor.setState({ target: p });
-          }
+          const route=indoorTapRoute(layout,position.current,p);
+          if(route){exit.current=false;useIndoor.setState({target:route.target,direction:{x:0,z:0}});}
+          else useGame.getState().speak('That spot is blocked. Tap a clear patch of floor nearby.');
         }}
       >
         <planeGeometry
           args={[
-            layout.maxX - layout.minX + 0.2,
-            layout.maxZ - layout.minZ + 0.6,
+            layout.maxX - layout.minX + 1.2,
+            layout.maxZ - layout.minZ + 1.2,
           ]}
         />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
+      <IndoorDestination/>
       <group ref={ref} position={[layout.spawn.x, 0.045, layout.spawn.z]}>
         <GnomeRig hat={hat} scale={0.72} coat="#557c6b" walking={moving} />
       </group>
@@ -241,8 +194,9 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
         position={[0, 0.045, layout.spawn.z + 0.1]}
         onClick={(e) => {
           e.stopPropagation();
+          if(e.delta>8||useIndoor.getState().arranging)return;
           exit.current = true;
-          useIndoor.setState({ target: { ...layout.spawn } });
+          useIndoor.setState({ target: { ...layout.spawn },direction:{x:0,z:0} });
         }}
       >
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
@@ -262,4 +216,11 @@ export function IndoorWalker({ id }: { id: InteriorId }) {
       </group>
     </>
   );
+}
+
+function IndoorDestination(){
+ const target=useIndoor(s=>s.target),arranging=useIndoor(s=>s.arranging),ref=useRef<Group>(null);
+ useFrame(({clock})=>{if(ref.current)ref.current.scale.setScalar(1+Math.sin(clock.elapsedTime*5)*.1);});
+ if(!target||arranging)return null;
+ return <group ref={ref} position={[target.x,.055,target.z]}><mesh rotation={[-Math.PI/2,0,0]} raycast={()=>{}}><ringGeometry args={[.15,.18,24]}/><meshBasicMaterial color="#efc567" depthWrite={false}/></mesh><mesh rotation={[0,Math.PI/4,0]} raycast={()=>{}}><boxGeometry args={[.2,.025,.035]}/><meshBasicMaterial color="#efc567"/></mesh><mesh rotation={[0,Math.PI/4,0]} raycast={()=>{}}><boxGeometry args={[.035,.025,.2]}/><meshBasicMaterial color="#efc567"/></mesh></group>;
 }

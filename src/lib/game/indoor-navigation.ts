@@ -171,6 +171,20 @@ export function indoorRoute(
   }
   return path;
 }
+/** Small finger-placement assistance near furniture and walls. Never crosses a blocked route. */
+export function indoorTapRoute(l:IndoorLayout,from:IndoorPoint,tap:IndoorPoint):{target:IndoorPoint;path:IndoorPoint[]}|null{
+  if(![from.x,from.z,tap.x,tap.z].every(Number.isFinite)||tap.x<l.minX-.6||tap.x>l.maxX+.6||tap.z<l.minZ-.6||tap.z>l.maxZ+.6)return null;
+  const direct=indoorRoute(l,from,tap);
+  if(direct)return {target:{...tap},path:direct};
+  const candidates:IndoorPoint[]=[];
+  for(const radius of [.12,.24,.36,.48,.6])for(let n=0;n<12;n++){
+    const a=n*Math.PI/6,p={x:tap.x+Math.cos(a)*radius,z:tap.z+Math.sin(a)*radius};
+    if(indoorClear(l,p))candidates.push(p);
+  }
+  candidates.sort((a,b)=>Math.hypot(a.x-tap.x,a.z-tap.z)-Math.hypot(b.x-tap.x,b.z-tap.z)||Math.hypot(a.x-from.x,a.z-from.z)-Math.hypot(b.x-from.x,b.z-from.z));
+  for(const p of candidates.slice(0,8)){const path=indoorRoute(l,from,p);if(path)return {target:p,path};}
+  return null;
+}
 export function indoorStep(
   l: IndoorLayout,
   p: IndoorPoint,

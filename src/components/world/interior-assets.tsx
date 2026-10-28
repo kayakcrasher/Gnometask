@@ -3,7 +3,7 @@ import {neighbourProfile} from "@/lib/game/neighbours";
 import { AdaptiveResolution, useCanvasDpr, MOBILE_GRAPHICS } from "./mobile-graphics";
 import { CottageMusicBox } from "./music-box";
 import { useGame } from "@/lib/game/store";
-import { IndoorWalker, IndoorControls, IndoorCamera } from "./indoor-walker";
+import { IndoorWalker, IndoorCamera } from "./indoor-walker";
 import {
   useRef,
   useState,
@@ -59,7 +59,6 @@ export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
           )}
         </Canvas>
         {!ready&&<p role="status" className="pointer-events-none absolute left-2 top-2 rounded-xl bg-parchment px-3 py-2 text-xs font-bold text-pine">Opening room…</p>}
-        {ready&&id && id !== "chart" && <IndoorControls />}
       </div>
     </InteriorBoundary>
   );
@@ -466,7 +465,7 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
       </button>
       {expanded && (
         <p className="absolute bottom-3 inset-x-2 text-center text-sm font-bold text-parchment">
-          Tap the floor to walk · arrow keys / WASD · front door to leave
+          Tap the floor to walk · tap the front door to leave
         </p>
       )}
     </div>

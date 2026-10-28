@@ -1,3 +1,4 @@
+import {PerspectiveCamera,Vector3} from 'three';
 // Optional Playwright check against APK assets; see docs/pappys-welcome-2026-10-28.md.
 import fs from 'node:fs/promises';import path from 'node:path';import assert from 'node:assert/strict';import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright-core');
@@ -13,8 +14,9 @@ try{
  };
  await start('Hattie',false);await p.getByText(/You’ll get a fresh start in the morn/).waitFor();
  await p.getByRole('button',{name:'Stay with Pappy tonight',exact:true}).click();await p.getByLabel('pappy-home interior preview',{exact:true}).waitFor();
- await p.getByRole('button',{name:'Explore room',exact:true}).click();await p.waitForFunction(()=>window.__indoor?.getState().room==='pappy-home');await p.getByRole('button',{name:'Walk forward',exact:true}).waitFor();
- const x=await p.evaluate(()=>window.__indoor.getState().position.x);await p.keyboard.down('ArrowLeft');await p.waitForTimeout(500);await p.keyboard.up('ArrowLeft');await p.waitForFunction(x=>window.__indoor.getState().position.x<x-.1,x);
+ await p.getByRole('button',{name:'Explore room',exact:true}).click();await p.waitForFunction(()=>window.__indoor?.getState().room==='pappy-home');await p.getByText('Opening room…',{exact:true}).waitFor({state:'detached'});assert.equal(await p.getByLabel('Indoor walking controls',{exact:true}).count(),0);
+ await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+ const box=await p.locator('canvas').boundingBox(),aspect=box.width/box.height,d=Math.max(8,7.6/(2*Math.tan(Math.PI/8)*aspect)),cam=new PerspectiveCamera(45,aspect,.1,1000);cam.position.set(0,d*.68,d*.74);cam.lookAt(0,.4,0);cam.updateMatrixWorld();const point=new Vector3(-.7,.035,1.15).project(cam);await p.touchscreen.tap(box.x+(point.x+1)*box.width/2,box.y+(1-point.y)*box.height/2);await p.waitForFunction(()=>{const p=window.__indoor.getState().position;return Math.hypot(p.x+.7,p.z-1.15)<.15;});
  await p.getByRole('button',{name:'Talk to Pappy',exact:true}).click();
  await p.evaluate(()=>window.__game.getState().persist());const bread=await p.evaluate(()=>window.__game.getState().bread);
  await p.reload();await p.getByRole('button',{name:'Continue — Hattie',exact:true}).click();await p.getByRole('button',{name:'Turn in for the night',exact:true}).waitFor();assert.equal(await p.evaluate(()=>window.__game.getState().bread),bread);

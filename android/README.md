@@ -157,3 +157,12 @@ his guest room, turn in when ready, then hear his morning advice about making
 Thimblehaven a place gnomes love to call home. Pappy asks whether you want a loan:
 choose an amount or begin without debt. Either choice leads to your owned town
 cottage. Conversations save between stages and older games continue normally.
+
+### 0.1.19 — Tap-to-walk indoors
+
+Tap a clear patch of floor to walk there, just as outside. Indoor direction pads
+are removed, and a gold marker shows the destination. New taps change your route;
+furniture and walls stay solid. Small finger-placement errors get nearby safe
+floor assistance. Dragging does not send your gnome walking. The shared controls
+cover homes, guest rooms, cabins, shops and public interiors. Furniture editing
+still uses its own select/place mode. Existing saves work without restarting.
