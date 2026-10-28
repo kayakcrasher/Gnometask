@@ -11,8 +11,8 @@ import {walkableLand} from './src/lib/game/world3';
 const g=useGame.getState; const reset=()=>{useGame.setState({...defaultSave(),...UI_SEED});g().beginGame('Juniper');};
 const free=()=>{g().chooseStarterLoan(25000);g().advanceCoach();};
 let count=0;function test(name,fn){reset();fn();count++;console.log('✓ '+name);}
-test('new game arrives at the player’s own Thimblehaven cottage with no landing or raid',()=>{
- const s=g();assert.deepEqual(playerHomeDoor(s),{x:THIMBLE_HOME.x,y:THIMBLE_HOME.y+34});assert.equal(s.gnomeX,playerHomeDoor(s).x);assert.equal(s.gnomeY,playerHomeDoor(s).y);assert(walkableLand(s.gnomeX,s.gnomeY));assert(s.deeds.includes('thimble-home'));assert.equal(playerHome(s).parcel,'thimble-home');assert.equal(s.city.buildings.filter(b=>b.kind==='home').length,1);assert.equal(s.landing,null);assert.equal(s.raids.length,0);assert(!s.quests.some(q=>q.id==='pappy-landing'));
+test('new game starts at Port Victoria while the owned town cottage waits safely in Thimblehaven',()=>{
+ const s=g();assert.deepEqual(playerHomeDoor(s),{x:THIMBLE_HOME.x,y:THIMBLE_HOME.y+34});assert.equal(s.gnomeX,96);assert.equal(s.gnomeY,520);assert.equal(s.opening.prologue,'invitation');assert(walkableLand(s.gnomeX,s.gnomeY));assert(s.deeds.includes('thimble-home'));assert.equal(playerHome(s).parcel,'thimble-home');assert.equal(s.city.buildings.filter(b=>b.kind==='home').length,1);assert.equal(s.landing,null);assert.equal(s.raids.length,0);assert(!s.quests.some(q=>q.id==='pappy-landing'));
 });
 test('loan choice and one brief tip never count as settling time or spawn enemies',()=>{
  for(let i=0;i<200;i++)g().tickOpening(1);assert.equal(g().opening.activeSeconds,0);g().chooseStarterLoan(25000);for(let i=0;i<200;i++)g().tickOpening(1);assert.equal(g().opening.activeSeconds,0);g().advanceCoach();assert.equal(g().coach,5);g().tickWorld();assert.equal(g().raids.length,0);assert.equal(g().landing,null);

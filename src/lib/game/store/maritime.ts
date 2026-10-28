@@ -1,3 +1,4 @@
+import {playerHomeDoor} from "../city";
 import {supportsDeepRig,DEEP_RIG_LEVEL} from "../deep-fishing";
 import {levelFromXp} from "../xp";
 import { oceanLandings, oceanLanding } from "../ocean-world";
@@ -26,6 +27,7 @@ export function maritimeSlice(
 ): Pick<
   GameState,
   | "chooseStarterLoan"
+  | "declineStarterLoan"
   | "repayBank"
   | "buyPortPlot"
   | "upgradeDock"
@@ -49,7 +51,9 @@ export function maritimeSlice(
       !s.transport.ride
     );
   };
+  const townArrival=()=>{const s=get();if(!s.opening.prologue)return {};const p=playerHomeDoor(s);const {prologue,...opening}=s.opening;return {opening,gnomeX:p.x,gnomeY:p.y,interior:null,coach:1,popup:null};};
   return {
+    declineStarterLoan:()=>{const s=get();if(!s.named||s.atHome||!s.bank.pending||s.bank.signed||s.combat||s.abroad||s.afloat)return;set({...townArrival(),bank:{...s.bank,pending:false},speech:'Pappy: No loan, no fuss. Your home is yours all the same. Start small; I believe in you. Mossroot will be there if you change your mind.'});scheduleWrite(get);},
     plotPortCourse: (id) => {
       const s = get();
       if (s.naval.rescue || s.naval.boarding) return;
@@ -72,6 +76,7 @@ export function maritimeSlice(
       )
         return;
       set({
+        ...townArrival(),
         coins: s.coins + amount,
         bank: {
           pending: false,

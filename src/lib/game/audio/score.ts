@@ -226,7 +226,7 @@ type MusicWorld = Pick<GameSave, "gnomeX" | "gnomeY" | "afloat" | "city"> &
   };
 export function themeForWorld(s: MusicWorld): MusicTheme {
   if (s.atHome) return "title";
-  if (s.interior === "cottage") return "home";
+  if ((s.interior === "cottage" || s.interior === "pappy-home")) return "home";
   if (s.combat && s.combat.phase !== "won" && s.combat.phase !== "lost")
     return "adventure";
   if (s.interior === "casino") return "sunstep";

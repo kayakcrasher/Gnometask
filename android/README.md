@@ -149,3 +149,11 @@ furniture with coins; extra copies get progressively more expensive. Layouts sav
 automatically, and placement keeps the front door and walking paths clear.
 Home comforts contains tea, upgrades, repairs and the aquarium. The outdoor
 renderer stops drawing while a room is open.
+
+### 0.1.18 — Pappy’s welcome
+
+Stay with Pappy for a night in Port Victoria before starting your new town. Explore
+his guest room, turn in when ready, then hear his morning advice about making
+Thimblehaven a place gnomes love to call home. Pappy asks whether you want a loan:
+choose an amount or begin without debt. Either choice leads to your owned town
+cottage. Conversations save between stages and older games continue normally.

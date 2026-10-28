@@ -36,6 +36,7 @@ export function clockSlice(
   return {
     dayPhase: "dawn",
     tickClock: (dtMs: number) => {
+      const prologue=get().opening.prologue;if(prologue){const phase=prologue==='evening'?'night':prologue==='invitation'?'dusk':'dawn';if(get().dayPhase!==phase)set({dayPhase:phase});return;}
       harborT = (harborT + dtMs / HARBOR_DAY_MS) % 1;
       const phase = phaseFromT(harborT);
       if (phase !== get().dayPhase) set({ dayPhase: phase });

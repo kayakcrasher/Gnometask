@@ -126,7 +126,7 @@ const waterFrag = `
   }
 `;
 
-function Water({ onWalk }: { onWalk: (x: number, y: number) => void }) {
+function Water({ onWalk,waterOrigin }: { onWalk: (x: number, y: number) => void;waterOrigin?:{x:number;y:number} }) {
   const mesh=useRef<THREE.Mesh>(null);
   const mat = useMemo(
     () =>
@@ -148,7 +148,7 @@ function Water({ onWalk }: { onWalk: (x: number, y: number) => void }) {
   );
   useFrame(({ clock }) => {
     mat.uniforms.uTime!.value = clock.elapsedTime;
-    const s=useGame.getState(),x=Math.round(s.gnomeX/1000)*50,z=Math.round(s.gnomeY/1000)*50;
+    const s=useGame.getState(),x=Math.round((waterOrigin?.x??s.gnomeX)/1000)*50,z=Math.round((waterOrigin?.y??s.gnomeY)/1000)*50;
     if(mesh.current)mesh.current.position.set(x,SEA_LEVEL,z);
     mat.uniforms.uOrigin!.value.set(x,-z);
   });
@@ -180,10 +180,10 @@ function Pond() {
   );
 }
 
-export function Terrain({ onWalk }: { onWalk: (x: number, y: number) => void }) {
+export function Terrain({ onWalk,waterOrigin }: { onWalk: (x: number, y: number) => void;waterOrigin?:{x:number;y:number} }) {
   return (
     <group>
-      <Water onWalk={onWalk} />
+      <Water onWalk={onWalk} waterOrigin={waterOrigin} />
       <IslandMesh onWalk={onWalk} />
       <Pond />
       <Kenney name="cliff_large_rock" position={to3(1760, 300, 0.12)} scale={1.35} />

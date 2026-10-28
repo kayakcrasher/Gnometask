@@ -1,3 +1,4 @@
+import {PappyWelcome} from "./intro/pappy-welcome";
 import {PlayerHomeRoom} from "./world/player-home-room";
 import {ShipHelm} from "./hud/ship-controls";
 import {ShipCabin} from "./world/ship-cabin";
@@ -99,6 +100,7 @@ export function AppShell() {
       <ShipCabin/>
       <OpenOceanControls/>
       <StarterLoanChoice/>
+      <PappyWelcome/>
       <div className={cn("absolute inset-0", atHome && "pointer-events-none")}>
         {!atHome && <LandMap />}
         {named && !atHome ? (

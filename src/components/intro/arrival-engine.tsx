@@ -68,7 +68,7 @@ function HarbourSet({scene,reduced,hurry,onAdvance}:{scene:number;reduced:boolea
     <color attach="background" args={['#a6c8c8']}/><fog attach="fog" args={['#a6c8c8',35,95]}/>
     <hemisphereLight args={['#e5ead5','#6b5340',1.1]}/><directionalLight position={[-10,20,12]} intensity={1.7} color="#ffe5b2"/>
     <group position={[-anchor[0],0,-anchor[2]]}>
-      <Terrain onWalk={noop}/><Pier/><Dockhouse onEnter={noop}/>
+      <Terrain onWalk={noop} waterOrigin={{x:78,y:520}}/><Pier/><Dockhouse onEnter={noop}/>
       {TOWN_SHOPS.filter(s=>s.x<900&&s.y<850).map(shop=><group key={shop.id} position={to3(shop.x,shop.y,groundY(shop.x,shop.y))} rotation={[0,shop.face,0]}>
         {shop.id==='townhall'?<Hall3 level={1} position={[0,0,0]}/>:shop.id==='bank'?<Bank3 position={[0,0,0]} onEnter={noop}/>:<TimberHouse position={[0,0,0]} roof={shop.roof} tall={shop.tall} sign={shop.sign} onEnter={noop}/>}
       </group>)}

@@ -1,3 +1,4 @@
+import {PUBLIC_PORT} from "../ports";
 import {recordNoticeVisits} from "../town-progress";
 import { freshOpening, openingPeaceful } from "../opening";
 import { playerHomeDoor } from "../city";
@@ -123,9 +124,10 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
       if (!s.named || !s.gnomeName) return;
       set({
         atHome: false,
+        interior:s.opening.prologue&&s.opening.prologue!=='invitation'?'pappy-home':null,
         abroad: s.raidVisit?.isleId as GameState["abroad"] ?? null,
         lifeDragon: { ...s.lifeDragon, name: "Ember" },
-        speech: openingPeaceful(s) ? `Welcome home, ${s.gnomeName}. Take your time finding your feet in Thimblehaven.` : `Welcome back, ${s.gnomeName}. Thimblehaven is waiting.`,
+        speech: s.opening.prologue?`Pappy is keeping your place by the fire in Port Victoria.`:openingPeaceful(s) ? `Welcome home, ${s.gnomeName}. Take your time finding your feet in Thimblehaven.` : `Welcome back, ${s.gnomeName}. Thimblehaven is waiting.`,
       });
     },
 
@@ -141,7 +143,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         ocean,naval:emptyNaval(),
         bank:{...fresh.bank,pending:true},
         city:{...fresh.city,buildings:[starterThimbleHome()]},
-        gnomeX:THIMBLE_HOME.x,gnomeY:THIMBLE_HOME.y+34,
+        gnomeX:PUBLIC_PORT.x,gnomeY:PUBLIC_PORT.y,
         gnomeName: trimmed,
         named: true,
         atHome: false,
@@ -160,7 +162,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
         panel: "place",
         abroad: null,
         raids: [],
-        speech: `Welcome to Thimblehaven, ${trimmed}. Your key is waiting, the kettle is warm, and this little town is yours to grow.`,
+        speech: `Welcome to Port Victoria, ${trimmed}. Pappy has a spare bed and the kettle is already on.`,
       });
       writeSave(snap(get()));
     },
@@ -210,7 +212,7 @@ export function sessionSlice(set: StoreSet, get: StoreGet): Pick<
     },
     enterInterior: (id: InteriorId) => {
       const s=get();
-      if(id==="ship-cabin"||id==="neighbor"||!canEnter(id === "chart"))return;
+      if(id==="pappy-home"||id==="ship-cabin"||id==="neighbor"||!canEnter(id === "chart"))return;
       const door=playerHomeDoor(s);
       const homeVisit=id==="cottage"&&!s.afloat&&Math.hypot(s.gnomeX-door.x,s.gnomeY-door.y)<90;
       set({ interior: id, popup: null, panel: "place", ...(homeVisit ? {opening:{...s.opening,homeVisited:true},coach:5} : {}), ...(id === "casino" ? { casinoVenue: null, casinoResult: null } : {}) });

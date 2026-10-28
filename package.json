@@ -39,7 +39,9 @@
     "check:angler": "node scripts/check-angler.mjs",
     "check:endless-seas": "node scripts/check-endless-seas.mjs",
     "check:home-room": "node scripts/check-home-room.mjs",
-    "test:home-browser": "node scripts/test-home-browser.mjs"
+    "test:home-browser": "node scripts/test-home-browser.mjs",
+    "check:pappy-welcome": "node scripts/check-pappy-welcome.mjs",
+    "test:pappy-browser": "node scripts/test-pappy-browser.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

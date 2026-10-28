@@ -38,6 +38,7 @@ export type ShopKind =
 export type PanelId = "place" | "chores" | "inventory" | "menu";
 
 export type InteriorId =
+  | "pappy-home"
   | "ship-cabin"
   | "neighbor"
   | "cottage"

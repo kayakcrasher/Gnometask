@@ -12,7 +12,7 @@ export function Coach() {
     <section aria-label="Welcome to Thimblehaven" className="pointer-events-auto absolute inset-x-3 bottom-[5.5rem] z-30 mx-auto max-w-md rounded-[20px] bg-parchment p-4 shadow-panel">
       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-bark/55">Ol Pappy · A key for you</p>
       <h2 className="mt-1 font-display text-xl font-bold text-pine">Welcome home, {s.gnomeName}.</h2>
-      <p className="mt-2 text-sm font-semibold leading-relaxed text-ink">“This is Thimblehaven. That little cottage is yours, and so is the town’s next chapter. The kettle’s on.”</p>
+      <p className="mt-2 text-sm font-semibold leading-relaxed text-ink">“This is Thimblehaven. New morning, new beginnings. That little cottage is yours. Take a breath, put the kettle on, and build a town folk will love coming home to.”</p>
       <p className="mt-2 text-xs text-bark">Tap the ground to walk. Tap a building to visit. Your town council is there whenever you’re ready to build.</p>
       <button type="button" onClick={()=>{s.advanceCoach();s.enterInterior("cottage");}} className="mt-3 min-h-11 w-full rounded-xl bg-pine font-display text-sm font-bold text-parchment">Step into my home</button>
       <button type="button" onClick={s.advanceCoach} className="mt-1 min-h-11 w-full rounded-xl text-sm font-bold text-pine">Explore on my own</button>

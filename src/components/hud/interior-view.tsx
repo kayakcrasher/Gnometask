@@ -15,6 +15,7 @@ import { levelFromXp } from "@/lib/game/xp";
 import { cn } from "@/lib/utils";
 
 const COPY: Record<InteriorId, { title: string; blurb: string; kinds?: ShopKind[] }> = {
+  "pappy-home":{title:"Pappy’s Port Victoria home",blurb:"A warm welcome and a spare bed."},
   "ship-cabin":{title:"Captain’s cabin",blurb:"A quiet place above the waterline."},
   neighbor: {title:"A neighbour’s home",blurb:"Come in and put your feet up."},
   chart: { title: "Enemy islands", blurb: "Chart a course from the harbour." },
@@ -266,7 +267,7 @@ function HallPanel() {
 export function InteriorView() {
   const interior = useGame((s) => s.interior);
   const leave = useGame((s) => s.leaveInterior);
-  if (!interior || interior === "cottage" || interior === "ship-cabin" || interior === "neighbor" || interior === "chart" || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
+  if (!interior || interior === "pappy-home" || interior === "cottage" || interior === "ship-cabin" || interior === "neighbor" || interior === "chart" || interior === "bank" || interior === "casino" || interior === "exchange" || interior === "court" || interior === "pub") return null;
   const meta = COPY[interior];
 
   return (

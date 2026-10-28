@@ -17,7 +17,7 @@ export function Arrival({name,onComplete}:{name:string;onComplete:()=>void}) {
   const lines=[
     'The gangplank creaks beneath your boots. Beyond the pier, the capitol rises above the harbour.',
     'Ol Pappy is already waving. Somehow, he always knows when your ship is coming in.',
-    `“${name}! I’d know that hat anywhere. Your cottage is ready up in Thimblehaven. Come on—let’s go home.”`,
+    `“${name}! I’d know that hat anywhere. Come ashore, sprout. You’re staying with me tonight. Big plans can wait till the kettle’s boiled.”`,
   ];
   return <section role="dialog" aria-modal="true" aria-label="Arrival in Port Victoria" className="fixed inset-0 z-[60] overflow-hidden bg-[#132f43] text-[#f8ebd1]">
     <div className="absolute inset-x-0 top-0 bottom-[24%]"><ArrivalEngine scene={scene} paused={paused} onReady={()=>setReady(true)} hurry={hurry} onAdvance={next}/>{!ready&&<p role="status" className="absolute inset-x-0 top-1/3 text-center text-sm text-parchment">Coming alongside…</p>}</div>
@@ -32,7 +32,7 @@ export function Arrival({name,onComplete}:{name:string;onComplete:()=>void}) {
         <p className="text-[10px] font-bold uppercase tracking-[.22em] text-[#e4c78e]">{scene===2?'Ol Pappy':'Port Victoria · The Capitol'}</p>
         <h1 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">{titles[scene]}</h1>
         <p className="mt-2 min-h-[4.5rem] text-sm leading-relaxed text-[#e3dece]">{lines[scene]}</p>
-        <button type="button" disabled={!ready||(scene===0&&hurry)} onClick={scene===2?finish:scene===0?()=>setHurry(true):next} className="mt-4 min-h-12 w-full rounded-2xl bg-[#ebcb8d] px-4 font-display text-base font-bold text-[#233e42]">{scene===0?(hurry?'Walking ashore…':'Meet Pappy'):scene===1?'Talk to Pappy':'On to Thimblehaven'}</button>
+        <button type="button" disabled={!ready||(scene===0&&hurry)} onClick={scene===2?finish:scene===0?()=>setHurry(true):next} className="mt-4 min-h-12 w-full rounded-2xl bg-[#ebcb8d] px-4 font-display text-base font-bold text-[#233e42]">{scene===0?(hurry?'Walking ashore…':'Meet Pappy'):scene===1?'Talk to Pappy':'Hear Pappy’s welcome'}</button>
       </div>
     </div>
   </section>;

@@ -32,8 +32,10 @@ class InteriorBoundary extends Component<
     );
   }
 }
+function InteriorFirstFrame({onReady}:{onReady:()=>void}){const sent=useRef(false);useFrame(()=>{if(!sent.current){sent.current=true;onReady();}});return null;}
 export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
   const dpr=useCanvasDpr();
+  const [ready,setReady]=useState(false);
   const id = useGame((s) => s.interior);
   const { children, ...canvasProps } = props;
   return (
@@ -47,6 +49,7 @@ export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
           fallback={<div role="alert" className="flex h-full flex-col items-center justify-center gap-3 bg-parchment p-4 text-pine"><p>Room graphics could not start. Leave and try entering again.</p><button type="button" className="min-h-11 rounded-xl bg-gold px-4" onClick={()=>useGame.getState().leaveInterior()}>Leave room</button></div>}
         >
           <AdaptiveResolution />
+          <InteriorFirstFrame onReady={()=>setReady(true)}/>
           {children}
           {id && id !== "chart" && (
             <>
@@ -55,7 +58,8 @@ export function InteriorCanvas(props: ComponentProps<typeof Canvas>) {
             </>
           )}
         </Canvas>
-        {id && id !== "chart" && <IndoorControls />}
+        {!ready&&<p role="status" className="pointer-events-none absolute left-2 top-2 rounded-xl bg-parchment px-3 py-2 text-xs font-bold text-pine">Opening room…</p>}
+        {ready&&id && id !== "chart" && <IndoorControls />}
       </div>
     </InteriorBoundary>
   );
@@ -201,7 +205,7 @@ function Table({ x = 0, z = 0 }: { x?: number; z?: number }) {
   );
 }
 function ShopFurniture({ id }: { id: InteriorId }) {
-  const cottage = id === "cottage" || id === "neighbor" || id === "ship-cabin",
+  const cottage = id === "pappy-home" || id === "cottage" || id === "neighbor" || id === "ship-cabin",
     dock = id === "dockhouse",
     hall = id === "townhall";
   return (
@@ -393,6 +397,7 @@ function CozyTouches() {
 export function InteriorPreview({ id }: { id: InteriorId }) {
   const cabinCrew=useGame(s=>s.afloat?s.shipLife.crew[s.afloat]:undefined);
   const host=useGame(s=>s.visitingNeighbour),profile=neighbourProfile(host??"nim");
+  const phase=useGame(s=>s.opening.prologue);
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
@@ -415,7 +420,7 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
           attach="background"
           args={[id === "dockhouse" ? "#52777e" : "#776452"]}
         />
-        <ambientLight intensity={1.5} />
+        <ambientLight intensity={id==='pappy-home'&&phase==='evening'?.8:1.5} />
         <directionalLight position={[2, 6, 5]} intensity={2} />
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[7, 6]} />
@@ -449,6 +454,7 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
         <ShopFurniture id={id} />
         {id === "ship-cabin"&&<><mesh position={[-1.4,.78,.2]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[.9,.6]}/><meshStandardMaterial color="#e4d5a9"/></mesh>{[-1,1].map(v=><mesh key={v} position={[v*1.7,1.75,-2.6]} rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[.35,.35,.06,16]}/><meshStandardMaterial color="#79acb5" emissive="#61969d" emissiveIntensity={.15}/></mesh>)}{(cabinCrew??[]).slice(0,3).map((role,i)=><group key={role} position={[-.8+i*.8,0,-1.8]}><GnomeRig hat="hat-night" coat={role==='navigator'?'#4b7188':role==='cook'?'#e4d3aa':'#799469'} scale={.8} beard/></group>)}</>}
         {id === "cottage" && <><CozyTouches/><TreasureShelf/></>}
+        {id === "pappy-home"&&<><CozyTouches/><group position={[0,0,-1.5]}><GnomeRig elder hat="hat-straw" coat="#8a6238" beard gesture="wave"/></group><mesh position={[0,.018,1]} rotation={[-Math.PI/2,0,0]}><circleGeometry args={[.9,24]}/><meshStandardMaterial color="#aa9172"/></mesh><mesh position={[1.3,1.8,-2.6]}><boxGeometry args={[1.1,.9,.04]}/><meshStandardMaterial color={phase==='evening'?'#334e68':'#b7d3bb'} emissive={phase==='evening'?'#182e49':'#a1b798'} emissiveIntensity={.25}/></mesh></>}
         {id === "neighbor"&&<><group position={[0,0,-1.5]}><GnomeRig hat="hat-moss" coat={profile.coat} beard gesture="wave"/></group><mesh position={[-.3,.018,.5]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[1.1,1.7]}/><meshStandardMaterial color={profile.coat}/></mesh><mesh position={[-3.28,1.8,-1.1]}><boxGeometry args={[.05,.7,.8]}/><meshStandardMaterial color={profile.coat}/></mesh></>}
       </InteriorCanvas>
       <button
@@ -456,7 +462,7 @@ export function InteriorPreview({ id }: { id: InteriorId }) {
         onClick={() => setExpanded(!expanded)}
         className="absolute right-2 top-2 z-20 min-h-11 rounded-xl bg-parchment px-3 text-xs font-bold text-ink"
       >
-        {expanded ? "Back to room services" : "Explore room"}
+        {expanded ? (id==="pappy-home"?"Talk to Pappy":"Back to room services") : "Explore room"}
       </button>
       {expanded && (
         <p className="absolute bottom-3 inset-x-2 text-center text-sm font-bold text-parchment">
