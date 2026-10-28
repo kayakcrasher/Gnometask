@@ -1,3 +1,4 @@
+import {spendProvisions,voyageProvisions,PROVISION_DISTANCE} from '../ship-supplies';
 import { BOAT_RANK } from "../data/boats";
 import { ISLE_BY_ID, raidLoot, repeatTier } from "../data/isles";
 import { CATALOG_BY_ID } from "../catalog";
@@ -16,7 +17,7 @@ export function islandsSlice(
     raidIsle: (id) => {
       const s = get(),
         isle = ISLE_BY_ID[id];
-      if (!isle || s.combat || s.naval?.battle || s.naval?.rescue || s.naval?.boarding || s.fishing || s.atHome) return;
+      if (!isle || !s.named || s.bank.pending || s.interior || s.transport.ride || s.combat || s.naval?.battle || s.naval?.rescue || s.naval?.boarding || s.fishing || s.atHome) return;
       if (s.abroad) {
         set({ speech: "Return home before setting out for another island." });
         return;
@@ -34,6 +35,7 @@ export function islandsSlice(
       const returnX = s.afloat ? s.gnomeX : harbour?.id === "capital" ? boat.x : harbour!.water.x,
         returnY = s.afloat ? s.gnomeY : harbour?.id === "capital" ? boat.y : harbour!.water.y;
       set({
+        shipStores:spendProvisions(s.shipStores,boat.id,voyageProvisions(boat.id,PROVISION_DISTANCE)),
         raidVisit: { isleId: id, boat: boat.id, returnX, returnY },
         raidProgress: { ...s.raidProgress, [id]: progress },
         abroad: id as GameState["abroad"],

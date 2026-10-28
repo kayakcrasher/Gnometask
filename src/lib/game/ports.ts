@@ -1,3 +1,4 @@
+import {SUPPLY_PORTS} from './ship-supplies';
 import { oceanLanding, getOceanSeed } from "./ocean-world";
 import { boatById } from "./data/boats";
 import { clearSeaSegment, seaRoute, type SeaPoint } from "./sailing";
@@ -126,7 +127,7 @@ export const portDestination = (id: string) =>
     ? PUBLIC_PORT
     : id === "north-landing"
       ? NORTH_LANDING
-      : (portSite(id) ?? oceanLanding(id));
+      : (SUPPLY_PORTS.find(p=>p.id===id) ?? portSite(id) ?? oceanLanding(id));
 export const speedBonus = (parts: readonly string[] = []) =>
   1 +
   (parts.includes("rigging") ? 0.12 : 0) +

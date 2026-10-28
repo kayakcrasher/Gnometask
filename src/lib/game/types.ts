@@ -234,6 +234,7 @@ export type GameSave = {
   deeds: string[];
   city: import("./city").PlayerCity;
   homeRoom:import("./home-room").HomeRoom;
+  shipStores:import("./ship-supplies").ShipStores;
   shipLife:import("./ship-life").ShipLife;
   exploration:import("./exploration").Exploration;
   neighbourhood:import("./neighbours").Neighbourhood;

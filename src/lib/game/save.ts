@@ -1,3 +1,4 @@
+import {emptyShipStores,coerceShipStores} from './ship-supplies';
 import {emptyHomeRoom} from "./home-room";
 import {coerceHomeRoom} from "./home-placement";
 import {emptyAnglerJournal,coerceAngler} from "./angler";
@@ -37,7 +38,7 @@ import { boatById } from "./data/boats";
 import type { GoblinLanding, LandingGoblin } from "./types";
 
 export const SAVE_KEY = "gnome-tasks:v2";
-export const SAVE_VERSION = 22;
+export const SAVE_VERSION = 23;
 
 function daysBetween(from: string, to: string) {
   const a = Date.parse(`${from}T00:00:00`);
@@ -108,6 +109,7 @@ export function defaultSave(): GameSave {
     deeds: ["thimble-home"],
     city: emptyCity(),
     homeRoom:emptyHomeRoom(),
+    shipStores:emptyShipStores(),
     shipLife:emptyShipLife(),
     exploration:emptyExploration(),
     neighbourhood:emptyNeighbourhood(),
@@ -381,6 +383,7 @@ export function migrate(raw: unknown): GameSave {
     saplings: typeof s.saplings === "number" ? Math.max(0, Math.floor(s.saplings)) : 0,
     deeds: [...new Set([...asStringArray(s.deeds, []), "thimble-home"])],
     homeRoom:coerceHomeRoom(s.homeRoom),
+    shipStores:coerceShipStores(s.shipStores,asStringArray(s.hulls,[])),
     shipLife:coerceShipLife(s.shipLife,asStringArray(s.hulls,[])),
     exploration:coerceExploration(s.exploration),
     neighbourhood:coerceNeighbourhood(s.neighbourhood),

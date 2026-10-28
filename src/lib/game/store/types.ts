@@ -21,6 +21,7 @@ export type GameState = GameSave &
     buyHomeFurniture:(kind:import('../home-room').FurnitureKind)=>void;
     placeHomeFurniture:(id:string,x:number,z:number,turn:number)=>void;
     storeHomeFurniture:(id:string)=>void;
+    buyProvisions:(hull:string,amount:number)=>void;
     hireShipCrew:(hull:string,role:import("../ship-life").CrewRole)=>void;
     setShipSpeed:(speed:import("../ship-life").ShipLife["speed"])=>void;
     enterShipCabin:()=>void;

@@ -1,8 +1,10 @@
+import {ShipProvisionPanel} from './ship-provisions';
+import {provisionHold,stockOn,voyageProvisions} from '@/lib/game/ship-supplies';
 import {supportsDeepRig} from "@/lib/game/deep-fishing";
 import {oceanLandings} from "@/lib/game/ocean-world";
 import { shipFit } from "@/lib/game/naval";
 import { BoatShowroom } from "./boat-showroom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useGame } from "@/lib/game/store";
 import { BOATS, boatById } from "@/lib/game/data/boats";
@@ -14,7 +16,7 @@ import {
   DOCK_STYLES,
   DOCK_UPGRADES,
   BOAT_PARTS,
-  shippingQuote,
+  shippingQuote,shippingRoute,routeLength,portSite,
 } from "@/lib/game/ports";
 import { BankLedger, marineButton as btn } from "./mossroot-bank";
 export function MarineControls() {
@@ -24,6 +26,7 @@ export function MarineControls() {
     [hull, setHull] = useState("row"),
     [origin, setOrigin] = useState("thimble"),
     [destination, setDestination] = useState("capital");
+  useEffect(()=>{const open=()=>{const s=useGame.getState();setHull(s.afloat??s.hulls.find(h=>provisionHold(h))??'coaster');setTab('fleet');setOpen(true);if(s.afloat)window.dispatchEvent(new Event('hollow-watch:anchor'));};const close=()=>setOpen(false);window.addEventListener('hollow-watch:supply-dock',open);window.addEventListener('hollow-watch:close-harbour',close);return ()=>{window.removeEventListener('hollow-watch:supply-dock',open);window.removeEventListener('hollow-watch:close-harbour',close);};},[]);
   if (
     !s.named ||
     s.bank.pending ||
@@ -43,6 +46,8 @@ export function MarineControls() {
     quote = dock
       ? shippingQuote(hull, dock.level, parts, economicClimate(s).factor)
       : null;
+  const freightRoute=shippingRoute(origin,destination),freightSite=portSite(origin);
+  const freightProvisions=freightRoute&&freightSite?voyageProvisions(hull,routeLength(freightRoute,freightSite.water)*2):0;
   return (
     <>
       <div className={`fixed ${s.afloat ? "bottom-72" : "bottom-40"} left-3 z-30 flex max-w-[70vw] flex-wrap gap-2`}>
@@ -171,6 +176,7 @@ export function MarineControls() {
                     unlock deep-water fish as Fishing improves.
                   </p>
                   <p className="text-xs">Giant bluefin unlocks at Fishing 60, Sunspire marlin at 75, and abyssal grouper at 90. All require the deepwater rig and open sea well clear of shores and islands. Ordinary fish still use your normal rod.</p>
+                  <ShipProvisionPanel hull={hull}/>
                   <h3 className="font-bold">
                     Boat parts · fitted to this hull
                   </h3>
@@ -235,7 +241,7 @@ export function MarineControls() {
                       }}
                       className={`${btn} bg-pine text-parchment`}
                     >
-                      Sail to Tideham public harbour
+                      Sail to Port Victoria public harbour
                     </button>
                   )}
 
@@ -406,9 +412,11 @@ export function MarineControls() {
                       margin {(quote.sale - quote.cost).toLocaleString()}
                     </p>
                   )}
+                  {provisionHold(hull)&&<p className="text-xs">Round-trip provisions: {freightProvisions} crates · {stockOn(s.shipStores,hull)} aboard. Restock at a supply quay before dispatch. Provisions are reserved once, on departure.</p>}
                   <button
                     type="button"
                     disabled={
+                      stockOn(s.shipStores,hull)<freightProvisions ||
                       !quote ||
                       !owned ||
                       busy ||

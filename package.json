@@ -42,7 +42,9 @@
     "test:home-browser": "node scripts/test-home-browser.mjs",
     "check:pappy-welcome": "node scripts/check-pappy-welcome.mjs",
     "test:pappy-browser": "node scripts/test-pappy-browser.mjs",
-    "check:indoor-taps": "node scripts/check-indoor-taps.mjs"
+    "check:indoor-taps": "node scripts/check-indoor-taps.mjs",
+    "check:ship-supplies": "node scripts/check-ship-supplies.mjs",
+    "test:supply-browser": "node scripts/test-supply-browser.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

@@ -41,7 +41,9 @@ export function DockAsset({
   x,
   y,
   water,
+  wide=false,
 }: {
+  wide?:boolean;
   dock: Dock;
   x: number;
   y: number;
@@ -65,14 +67,14 @@ export function DockAsset({
     <group position={to3(x, y, SEA_LEVEL+.26)} rotation={[0, angle, 0]}>
       <Beam
         at={[0, 0.25, length / 2]}
-        size={[1.6, 0.22, length]}
+        size={[wide?3.6:1.6, 0.22, length]}
         color={color}
       />
       {Array.from({ length: Math.ceil(length / 0.6) }, (_, i) => (
         <Beam
           key={i}
           at={[0, 0.38, i * 0.6]}
-          size={[1.58, 0.035, 0.035]}
+          size={[wide?3.58:1.58, 0.035, 0.035]}
           color={trim}
         />
       ))}
@@ -80,7 +82,7 @@ export function DockAsset({
         [-1, 1].map((side) => (
           <Beam
             key={`${side}-${i}`}
-            at={[side * 0.65, -0.15, i * 2]}
+            at={[side * (wide?1.65:.65), -0.15, i * 2]}
             size={[0.2, 1.6, 0.2]}
             color={trim}
           />

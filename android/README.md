@@ -166,3 +166,16 @@ furniture and walls stay solid. Small finger-placement errors get nearby safe
 floor assistance. Dragging does not send your gnome walking. The shared controls
 cover homes, guest rooms, cabins, shops and public interiors. Furniture editing
 still uses its own select/place mode. Existing saves work without restarting.
+
+### 0.1.20 — Large-ship supply quays
+
+Port Victoria’s Quartermaster Quay stocks food, fresh water and lamp oil for large
+ships. Load from shore or alongside its marked berth through Fleet & parts.
+Provisions cost five coins per crate and remain with their hull. Small starter
+boats are exempt. Existing large ships receive one full hold on first migration.
+Travel consumes stock; idle and offline time do not. Empty ships can return at
+half speed or call SOS, but must restock before departing again.
+
+After the harbour town hall, fund Thimblehaven’s large-ship supply dock for
+32,000 coins. Its quartermaster opens when construction completes. Freight
+reserves provisions for the full round trip when dispatched.

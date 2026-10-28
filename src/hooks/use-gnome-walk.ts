@@ -1,3 +1,4 @@
+import {provisionSpeed} from '@/lib/game/ship-supplies';
 import {helmCourse,throttleFactor,crewOnDuty} from "@/lib/game/ship-life";
 import { windSpeedFactor, hullHandling } from "@/lib/game/sea-weather";
 import { sailingVelocity } from "@/lib/game/visual-motion";
@@ -95,7 +96,7 @@ export function useGnomeWalk(followRef: MutableRefObject<SeaPoint>) {
         const dx = target.x - cur.x, dy = target.y - cur.y;
         const distance = Math.hypot(dx, dy);
         const sea = Boolean(state.afloat);
-        const maximum = state.afloat ? sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat])*windSpeedFactor(state.afloat,Math.atan2(dy,dx),cur.x,cur.y,state.ports.parts[state.afloat])*throttleFactor(state.shipLife.speed)*(crewOnDuty(state,state.afloat,"deckhand")?1.06:1) : state.transport.mounted ? CART_SPEED : SPEED;
+        const maximum = state.afloat ? provisionSpeed(state.shipStores,state.afloat)*sailingSpeed(state.afloat, state.skills.sailing,state.ports.parts[state.afloat])*windSpeedFactor(state.afloat,Math.atan2(dy,dx),cur.x,cur.y,state.ports.parts[state.afloat])*throttleFactor(state.shipLife.speed)*(crewOnDuty(state,state.afloat,"deckhand")?1.06:1) : state.transport.mounted ? CART_SPEED : SPEED;
         const speed=sea?(cruiseRef.current=sailingVelocity(cruiseRef.current,maximum,routeRef.current.length===1?distance:Infinity,dt,hullHandling(state.afloat!).acceleration)):maximum;
         const course=sea?helmCourse(yawRef.current,Math.atan2(dx,dy),state.afloat!,dt,crewOnDuty(state,state.afloat!,"navigator")):null;
         const assisted=sea&&distance<60;

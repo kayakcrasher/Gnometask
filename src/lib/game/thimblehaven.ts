@@ -49,10 +49,11 @@ export const TOWN_PROJECTS = [
     description:
       "An expanded council house, public garden and room for eight families.",
   },
+  { id:"supply-dock", name:"Large-ship supply dock", cost:32000, description:"A wide quay, quartermaster warehouse and loading crane. Buy provisions here for your larger ships. Includes the waterfront easement." },
 ] as const;
 export type HomeWork={target:number;progress:number};
 export type TownResident = { id: string; name: string; purse: number; homeLevel?:number; work?:HomeWork; arrival?:number };
-export const PROJECT_WORK:Record<string,number>={well:6,market:8,depot:10,cottages:12,hall:16};
+export const PROJECT_WORK:Record<string,number>={well:6,market:8,depot:10,cottages:12,hall:16,"supply-dock":24};
 export type Thimblehaven = {
   version: 1;
   projects: string[];

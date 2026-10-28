@@ -1,3 +1,4 @@
+import {supplyPorts,voyageProvisions,spendProvisions,stockOn} from '../ship-supplies';
 import {playerHomeDoor} from "../city";
 import {supportsDeepRig,DEEP_RIG_LEVEL} from "../deep-fishing";
 import {levelFromXp} from "../xp";
@@ -61,7 +62,7 @@ export function maritimeSlice(
         s.afloat &&
         portDestination(id) &&
         (id === "north-landing" ||
-          id === "capital" ||
+          id === "capital" || supplyPorts(s.thimble).some(p=>p.id===id) ||
           id.startsWith("ocean-") ||
           s.ports.docks.some((d) => d.site === id))
       )
@@ -280,6 +281,8 @@ export function maritimeSlice(
         route = shippingRoute(origin, destination),
         site = portSite(origin);
       if (!quote || !route || !site || s.coins < quote.cost) return;
+      const provisions=voyageProvisions(id,routeLength(route,site.water)*2);
+      if(stockOn(s.shipStores,id)<provisions){set({speech:`This round trip requires ${provisions} provision crates. Restock this hull at a supply quay before dispatch.`});return;}
       const duration = Math.max(
         45,
         (routeLength(route, site.water) /
@@ -288,6 +291,7 @@ export function maritimeSlice(
       );
       set({
         coins: s.coins - quote.cost,
+        shipStores:spendProvisions(s.shipStores,id,provisions),
         ports: {
           ...s.ports,
           shipments: [

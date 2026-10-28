@@ -1,3 +1,4 @@
+import {supplyQuayClearance} from '@/lib/game/ship-supplies';
 import {neighbourHome} from "@/lib/game/neighbours";
 import { useMemo, useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
@@ -134,7 +135,8 @@ export function FrontierLandscape({
     estate = useGame((s) => s.estate),
     plots = useGame((s) => s.civic.plots),
     residents=useGame(s=>s.thimble.residents),
-    homes=useGame(s=>s.neighbourhood.homes);
+    homes=useGame(s=>s.neighbourhood.homes),
+    town=useGame(s=>s.thimble);
   const groves = useMemo(() => {
     const occupied = [
       ...residents.map((r,i)=>neighbourHome(r.id,i)),
@@ -147,10 +149,10 @@ export function FrontierLandscape({
     return GROVES.map((g) => ({
       ...g,
       trees: g.trees.filter(
-        (t) => !occupied.some((b) => Math.hypot(t.x - b.x, t.y - b.y) < 65),
+        (t) => !supplyQuayClearance(t.x,t.y,town)&&!occupied.some((b) => Math.hypot(t.x - b.x, t.y - b.y) < 65),
       ),
     })).filter((g) => g.trees.length > 0);
-  }, [buildings, estate, plots,residents,homes]);
+  }, [buildings, estate, plots,residents,homes,town]);
   return (
     <group>
       <mesh

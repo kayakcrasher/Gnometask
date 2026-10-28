@@ -1,3 +1,4 @@
+import {supplyPorts,departureReady,sailProvisions,provisionHold} from '../ship-supplies';
 import {oceanDanger} from "../ocean-world";
 import { ANGLER_AWARDS, speciesCaught, spareFishSale, anglerAvailable } from '../angler';
 import {offshoreFishing,supportsDeepRig,fishLength} from "../deep-fishing";
@@ -136,7 +137,7 @@ export function gatherSlice(
     sailTo: (dest, boatId) => {
       const s = get();
       if (!s.named || s.atHome || s.interior || s.abroad || s.combat || s.fishing || s.bank.pending || s.transport.ride || s.naval.battle || s.naval.rescue || s.naval.boarding) return;
-      const harbours=[PUBLIC_PORT,NORTH_LANDING,...oceanLandings(s.gnomeX,s.gnomeY),...s.ports.docks.map(d=>portSite(d.site)!)];
+      const harbours=[PUBLIC_PORT,NORTH_LANDING,...supplyPorts(s.thimble),...oceanLandings(s.gnomeX,s.gnomeY),...s.ports.docks.map(d=>portSite(d.site)!)];
       if (dest === "dock") {
         if (!s.afloat) {
           set({ speech: "You are already ashore.", popup: null });
@@ -179,6 +180,7 @@ export function gatherSlice(
         set({ speech: `${boat.name} needs Sailing ${boat.need} and Naval Warfare ${boat.warfare??1}.`, popup: null });
         return;
       }
+      if(!departureReady(s.shipStores,boat.id)){set({speech:"Load provisions at Port Victoria’s Quartermaster Quay or your town supply dock before casting off."});return;}
       set({
         naval:{...s.naval,moored:Object.fromEntries(Object.entries(s.naval.moored).filter(([id])=>id!==boat.id))},
         gnomeX: boarding.id==='capital'?boat.x:boarding.water.x, gnomeY: boarding.id==='capital'?boat.y:boarding.water.y, afloat: boat.id, sailHome: false,
@@ -206,6 +208,7 @@ export function gatherSlice(
       const gained = xp ? withXp(s.skills, { sailing: xp }) : null;
       set({
         gnomeX: x, gnomeY: y, sailingDistance: total,
+        shipStores:sailProvisions(s.shipStores,boat.id,distance),
         coins:Math.max(0,s.coins-wage),
         ...(gained ? { skills: gained.skills, speech: gained.ding ?? `+${xp} Sailing XP. Steady on the water.` } : {}),
       });
@@ -244,7 +247,7 @@ export function gatherSlice(
         hulls: [...s.hulls, boat.id],
         boatRank: Math.max(s.boatRank, BOAT_RANK[boat.id]),
         coinPopKey: s.coinPopKey + 1,
-        speech: `Wim slides the ${boat.name.toLowerCase()} onto your account. She's at the pier.`,
+        speech: `Wim slides the ${boat.name.toLowerCase()} onto your account. She's at the pier.${provisionHold(boat.id)?' Load provisions at Quartermaster Quay before her first voyage.':''}`,
       });
       sfx("buy");
       scheduleWrite(get);

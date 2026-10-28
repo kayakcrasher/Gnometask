@@ -98,6 +98,7 @@ export function snap(s: GameSave): GameSave {
     thimble:s.thimble,
     neighbourhood:s.neighbourhood,
     exploration:s.exploration,
+    shipStores:s.shipStores,
     shipLife:s.shipLife,
     homeRoom:s.homeRoom,
     naval:s.naval,
