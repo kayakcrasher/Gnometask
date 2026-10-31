@@ -9,6 +9,9 @@ const src = path.join(root, "src");
 const dist = path.join(root, "dist");
 
 fs.mkdirSync(dist, { recursive: true });
+// Static assets (Kenney models, flower sprites, favicon) live in public/ and are
+// fetched at runtime, so they must sit next to the bundle.
+fs.cpSync(path.join(root, "public"), dist, { recursive: true });
 fs.copyFileSync(path.join(root, "index.html"), path.join(dist, "index.html"));
 
 // 1. Tailwind

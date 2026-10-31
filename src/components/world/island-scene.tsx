@@ -589,6 +589,9 @@ export function IslandCanvas({
         zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08);
       }}
     >
+      {/* Own stacking context: drei <Html> labels use very large z-indexes, which
+          otherwise paint over the minimap and zoom buttons below. */}
+      <div className="absolute inset-0 isolate z-0">
       <CanvasGate onFail={() => failRef.current?.()}>
         <Canvas
           key={epoch}
@@ -602,11 +605,23 @@ export function IslandCanvas({
             gl.shadowMap.enabled = !MOBILE_GRAPHICS;
             gl.shadowMap.type = THREE.PCFShadowMap;
             const el = gl.domElement;
+            // Unmounting a Canvas (entering a room, going home, a remount) forces a
+            // context loss on purpose; only a loss on a live, attached canvas is a
+            // real GPU failure. Even then, give the browser a moment to restore it
+            // before falling back to the flat map.
+            let giveUp = 0;
             const lost = (e: Event) => {
               e.preventDefault();
-              failRef.current?.();
+              if (!el.isConnected) return;
+              window.clearTimeout(giveUp);
+              giveUp = window.setTimeout(() => {
+                if (el.isConnected) failRef.current?.();
+              }, 3000);
             };
-            const restored = () => setEpoch((n) => n + 1);
+            const restored = () => {
+              window.clearTimeout(giveUp);
+              setEpoch((n) => n + 1);
+            };
             el.addEventListener("webglcontextlost", lost);
             el.addEventListener("webglcontextrestored", restored);
             requestAnimationFrame(() => {
@@ -629,10 +644,11 @@ export function IslandCanvas({
           </NearbyWorld>
         </Canvas>
       </CanvasGate>
+      </div>
       {named ? (
         <>
           <Minimap pos={pos} facingYaw={yaw} walkTo={walk} npcPoses={npcPoses} compassRef={compassNeedle} />
-          <div className="pointer-events-none absolute bottom-4 right-3 z-20 flex flex-col gap-1 md:bottom-6 md:right-4">
+          <div className="pointer-events-none absolute bottom-4 right-3 z-20 flex flex-col gap-1 md:bottom-6 md:right-4 [@media(max-height:560px)]:bottom-3 [@media(max-height:560px)]:flex-row">
             {[
               { label: "Zoom in", text: "+" },
               { label: "Zoom out", text: "−" },

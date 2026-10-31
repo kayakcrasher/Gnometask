@@ -27,7 +27,12 @@ Content lives in `src/lib/game/data/`. Engine and UI stay out of those files.
 
 ## Run
 
-This tree is the game source. The live preview on Grok App Builder runs the full app. Clone, then overlay onto a Vite + React + R3F shell, or keep editing here and push.
+```bash
+npm install
+npm run dev        # builds into dist/ (bundle, styles and public/ assets) and serves http://localhost:8080
+```
+
+`npm run build` alone produces `dist/`; `npm run serve` serves an existing build. `npm run check:types` type-checks, and each `npm run check:*` script verifies one system. The `test:*-browser` scripts drive the built game in Playwright (set `PLAYWRIGHT_MODULE` if Playwright is installed globally); `npm run test:world-browser` checks that the 3D world survives room visits and that the outdoor controls never overlap on phone, landscape or desktop.
 
 ## Build your city
 

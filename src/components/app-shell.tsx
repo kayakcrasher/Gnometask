@@ -1,3 +1,4 @@
+import { HudDock } from "./hud/hud-dock";
 import {PappyWelcome} from "./intro/pappy-welcome";
 import {PlayerHomeRoom} from "./world/player-home-room";
 import {ShipHelm} from "./hud/ship-controls";
@@ -93,6 +94,7 @@ export function AppShell() {
   return (
     <div className="fixed inset-0 overflow-hidden bg-pine" onPointerDown={unlockAudio} onKeyDown={unlockAudio}>
       <Soundtrack />
+      <HudDock />
       <TransportControls />
       <MarineControls/>
       <NorthernSeas/>

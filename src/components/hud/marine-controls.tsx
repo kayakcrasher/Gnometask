@@ -1,3 +1,4 @@
+import { DockSlot } from "./hud-dock";
 import {ShipProvisionPanel} from './ship-provisions';
 import {provisionHold,stockOn,voyageProvisions} from '@/lib/game/ship-supplies';
 import {supportsDeepRig} from "@/lib/game/deep-fishing";
@@ -50,7 +51,7 @@ export function MarineControls() {
   const freightProvisions=freightRoute&&freightSite?voyageProvisions(hull,routeLength(freightRoute,freightSite.water)*2):0;
   return (
     <>
-      <div className={`fixed ${s.afloat ? "bottom-72" : "bottom-40"} left-3 z-30 flex max-w-[70vw] flex-wrap gap-2`}>
+      <DockSlot order={1}>
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -58,7 +59,7 @@ export function MarineControls() {
         >
           Bank & harbour
         </button>
-      </div>
+      </DockSlot>
       {open &&
         createPortal(
           <div

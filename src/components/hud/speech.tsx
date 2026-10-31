@@ -9,7 +9,7 @@ export function Speech() {
   if (combat || interior || panel !== "place") return null;
   const line = combat ? combat.log : speech;
   return (
-    <div className="pointer-events-none absolute left-3 top-[4.75rem] z-20 max-w-[min(100%-1.5rem,22rem)] md:top-[5.25rem]">
+    <div className="pointer-events-none absolute left-3 top-[4.75rem] z-20 max-w-[min(100%-7.5rem,22rem)] md:top-[5.25rem] md:max-w-[min(100%-10.5rem,22rem)]">
       <div
         key={bounceKey + line}
         className="slide-up pointer-events-none relative rounded-[18px] bg-parchment px-3.5 py-2.5 shadow-panel"

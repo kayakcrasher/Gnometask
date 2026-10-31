@@ -1,3 +1,4 @@
+import { DockSlot } from "./hud-dock";
 import {TownOutlook} from "./town-outlook";
 import {ShipCrewPanel} from "./ship-controls";
 import {NeighbourDirectory} from "./neighbours";
@@ -49,6 +50,7 @@ export function NorthernSeas() {
     warfare = levelFromXp(s.skills.navalWarfare);
   return (
     <>
+      <DockSlot order={2}>
       <button
         type="button"
         onClick={() => {
@@ -56,10 +58,11 @@ export function NorthernSeas() {
           if (s.afloat) setHull(s.afloat);
           setOpen(true);
         }}
-        className={`${btn} fixed bottom-56 left-3 z-30 bg-parchment text-pine shadow-panel`}
+        className={`${btn} bg-parchment text-pine shadow-panel`}
       >
         {s.afloat ? "Naval command" : "Thimblehaven council"}
       </button>
+      </DockSlot>
       {battle && (
         <div className="fixed inset-x-3 top-20 z-40 mx-auto max-w-md rounded-2xl bg-pine p-3 text-parchment">
           <strong>

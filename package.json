@@ -45,7 +45,8 @@
     "check:indoor-taps": "node scripts/check-indoor-taps.mjs",
     "check:ship-supplies": "node scripts/check-ship-supplies.mjs",
     "test:supply-browser": "node scripts/test-supply-browser.mjs",
-    "check:harbour-fixes": "node scripts/check-harbour-fixes.mjs"
+    "check:harbour-fixes": "node scripts/check-harbour-fixes.mjs",
+    "test:world-browser": "node scripts/test-world-browser.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

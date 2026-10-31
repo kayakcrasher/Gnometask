@@ -17,6 +17,13 @@ export default {
       fontFamily: {
         display: ["Georgia", "serif"],
       },
+      // Tailwind 3 only generates opacity modifiers on its own scale (steps of 5);
+      // the HUD uses a few in-between values, so register them explicitly.
+      opacity: {
+        12: "0.12",
+        88: "0.88",
+        92: "0.92",
+      },
       boxShadow: {
         panel: "0 8px 24px rgba(0,0,0,0.18)",
       },

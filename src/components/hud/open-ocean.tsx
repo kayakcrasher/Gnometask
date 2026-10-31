@@ -1,3 +1,4 @@
+import { DockSlot } from "./hud-dock";
 import {Discoveries} from "./discoveries";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -28,13 +29,15 @@ export function OpenOceanControls() {
   return (
     <>
       {!rescue && !wreck && (
+        <DockSlot order={3}>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`${btn} fixed ${s.afloat ? "bottom-64" : "bottom-24"} right-3 z-30 bg-parchment text-pine shadow-panel`}
+          className={`${btn} bg-parchment text-pine shadow-panel`}
         >
           Ocean chart
         </button>
+        </DockSlot>
       )}
       {rescue && (
         <section

@@ -1,3 +1,4 @@
+import { DockSlot } from "./hud-dock";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useGame } from "@/lib/game/store";
@@ -24,7 +25,7 @@ export function TransportControls() {
       "min-h-11 rounded-xl px-3 py-2 text-xs font-bold disabled:opacity-45";
   return (
     <>
-      <div className="fixed bottom-24 left-3 z-30 flex flex-col gap-2">
+      <DockSlot order={0}>
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -41,7 +42,7 @@ export function TransportControls() {
             Hop off wagon
           </button>
         )}
-      </div>
+      </DockSlot>
       {open &&
         createPortal(
           <div
